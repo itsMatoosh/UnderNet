@@ -1,6 +1,7 @@
 package me.matoosh.undernet.ui.view;
 
 import android.animation.Animator;
+import android.animation.TimeInterpolator;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -154,23 +155,23 @@ public class ViewManager {
          */
         private void handleCommunitiesRevealAnim(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
             //Making sure no accidental swipes happen.
-            Log.e("Ayy", "Lmao it hurts xd " + " " + distanceX + " " + distanceY);
-            if(distanceY < -20f && Math.abs(distanceX) < 10f) {
-
+            if(!isTransitioning && distanceY < -20f && Math.abs(distanceX) < 10f) {
+                //Setting the transitioning flag.
                 isTransitioning = true;
                 View communitiesPager = sections[1].pager;
                 //Creating the animator for this view (the start radius is zero)
                 if(transitionAnimator == null) {
                     //Calculating the final radius.
                     float finalRadius = (float) Math.hypot(communitiesPager.getHeight(), communitiesPager.getWidth());
-
-
                     transitionAnimator = ViewAnimationUtils.createCircularReveal(sections[1].pager, (int)e1.getX(), (int)e1.getY(), 0, finalRadius);
                 }
 
                 // make the view visible and start the animation
                 communitiesPager.setVisibility(View.VISIBLE);
                 transitionAnimator.start();
+            } else if(isTransitioning) {
+                //Change the state of the animation.
+                transitionAnimator.pause();
             }
         }
 
