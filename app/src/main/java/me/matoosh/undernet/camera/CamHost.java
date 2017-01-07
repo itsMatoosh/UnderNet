@@ -10,11 +10,11 @@ public class CamHost {
     /**
      * View for displaying the camera preview.
      */
-    private TextureView previewView;
+    private static TextureView previewView;
     /**
      * Surface texture listener.
      */
-    private TextureView.SurfaceTextureListener surfaceTextureListener = new TextureView.SurfaceTextureListener() {
+    private static TextureView.SurfaceTextureListener surfaceTextureListener = new TextureView.SurfaceTextureListener() {
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
 
@@ -39,13 +39,13 @@ public class CamHost {
     /**
      * Initializes the CamHost.
      */
-    public void init() {
+    public static void init() {
 
     }
     /**
      * Sets up the camera.
      */
-    private void setupCamera(SurfaceTexture preview, int prevWidth, int prevHeight) {
+    private static void setupCamera(SurfaceTexture preview, int prevWidth, int prevHeight) {
 
     }
 }

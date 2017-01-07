@@ -1,7 +1,23 @@
-<android.support.v4.view.ViewPager xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main_pager"
+    android:id="@+id/community_pager"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#101423"
-    tools:context="me.matoosh.undernet.MainActivity" />
+    tools:context="me.matoosh.undernet.MainActivity">
+
+    <android.support.v4.view.ViewPager
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/main_pager"
+        android:background="@color/colorPrimaryDark">
+    </android.support.v4.view.ViewPager>
+    <android.support.v4.view.ViewPager
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/communities_pager"
+        android:background="@color/colorAccent"
+        android:visibility="invisible"
+        >
+    </android.support.v4.view.ViewPager>
+
+</RelativeLayout>

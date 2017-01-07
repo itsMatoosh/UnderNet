@@ -1,11 +1,7 @@
 package me.matoosh.undernet;
 
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.widget.Toast;
 
 import me.matoosh.undernet.camera.CamHost;
 import me.matoosh.undernet.ui.view.ViewManager;
@@ -19,6 +15,10 @@ public class MainActivity extends AppCompatActivity {
      * Reference to the main activity instance.
      */
     public static MainActivity instance;
+    /**
+     * The ViewManager.
+     */
+    public static ViewManager viewManager;
 
     //PERMISSIONS
     private static final int REQUEST_CAMERA_PERMISSION = 200;
@@ -33,9 +33,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         //Initializing all the components.
         init();
-
-        //Changing to the default view.
-        ViewManager.setView(ViewType.CAMERA);
     }
 
     /**
@@ -43,6 +40,9 @@ public class MainActivity extends AppCompatActivity {
      */
     protected void init() {
         //Initializing the ViewManager.
-        ViewManager.init();
+        viewManager = new ViewManager();
+        viewManager.init();
+        //Initializing the CamHost.
+        CamHost.init();
     }
 }

@@ -4,13 +4,21 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
+import me.matoosh.undernet.MainActivity;
+
 /**
  * Created by Mateusz Rębacz on 20.12.2016.
  */
 
 public class TabAdapter extends FragmentPagerAdapter {
-    public TabAdapter(FragmentManager fragmentManager) {
+    /**
+     * Section using this TabAdapter.
+     */
+    private ViewManager.Section section;
+
+    public TabAdapter(FragmentManager fragmentManager, ViewManager.Section section) {
         super(fragmentManager);
+        this.section = section;
     }
 
     /**
@@ -20,7 +28,7 @@ public class TabAdapter extends FragmentPagerAdapter {
      */
     @Override
     public Fragment getItem(int position) {
-        return (Fragment)ViewManager.getView(position);
+        return (Fragment) section.getView(position);
     }
 
 
@@ -30,6 +38,6 @@ public class TabAdapter extends FragmentPagerAdapter {
      */
     @Override
     public int getCount() {
-        return ViewManager.registeredViews.size();
+        return section.registeredViews.size();
     }
 }

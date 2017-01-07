@@ -5,5 +5,7 @@ package me.matoosh.undernet.ui.view;
  */
 
 public enum ViewType {
-    CAMERA
+    CONTENT,
+    CAMERA,
+    USER
 }
