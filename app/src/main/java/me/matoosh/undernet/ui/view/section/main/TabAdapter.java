@@ -1,4 +1,4 @@
-package me.matoosh.undernet.ui.view;
+package me.matoosh.undernet.ui.view.section.main;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -6,8 +6,10 @@ import android.support.v4.app.FragmentPagerAdapter;
 
 import me.matoosh.undernet.MainActivity;
 import me.matoosh.undernet.ui.view.section.Section;
+import me.matoosh.undernet.ui.view.section.TabbedSection;
 
 /**
+ * Manages tabs within the main section.
  * Created by Mateusz Rębacz on 20.12.2016.
  */
 
@@ -15,9 +17,9 @@ public class TabAdapter extends FragmentPagerAdapter {
     /**
      * Section using this TabAdapter.
      */
-    private Section section;
+    private TabbedSection section;
 
-    public TabAdapter(FragmentManager fragmentManager, Section section) {
+    public TabAdapter(FragmentManager fragmentManager, TabbedSection section) {
         super(fragmentManager);
         this.section = section;
     }
@@ -39,6 +41,6 @@ public class TabAdapter extends FragmentPagerAdapter {
      */
     @Override
     public int getCount() {
-        return section.registeredViews.size();
+        return section.registeredTabs.size();
     }
 }

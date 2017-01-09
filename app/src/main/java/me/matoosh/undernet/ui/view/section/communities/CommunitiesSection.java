@@ -1,8 +1,9 @@
-package me.matoosh.undernet.ui.view.section;
+package me.matoosh.undernet.ui.view.section.communities;
 
 import android.animation.Animator;
 import android.graphics.Rect;
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewAnimationUtils;
@@ -11,40 +12,30 @@ import java.util.ArrayList;
 
 import me.matoosh.undernet.MainActivity;
 import me.matoosh.undernet.R;
-import me.matoosh.undernet.ui.view.CameraFragment;
-import me.matoosh.undernet.ui.view.CommunitiesFragment;
-import me.matoosh.undernet.ui.view.FriendsFragment;
-import me.matoosh.undernet.ui.view.IView;
-import me.matoosh.undernet.ui.view.TabAdapter;
-import me.matoosh.undernet.ui.view.ViewManager;
+import me.matoosh.undernet.ui.view.section.main.ITab;
+import me.matoosh.undernet.ui.view.section.main.TabAdapter;
+import me.matoosh.undernet.ui.view.section.Section;
 
 /**
  * The communities section of the app.
  */
-public class CommunititesSection extends Section {
+public class CommunitiesSection extends Section {
     /**
      * Transition animator of this section.
      */
     private Animator transitionAnimator;
+    /**
+     * Recycler view listing community cards.
+     */
+    private RecyclerView recyclerView;
 
     public void setup() {
-        //Creating the ArrayList.
-        registeredViews = new ArrayList<IView>();
+        //Setting the tag for this section.
+        TAG = "Communities";
 
-        //Registering a single view for each type of view.
-        registeredViews.add(new CommunitiesFragment());
-
-        //Setting the default view.
-        defaultView = registeredViews.get(0);
-
-        //Setting up the main section pager.
-        pager = (ViewPager) MainActivity.instance.findViewById(R.id.communities_pager);
-        if(pager == null) {
-            Log.println(Log.ERROR, "ViewManager", "No communities pager!");
-        }
-        TabAdapter tabAdapter = new TabAdapter(MainActivity.instance.getSupportFragmentManager(), this);
-        pager.setAdapter(tabAdapter);
-
+        //Setting the main view of the section.
+        recyclerView = (RecyclerView)MainActivity.instance.findViewById(R.id.communities_recycler_view);
+        mainView = (View)MainActivity.instance.findViewById(R.id.communities_layout);
     }
 
     /**
@@ -53,17 +44,17 @@ public class CommunititesSection extends Section {
     private void hide() {
         //Making sure no accidental swipes happen.
         if(!isTransitioning) {
-            View mainPager = MainActivity.viewManager.sections[0].pager;
+            final View mainView = MainActivity.viewManager.sections[0].mainView;
             //Creating the animator for this view (the start radius is zero)
             if(transitionAnimator == null) {
                 //Calculating the final radius.
                 Rect bounds = new Rect();
-                mainPager.getDrawingRect(bounds);
+                mainView.getDrawingRect(bounds);
                 int centerX = bounds.centerX();
                 int centerY = bounds.centerY();
                 int finalRadius = Math.max(bounds.width(), bounds.height());
 
-                transitionAnimator = ViewAnimationUtils.createCircularReveal(mainPager, centerX, centerY, 0f, finalRadius);
+                transitionAnimator = ViewAnimationUtils.createCircularReveal(mainView, centerX, centerY, 0f, finalRadius);
             }
 
             // make the view visible and start the animation
@@ -71,7 +62,7 @@ public class CommunititesSection extends Section {
                 @Override
                 public void onAnimationStart(Animator animation) {
                     //Setting the transitioning flag.
-                    pager.setVisibility(View.VISIBLE);
+                    mainView.setVisibility(View.VISIBLE);
                     isTransitioning = true;
                 }
 
@@ -79,7 +70,7 @@ public class CommunititesSection extends Section {
                 public void onAnimationEnd(Animator animation) {
                     //Setting the transitioning flag.
                     isTransitioning = false;
-                    pager.setVisibility(View.INVISIBLE);
+                    mainView.setVisibility(View.INVISIBLE);
                 }
 
                 @Override
@@ -91,7 +82,7 @@ public class CommunititesSection extends Section {
                 @Override
                 public void onAnimationRepeat(Animator animation) {
                     //Setting the transitioning flag.
-                    pager.setVisibility(View.VISIBLE);
+                    mainView.setVisibility(View.VISIBLE);
                     isTransitioning = true;
                 }
             });

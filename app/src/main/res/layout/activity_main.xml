@@ -9,15 +9,21 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/main_pager"
-        android:background="@color/colorPrimaryDark">
+        android:background="@color/colorPrimaryDark"
+        android:visibility="visible">
     </android.support.v4.view.ViewPager>
-    <android.support.v4.view.ViewPager
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/communities_pager"
         android:background="@color/colorAccent"
         android:visibility="invisible"
-        >
-    </android.support.v4.view.ViewPager>
+        android:id="@+id/communities_layout">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/communities_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </LinearLayout>
 
 </RelativeLayout>

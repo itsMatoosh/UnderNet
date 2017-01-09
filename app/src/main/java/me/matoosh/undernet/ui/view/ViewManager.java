@@ -1,7 +1,7 @@
 package me.matoosh.undernet.ui.view;
 
-import me.matoosh.undernet.ui.view.section.CenterSection;
-import me.matoosh.undernet.ui.view.section.CommunititesSection;
+import me.matoosh.undernet.ui.view.section.main.MainSection;
+import me.matoosh.undernet.ui.view.section.communities.CommunitiesSection;
 import me.matoosh.undernet.ui.view.section.Section;
 
 /**
@@ -20,8 +20,8 @@ public class ViewManager {
     public void init() {
         //Initializing the  sections.
         sections = new Section[2];
-        sections[0] = new CenterSection();
-        sections[1] = new CommunititesSection();
+        sections[0] = new MainSection();
+        sections[1] = new CommunitiesSection();
         for (Section s:
              sections) {
             s.setup();

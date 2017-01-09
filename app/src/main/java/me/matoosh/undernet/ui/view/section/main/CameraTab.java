@@ -1,4 +1,4 @@
-package me.matoosh.undernet.ui.view;
+package me.matoosh.undernet.ui.view.section.main;
 
 
 import android.os.Bundle;
@@ -15,10 +15,10 @@ import me.matoosh.undernet.R;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class CameraFragment extends Fragment implements IView {
+public class CameraTab extends Fragment implements ITab {
 
 
-    public CameraFragment() {
+    public CameraTab() {
         // Required empty public constructor
     }
 

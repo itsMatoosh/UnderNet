@@ -1,10 +1,10 @@
-package me.matoosh.undernet.ui.view;
+package me.matoosh.undernet.ui.view.section.main;
 
 /**
  * Created by Mateusz Rębacz on 18.12.2016.
  */
 
-public interface IView {
+public interface ITab {
     /**
      * Called when the view is created.
      */

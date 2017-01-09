@@ -1,40 +1,25 @@
 package me.matoosh.undernet.ui.view.section;
 
-import android.support.v4.view.ViewPager;
 import android.view.GestureDetector;
-
-import java.util.ArrayList;
-
-import me.matoosh.undernet.ui.view.IView;
-import me.matoosh.undernet.ui.view.ViewType;
+import android.view.View;
 
 /**
  * Represents a single section of the app.
  */
 public class Section {
     /**
-     * Pager of this section.
+     * Main view of the section.
      */
-    public ViewPager pager;
+    public View mainView;
+    /**
+     * Debugging tag of this section.
+     */
+    public static String TAG = "Unknown Section";
+
     /**
      * Gesture Detector of this section.
      */
     public GestureDetector gestureDetector;
-
-    /**
-     * Default view of the section.
-     */
-    public IView defaultView;
-
-    /**
-     * Currently visible view.
-     */
-    public IView currentView;
-
-    /**
-     * List of the registered views.
-     */
-    public ArrayList<IView> registeredViews;
 
     /**
      * Whether a transition is taking place to a different section.
@@ -45,21 +30,4 @@ public class Section {
      * Sets up the section.
      */
     public void setup() {}
-
-    /**
-     * Sets the current view of the app.
-     * @param type
-     */
-    public void setView(ViewType type) {
-        if(currentView != null) {
-            currentView.OnInvisible();
-        }
-        currentView = registeredViews.get(type.ordinal());
-        pager.setCurrentItem(type.ordinal());
-        currentView.OnVisible();
-    }
-    public IView getView(int id) {
-        return registeredViews.get(id);
-    }
-
 }

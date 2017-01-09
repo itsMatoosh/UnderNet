@@ -1,4 +1,4 @@
-package me.matoosh.undernet.ui.view;
+package me.matoosh.undernet.ui.view.section.main;
 
 
 import android.os.Bundle;
@@ -15,10 +15,10 @@ import me.matoosh.undernet.R;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class CommunitiesFragment extends Fragment implements IView {
+public class FriendsTab extends Fragment implements ITab {
 
 
-    public CommunitiesFragment() {
+    public FriendsTab() {
         // Required empty public constructor
     }
 
@@ -27,7 +27,7 @@ public class CommunitiesFragment extends Fragment implements IView {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_communities, container, false);
+        return inflater.inflate(R.layout.fragment_friends, container, false);
     }
 
     @Override

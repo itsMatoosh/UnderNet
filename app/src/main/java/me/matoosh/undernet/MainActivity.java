@@ -5,7 +5,6 @@ import android.support.v7.app.AppCompatActivity;
 
 import me.matoosh.undernet.camera.CamHost;
 import me.matoosh.undernet.ui.view.ViewManager;
-import me.matoosh.undernet.ui.view.ViewType;
 
 /**
  * The main activity of the app.
