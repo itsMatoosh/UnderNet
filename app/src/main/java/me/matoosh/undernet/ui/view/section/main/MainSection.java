@@ -12,6 +12,7 @@ import java.util.ArrayList;
 
 import me.matoosh.undernet.MainActivity;
 import me.matoosh.undernet.R;
+import me.matoosh.undernet.ui.view.ViewManager;
 import me.matoosh.undernet.ui.view.ViewType;
 import me.matoosh.undernet.ui.view.section.TabbedSection;
 import me.matoosh.undernet.ui.view.section.communities.CommunitiesSection;
@@ -74,51 +75,8 @@ public class MainSection extends TabbedSection {
      */
     private void handleCommunitiesRevealAnim(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
         //Making sure no accidental swipes happen.
-        if(!isTransitioning && distanceY < -20f && Math.abs(distanceX) < 10f) {
-            //Getting the main view of the communities section.
-            View communitiesView = MainActivity.viewManager.sections[1].mainView;
-            if(communitiesView == null) {
-                Log.e(TAG, "Communities main view couldn't be found.");
-            }
-
-            //Creating the animator for this view (the start radius is zero)
-            if(transitionAnimator == null) {
-                //Calculating the final radius.
-                float finalRadius = (float) Math.hypot(communitiesView.getHeight(), communitiesView.getWidth());
-                transitionAnimator = ViewAnimationUtils.createCircularReveal(communitiesView, (int)e1.getX(), (int)e1.getY(), 0, finalRadius);
-            }
-
-            // make the view visible and start the animation
-            communitiesView.setVisibility(View.VISIBLE);
-            transitionAnimator.addListener(new Animator.AnimatorListener() {
-                @Override
-                public void onAnimationStart(Animator animation) {
-                    //Setting the transitioning flag.
-                    isTransitioning = true;
-                    Log.d(TAG, "Transitioning to " + CommunitiesSection.TAG);
-                }
-
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    //Setting the transitioning flag.
-                    isTransitioning = false;
-                }
-
-                @Override
-                public void onAnimationCancel(Animator animation) {
-                    //Setting the transitioning flag.
-                    isTransitioning = false;
-                }
-
-                @Override
-                public void onAnimationRepeat(Animator animation) {
-                    //Setting the transitioning flag.
-                    isTransitioning = true;
-                    Log.d(TAG, "Transitioning to " + CommunitiesSection.TAG);
-                }
-            });
-
-            transitionAnimator.start();
+        if(distanceY < -20f && Math.abs(distanceX) < 10f) {
+            MainActivity.viewManager.transitionTo(MainActivity.viewManager.sections[1] , e1.getX(), e1.getY());
         }
     }
 }
