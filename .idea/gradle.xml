@@ -9,7 +9,9 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/netty-all-4.1.7.Final" />
+            <option value="$PROJECT_DIR$/undernet-android" />
+            <option value="$PROJECT_DIR$/undernet-core" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

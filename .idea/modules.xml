@@ -2,8 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/UnderNet-Android.iml" filepath="$PROJECT_DIR$/UnderNet-Android.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/UnderNet.iml" filepath="$PROJECT_DIR$/UnderNet.iml" />
+      <module fileurl="file://$PROJECT_DIR$/netty-all-4.1.7.Final/netty-all-4.1.7.Final.iml" filepath="$PROJECT_DIR$/netty-all-4.1.7.Final/netty-all-4.1.7.Final.iml" />
+      <module fileurl="file://$PROJECT_DIR$/undernet-android/undernet-android.iml" filepath="$PROJECT_DIR$/undernet-android/undernet-android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/undernet-core/undernet-core.iml" filepath="$PROJECT_DIR$/undernet-core/undernet-core.iml" />
     </modules>
   </component>
 </project>

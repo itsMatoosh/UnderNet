@@ -13,7 +13,7 @@ public class PeersManager {
      * @param address
      */
     public void connect(InetAddress address) {
-        
+
     }
 
     /**
