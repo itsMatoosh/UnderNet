@@ -30,6 +30,10 @@ public class MainActivity extends AppCompatActivity {
         instance = this;
         //Setting the view to the activity.
         setContentView(R.layout.activity_main);
+
+        //Initializing the Core library.
+        UnderNet.setup();
+
         //Initializing all the components.
         init();
     }

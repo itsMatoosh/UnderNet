@@ -8,9 +8,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Button;
 
 import me.matoosh.undernet.MainActivity;
 import me.matoosh.undernet.R;
+import me.matoosh.undernet.UnderNet;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -32,7 +34,15 @@ public class FriendsTab extends Fragment implements ITab {
 
     @Override
     public void OnCreate() {
-
+        //Registering the connect button.
+        Button b = (Button)MainActivity.instance.findViewById(R.id.connect_button);
+        b.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Starting the UnderNet connection process.
+                UnderNet.connect();
+            }
+        });
     }
 
     @Override
