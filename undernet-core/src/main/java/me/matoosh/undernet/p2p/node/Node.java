@@ -1,4 +1,4 @@
-package me.matoosh.undernet.p2p;
+package me.matoosh.undernet.p2p.node;
 
 import java.net.InetAddress;
 
@@ -9,11 +9,12 @@ import java.net.InetAddress;
 
 public class Node {
     /**
-     * Username associated with this node.
-     */
-    public String username;
-    /**
      * Address of this node.
      */
     public InetAddress address;
+
+    /**
+     * Relative reliability of the node.
+     */
+    public float reliability;
 }

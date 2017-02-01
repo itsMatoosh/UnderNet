@@ -1,7 +1,8 @@
 apply plugin: 'java'
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile project(':netty-all-4.1.7.Final')
 }
 
 sourceCompatibility = "1.7"

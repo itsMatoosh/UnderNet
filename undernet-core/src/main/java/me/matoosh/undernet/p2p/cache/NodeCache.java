@@ -1,15 +1,8 @@
 package me.matoosh.undernet.p2p.cache;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
 
-import me.matoosh.undernet.p2p.Node;
-import sun.util.resources.cldr.zh.CalendarData_zh_Hans_CN;
-
-import static com.sun.org.apache.xalan.internal.xsltc.compiler.util.Type.Node;
+import me.matoosh.undernet.p2p.node.Node;
 
 /**
  * Cached nodes storage.
@@ -20,15 +13,15 @@ public class NodeCache {
     /**
      * All the loaded cached nodes.
      */
-    public static ArrayList<CachedNode> cachedNodes;
+    public static ArrayList<Node> cachedNodes;
 
     /**
      * Returns a specific number of the most reliable nodes.
      * @param amount
      * @return
      */
-    public static ArrayList<CachedNode> getMostReliable(int amount, ArrayList<CachedNode> exclude) {
-        ArrayList<CachedNode> resultList = cachedNodes;
+    public static ArrayList<Node> getMostReliable(int amount, ArrayList<Node> exclude) {
+        ArrayList<Node> resultList = cachedNodes;
 
         //Excluding nodes.
         if(exclude != null) {
@@ -38,8 +31,8 @@ public class NodeCache {
         //Removing nodes with lowest reliability until reached the amount.
         for(int i = 0; i < amount; i++) {
             //Getting the most reliable node in the remaining set.
-            CachedNode lowestRel = resultList.get(0);
-            for(CachedNode node : resultList) {
+            Node lowestRel = resultList.get(0);
+            for(Node node : resultList) {
                 if(node.reliability < lowestRel.reliability) {
                     lowestRel = node;
                 }
@@ -55,7 +48,7 @@ public class NodeCache {
      * Adds a node to the node cache.
      * @param node
      */
-    public static void addNode(me.matoosh.undernet.p2p.Node node) {
+    public static void addNode(me.matoosh.undernet.p2p.node.Node node) {
         //TODO: ADD NODE LOGIC
 
         save();
