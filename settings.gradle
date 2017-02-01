@@ -1,1 +1,1 @@
-include ':undernet-android', ':netty-all-4.1.7.Final', ':undernet-core'
+include ':undernet-android', ':undernet-core'

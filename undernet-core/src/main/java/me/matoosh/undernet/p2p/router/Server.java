@@ -10,9 +10,6 @@ import io.netty.bootstrap.ServerBootstrap;
 
 public class Server {
     private static final ServerBootstrap bootstrap = new ServerBootstrap(
-      new NioServerSocketChannelFactory(
 
-
-      )
     );
 }
