@@ -103,7 +103,6 @@ public class ViewManager {
                 Log.d(TAG, "Transitioning to " + CommunitiesSection.TAG);
             }
         });
-
         transitionAnimator.start();
     }
 }

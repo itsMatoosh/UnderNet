@@ -26,6 +26,7 @@ public class Client {
     public Client() {
         node = new Node();
     }
+
     /**
      * Connects the client to the network.
      * */

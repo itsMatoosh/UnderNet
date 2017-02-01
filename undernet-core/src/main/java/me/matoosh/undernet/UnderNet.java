@@ -2,6 +2,7 @@ package me.matoosh.undernet;
 
 import me.matoosh.undernet.p2p.cache.NodeCache;
 import me.matoosh.undernet.p2p.router.Client;
+import me.matoosh.undernet.p2p.router.Server;
 
 /**
  * Core of the UnderNet package.
@@ -16,7 +17,14 @@ public class UnderNet {
         NodeCache.load();
 
         //Setting up the client.
-        Client.setup();
+        new Client().setup();
+
+        //Starting the server.
+        try {
+            new Server(42069).start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
