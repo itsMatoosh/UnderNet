@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="jcabi-aspects-0.22.5">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jcabi/jcabi-aspects/0.22.5/7ba182ce547aab913deae69125777dbdc5799dc3/jcabi-aspects-0.22.5.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.jcabi/jcabi-aspects/0.22.5/b1720eec05b51b32e98b6eafa89a8c2ec04cb486/jcabi-aspects-0.22.5-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

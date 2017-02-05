@@ -1,14 +1,11 @@
 package me.matoosh.undernet.p2p.router;
 
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import me.matoosh.undernet.p2p.router.handlers.ResourceReceiveHandler;
+import com.jcabi.aspects.Async;
+
+import java.net.ServerSocket;
+import java.net.Socket;
+
+import sun.rmi.runtime.Log;
 
 /**
  * Server part of the router.
@@ -21,6 +18,14 @@ public class Server {
      * Port used by the server.
      */
     public int port;
+    /**
+     * Server socket of the server.
+     */
+    public ServerSocket serverSocket;
+    /**
+     * Whether the server is running.
+     */
+    public boolean running = false;
 
     /**
      * Creates a server instance using a specified port.
@@ -35,32 +40,25 @@ public class Server {
      * @throws Exception
      */
     public void start() throws Exception {
-        EventLoopGroup bossGroup = new NioEventLoopGroup(); // (1)
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
-            ServerBootstrap b = new ServerBootstrap(); // (2)
-            b.group(bossGroup, workerGroup)
-                    .channel(NioServerSocketChannel.class) // (3)
-                    .childHandler(new ChannelInitializer<SocketChannel>() { // (4)
-                        @Override
-                        public void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(new ResourceReceiveHandler());
-                        }
-                    })
-                    .option(ChannelOption.SO_BACKLOG, 128)          // (5)
-                    .childOption(ChannelOption.SO_KEEPALIVE, true); // (6)
+            serverSocket = new ServerSocket(port);
 
-            // Bind and start to accept incoming connections.
-            ChannelFuture f = b.bind(port).sync(); // (7)
+            while(running) {
+                //Listening for the incoming connections and accepting them on a separate thread.
 
-            // Wait until the server socket is closed.
-            // In this example, this does not happen, but you can do that to gracefully
-            // shut down your server.
-            f.channel().closeFuture().sync();
+                session();
+            }
         } finally {
-            workerGroup.shutdownGracefully();
-            bossGroup.shutdownGracefully();
+            running = false;
         }
+    }
+
+    /**
+     * A single connection session to the server.
+     */
+    @Async
+    private void session() {
+        LOG
     }
 
     /**

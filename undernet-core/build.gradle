@@ -2,7 +2,7 @@ apply plugin: 'java'
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'io.netty:netty-all:5.0.0.Alpha2'
+    compile 'com.jcabi:jcabi-aspects:0.22.5'
 }
 
 sourceCompatibility = "1.7"
