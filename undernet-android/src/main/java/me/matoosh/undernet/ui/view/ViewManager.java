@@ -1,6 +1,7 @@
 package me.matoosh.undernet.ui.view;
 
 import android.animation.Animator;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewAnimationUtils;
 
@@ -62,7 +63,7 @@ public class ViewManager {
         //Getting the main view of the new section.
         View toView = section.mainView;
         if(toView == null) {
-            Logger.(TAG, "Transition to section's main view couldn't be found.");
+            Log.e(TAG, "Transition to section's main view couldn't be found.");
         }
 
         //Instantiating a new animator.

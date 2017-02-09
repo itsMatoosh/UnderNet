@@ -4,7 +4,11 @@ import com.jcabi.aspects.Async;
 
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Logger;
 
+import me.matoosh.undernet.p2p.node.Node;
 import sun.rmi.runtime.Log;
 
 /**
@@ -26,6 +30,10 @@ public class Server {
      * Whether the server is running.
      */
     public boolean running = false;
+    /**
+     * List of the active connections.
+     */
+    public ArrayList<Node> connections = new ArrayList<Node>();
 
     /**
      * Creates a server instance using a specified port.
@@ -40,15 +48,27 @@ public class Server {
      * @throws Exception
      */
     public void start() throws Exception {
+        running = true;
+
         try {
             serverSocket = new ServerSocket(port);
 
             while(running) {
                 //Listening for the incoming connections and accepting them on a separate thread.
-
-                session();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            session();
+                        } catch (Exception e) {
+                            Logger.getGlobal().info("Connection error: " + e.toString());
+                        }
+                    }
+                }).start();
             }
-        } finally {
+        }
+        finally {
+            //Server stopped.
             running = false;
         }
     }
@@ -56,15 +76,17 @@ public class Server {
     /**
      * A single connection session to the server.
      */
-    @Async
-    private void session() {
-        LOG
+    private void session() throws Exception {
+        //Listen and accept the connection.
+        Logger.getGlobal().info("Listening for connections on: " + port);
+        Socket clientSocket = serverSocket.accept();
+
     }
 
     /**
      * Stops the server.
      */
     public void stop() {
-
+        running = false;
     }
 }
