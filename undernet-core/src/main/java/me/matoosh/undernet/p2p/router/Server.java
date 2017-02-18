@@ -1,15 +1,8 @@
 package me.matoosh.undernet.p2p.router;
 
-import com.jcabi.aspects.Async;
-
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
-
-import me.matoosh.undernet.p2p.node.Node;
-import sun.rmi.runtime.Log;
 
 /**
  * Server part of the router.
@@ -31,9 +24,13 @@ public class Server {
      */
     public boolean running = false;
     /**
+     * Whether the server is accpeting connections.
+     */
+    private boolean acceptingConnections = false;
+    /**
      * List of the active connections.
      */
-    public ArrayList<Node> connections = new ArrayList<Node>();
+    public ArrayList<Connection> connections = new ArrayList<Connection>();
 
     /**
      * Creates a server instance using a specified port.
@@ -49,22 +46,32 @@ public class Server {
      */
     public void start() throws Exception {
         running = true;
+        acceptingConnections = true;
 
         try {
             serverSocket = new ServerSocket(port);
 
+            //The server loop.
             while(running) {
-                //Listening for the incoming connections and accepting them on a separate thread.
-                new Thread(new Runnable() {
+                //If no new connections are awaiting, continue the loop.
+                if(!acceptingConnections) continue;
+
+                //Set the pending connection flag to false.
+                acceptingConnections = false;
+
+                //Listening for the incoming connection and accepting it on a separate thread.
+                Thread t = new Thread(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            session();
+                            connections.add(new Connection(Server.this, Thread.currentThread()));
                         } catch (Exception e) {
                             Logger.getGlobal().info("Connection error: " + e.toString());
                         }
                     }
-                }).start();
+                });
+
+                t.start();
             }
         }
         finally {
@@ -74,19 +81,30 @@ public class Server {
     }
 
     /**
-     * A single connection session to the server.
-     */
-    private void session() throws Exception {
-        //Listen and accept the connection.
-        Logger.getGlobal().info("Listening for connections on: " + port);
-        Socket clientSocket = serverSocket.accept();
-
-    }
-
-    /**
      * Stops the server.
      */
     public void stop() {
+        //Stopping the server loop.
         running = false;
+
+        //Interrupting all the connections.
+        for (Connection c:
+             connections) {
+            if (c.thread != null
+            && c.thread.isAlive()) {
+                c.thread.interrupt();
+            }
+        }
+    }
+
+    //Events
+
+    /**
+     * Called when a connection has been established.
+     * @param c
+     */
+    public void onConnectionEstablished(Connection c) {
+        //Accepting new connections.
+        acceptingConnections = true;
     }
 }
