@@ -11,30 +11,23 @@ import me.matoosh.undernet.p2p.node.Node;
 
 public class Client {
     /**
-     * Currently used Client instance.
-     * */
-    public static Client current;
-
-    /**
-     * Node used by the client.
-     * */
+     * Node represented by the client.
+     */
     public Node node;
 
     /**
      * Instantiates a client.
-     * */
-    public Client() {
-        node = new Node();
+     * @param node
+     */
+    public Client(Node node) {
+        this.node = node;
     }
 
     /**
      * Connects the client to the network.
-     * */
-    public void connect() {
-        //Attempting to connect to each of the 5 most reliable nodes.
-        for(Node node : NodeCache.getMostReliable(5, null)) {
+     */
+    public void connect(Node node) {
 
-        }
     }
 
     /**
@@ -45,8 +38,8 @@ public class Client {
 
     /**
      * Sets up the client.
-     * */
+     */
     public static void setup () {
-        current = new Client();
+
     }
 }
