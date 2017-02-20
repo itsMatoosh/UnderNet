@@ -2,8 +2,10 @@ package me.matoosh.undernet.ui.view.section.main;
 
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,16 +28,18 @@ public class FriendsTab extends Fragment implements ITab {
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_friends, container, false);
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
     }
 
     @Override
-    public void OnCreate() {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View view = inflater.inflate(R.layout.fragment_friends, container, false);
+
         //Registering the connect button.
-        Button b = (Button)MainActivity.instance.findViewById(R.id.connect_button);
+        Button b = (Button)view.findViewById(R.id.connect_button);
         b.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -43,6 +47,13 @@ public class FriendsTab extends Fragment implements ITab {
                 UnderNet.connect();
             }
         });
+
+        return view;
+    }
+
+    @Override
+    public void OnCreate() {
+
     }
 
     @Override

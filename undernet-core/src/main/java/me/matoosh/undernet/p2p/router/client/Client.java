@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.logging.Logger;
 
+import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.p2p.node.KnownNode;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.client.connection.Connection;
@@ -42,7 +43,7 @@ public class Client {
     /**
      * Connects the client to the network.
      */
-    public void connect(KnownNode node) {
+    public void connect(Node node) {
         //Attempting to connect directly to the node.
         if(!connectDirectly(node)) {
             connectByInternet(node);
@@ -53,7 +54,7 @@ public class Client {
      * Connects to a node through Internet.
      * @param node
      */
-    private void connectByInternet(final KnownNode node) {
+    private void connectByInternet(final Node node) {
         //Connecting to the node in a separate thread.
         Thread t = new Thread(new Runnable() {
             @Override
@@ -62,7 +63,11 @@ public class Client {
                     //Adding the connection to the list and starting the connection session.
                     connections.add(new InternetConnection(Client.this, node, Thread.currentThread()));
                 } catch (Exception e) {
-                    System.out.println("Error while connecting to node: " + node.username + " by Internet.");
+                    if(node.getClass() == KnownNode.class){
+                        UnderNet.logger.("Error while connecting to node: " + ((KnownNode) node).username + " - " + node.address + " by Internet.");
+                    } else {
+                        System.out.println("Error while connecting to node: " + node.address + " by Internet.");
+                    }
                     Logger.getGlobal().info("Connection error: " + e.toString());
                 }
             }
@@ -77,7 +82,7 @@ public class Client {
      * @param node
      * @return whether the direct connection was succesful.
      */
-    private boolean connectDirectly(KnownNode node) {
+    private boolean connectDirectly(Node node) {
         //TODO: Add logic.
         return false;
     }

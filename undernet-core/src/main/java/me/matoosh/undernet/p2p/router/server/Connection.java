@@ -3,6 +3,7 @@ package me.matoosh.undernet.p2p.router.server;
 import java.net.Socket;
 import java.util.logging.Logger;
 
+import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.server.Server;
 
 /**
@@ -19,6 +20,10 @@ public class Connection {
      * The Thread used for this connection.
      */
     public Thread thread;
+    /**
+     * Node that the server is connected to.
+     */
+    public Node node;
 
     //Creates a new connection on a specific thread.
     public Connection(Server server, Thread thread) throws Exception {
@@ -50,6 +55,7 @@ public class Connection {
 
         //Session logic.
         while(!thread.isInterrupted()) {
+            System.out.println("Connection logic running.");
             //TODO: Logic
         }
     }

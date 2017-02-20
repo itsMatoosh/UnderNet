@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 import me.matoosh.undernet.camera.CamHost;
+import me.matoosh.undernet.ui.AndroidLogger;
 import me.matoosh.undernet.ui.view.ViewManager;
 
 /**
@@ -32,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         //Initializing the Core library.
-        UnderNet.setup();
+        UnderNet.setup(AndroidLogger.getLogger("undernet.android"));
 
         //Initializing all the components.
         init();

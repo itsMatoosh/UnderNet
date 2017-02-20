@@ -1,5 +1,6 @@
 package me.matoosh.undernet.p2p.router.server;
 
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.logging.Logger;
@@ -45,39 +46,47 @@ public class Server {
      * @throws Exception
      */
     public void start() throws Exception {
-        running = true;
-        acceptingConnections = true;
+        //The server loop.
+        Thread connectionAssignmentThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                running = true;
+                acceptingConnections = true;
 
-        try {
-            serverSocket = new ServerSocket();
+                try {
+                    serverSocket = new ServerSocket(42069);
 
-            //The server loop.
-            while(running) {
-                //If no new connections are awaiting, continue the loop.
-                if(!acceptingConnections) continue;
 
-                //Set the pending connection flag to false.
-                acceptingConnections = false;
+                    while(running) {
+                        //If no new connections are awaiting, continue the loop.
+                        if(!acceptingConnections) continue;
 
-                //Listening for the incoming connection and accepting it on a separate thread.
-                Thread t = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            connections.add(new Connection(Server.this, Thread.currentThread()));
-                        } catch (Exception e) {
-                            Logger.getGlobal().info("Connection error: " + e.toString());
-                        }
+                        //Set the pending connection flag to false.
+                        acceptingConnections = false;
+
+                        //Listening for the incoming connection and accepting it on a separate thread.
+                        Thread t = new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    connections.add(new Connection(Server.this, Thread.currentThread()));
+                                } catch (Exception e) {
+                                    Logger.getGlobal().info("Connection error: " + e.toString());
+                                }
+                            }
+                        });
+
+                        t.start();
                     }
-                });
-
-                t.start();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    //Server stopped.
+                    running = false;
+                }
             }
-        }
-        finally {
-            //Server stopped.
-            running = false;
-        }
+        });
+        connectionAssignmentThread.start();
     }
 
     /**
@@ -101,6 +110,7 @@ public class Server {
      * @param c
      */
     public void onConnectionEstablished(Connection c) {
+        System.out.println("New connection established with " + c.node);
         //Accepting new connections.
         acceptingConnections = true;
     }

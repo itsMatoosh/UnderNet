@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.util.Random;
 
 import me.matoosh.undernet.p2p.node.KnownNode;
+import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.client.Client;
 
 /**
@@ -13,7 +14,7 @@ import me.matoosh.undernet.p2p.router.client.Client;
  */
 
 public class InternetConnection extends Connection {
-    public InternetConnection(Client client, KnownNode node, Thread thread) throws Exception {
+    public InternetConnection(Client client, Node node, Thread thread) throws Exception {
         super(client, node, thread);
     }
 

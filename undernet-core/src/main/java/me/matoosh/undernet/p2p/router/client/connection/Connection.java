@@ -5,6 +5,7 @@ import java.net.Socket;
 import java.util.logging.Logger;
 
 import me.matoosh.undernet.p2p.node.KnownNode;
+import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.client.Client;
 import me.matoosh.undernet.p2p.router.server.Server;
 
@@ -25,13 +26,14 @@ public abstract class Connection {
     /**
      * Node that the connection is made to.
      */
-    public KnownNode node;
+    public Node node;
 
     //Creates a new connection on a specific thread.
-    public Connection(Client client, KnownNode node, Thread thread) throws Exception {
+    public Connection(Client client, Node node, Thread thread) throws Exception {
         //Setting the variables.
         this.client = client;
         this.thread = thread;
+        this.node = node;
 
         //Starting the connection session.
         init();

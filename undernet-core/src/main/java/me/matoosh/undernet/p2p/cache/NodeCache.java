@@ -21,7 +21,12 @@ public class NodeCache {
      * @return
      */
     public static ArrayList<Node> getMostReliable(int amount, ArrayList<Node> exclude) {
-        ArrayList<Node> resultList = cachedNodes;
+        ArrayList<Node> resultList = (ArrayList<Node>) cachedNodes.clone();
+
+        //Skipping if there are no cached nodes.
+        if(cachedNodes.size() == 0) {
+            return null;
+        }
 
         //Excluding nodes.
         if(exclude != null) {
@@ -58,7 +63,7 @@ public class NodeCache {
      * Loading the node cache from disk.
      */
     public static void load() {
-
+        cachedNodes = new ArrayList<Node>();
     }
 
     /**

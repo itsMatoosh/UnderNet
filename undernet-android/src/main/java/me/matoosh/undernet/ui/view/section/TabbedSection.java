@@ -47,4 +47,13 @@ public class TabbedSection extends Section {
     public ITab getView(int id) {
         return registeredTabs.get(id);
     }
+
+    @Override
+    public void setup() {
+        super.setup();
+        for (ITab tab:
+             registeredTabs) {
+            tab.OnCreate();
+        }
+    }
 }

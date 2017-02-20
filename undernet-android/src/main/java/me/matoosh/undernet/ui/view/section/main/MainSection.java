@@ -68,6 +68,8 @@ public class MainSection extends TabbedSection {
                 return false;
             }
         });
+
+        super.setup();
     }
 
     /**
