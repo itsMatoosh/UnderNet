@@ -1,4 +1,4 @@
-package me.matoosh.undernet.p2p.router;
+package me.matoosh.undernet.p2p.router.server;
 
 import java.net.ServerSocket;
 import java.util.ArrayList;
@@ -49,7 +49,7 @@ public class Server {
         acceptingConnections = true;
 
         try {
-            serverSocket = new ServerSocket(port);
+            serverSocket = new ServerSocket();
 
             //The server loop.
             while(running) {
@@ -90,10 +90,7 @@ public class Server {
         //Interrupting all the connections.
         for (Connection c:
              connections) {
-            if (c.thread != null
-            && c.thread.isAlive()) {
-                c.thread.interrupt();
-            }
+            c.drop();
         }
     }
 

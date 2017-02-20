@@ -1,7 +1,9 @@
-package me.matoosh.undernet.p2p.router;
+package me.matoosh.undernet.p2p.router.server;
 
 import java.net.Socket;
 import java.util.logging.Logger;
+
+import me.matoosh.undernet.p2p.router.server.Server;
 
 /**
  * Represents a single connection with the server.
@@ -29,7 +31,7 @@ public class Connection {
     }
 
     /**
-     * A single connection session to the server.
+     * A single connection session of the server.
      */
     private void session() throws Exception {
         //Listen and accept the connection.
@@ -49,6 +51,15 @@ public class Connection {
         //Session logic.
         while(!thread.isInterrupted()) {
             //TODO: Logic
+        }
+    }
+
+    /**
+     * Drops the connection.
+     */
+    public void drop() {
+        if(thread != null && thread.isAlive()) {
+            thread.interrupt();
         }
     }
 }

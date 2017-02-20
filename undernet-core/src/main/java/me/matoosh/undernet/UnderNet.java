@@ -2,8 +2,8 @@ package me.matoosh.undernet;
 
 import me.matoosh.undernet.p2p.cache.NodeCache;
 import me.matoosh.undernet.p2p.node.Node;
-import me.matoosh.undernet.p2p.router.Client;
-import me.matoosh.undernet.p2p.router.Server;
+import me.matoosh.undernet.p2p.router.client.Client;
+import me.matoosh.undernet.p2p.router.server.Server;
 
 /**
  * Core of the UnderNet package.
