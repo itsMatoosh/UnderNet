@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,10 +18,10 @@ import me.matoosh.undernet.UnderNet;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class FriendsTab extends Fragment implements ITab {
+public class StatusTab extends Fragment implements ITab {
 
 
-    public FriendsTab() {
+    public StatusTab() {
         // Required empty public constructor
     }
 
@@ -36,7 +35,7 @@ public class FriendsTab extends Fragment implements ITab {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_friends, container, false);
+        View view = inflater.inflate(R.layout.fragment_status, container, false);
 
         //Registering the connect button.
         Button b = (Button)view.findViewById(R.id.connect_button);

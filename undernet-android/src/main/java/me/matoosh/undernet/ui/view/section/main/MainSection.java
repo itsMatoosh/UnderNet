@@ -6,16 +6,13 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewAnimationUtils;
 
 import java.util.ArrayList;
 
 import me.matoosh.undernet.MainActivity;
 import me.matoosh.undernet.R;
-import me.matoosh.undernet.ui.view.ViewManager;
 import me.matoosh.undernet.ui.view.ViewType;
 import me.matoosh.undernet.ui.view.section.TabbedSection;
-import me.matoosh.undernet.ui.view.section.communities.CommunitiesSection;
 
 /**
  * The main section of the app.
@@ -34,7 +31,7 @@ public class MainSection extends TabbedSection {
         //Registering tabs for this section.
         registeredTabs = new ArrayList<ITab>();
         registeredTabs.add(new CameraTab());
-        registeredTabs.add(new FriendsTab());
+        registeredTabs.add(new StatusTab());
 
         //Setting the default tab.
         defaultTab = ViewType.CAMERA;

@@ -5,12 +5,9 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewAnimationUtils;
 
-import java.util.logging.Logger;
-
-import me.matoosh.undernet.MainActivity;
-import me.matoosh.undernet.ui.view.section.main.MainSection;
-import me.matoosh.undernet.ui.view.section.communities.CommunitiesSection;
 import me.matoosh.undernet.ui.view.section.Section;
+import me.matoosh.undernet.ui.view.section.communities.CommunitiesSection;
+import me.matoosh.undernet.ui.view.section.main.MainSection;
 
 /**
  * Manages the sections of the app.

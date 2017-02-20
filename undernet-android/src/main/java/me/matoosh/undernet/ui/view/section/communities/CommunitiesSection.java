@@ -2,18 +2,12 @@ package me.matoosh.undernet.ui.view.section.communities;
 
 import android.animation.Animator;
 import android.graphics.Rect;
-import android.support.v4.view.ViewPager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewAnimationUtils;
 
-import java.util.ArrayList;
-
 import me.matoosh.undernet.MainActivity;
 import me.matoosh.undernet.R;
-import me.matoosh.undernet.ui.view.section.main.ITab;
-import me.matoosh.undernet.ui.view.section.main.TabAdapter;
 import me.matoosh.undernet.ui.view.section.Section;
 
 /**

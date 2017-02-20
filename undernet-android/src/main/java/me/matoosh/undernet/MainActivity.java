@@ -3,8 +3,10 @@ package me.matoosh.undernet;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import me.matoosh.undernet.camera.CamHost;
-import me.matoosh.undernet.ui.AndroidLogger;
 import me.matoosh.undernet.ui.view.ViewManager;
 
 /**
@@ -19,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
      * The ViewManager.
      */
     public static ViewManager viewManager;
+    public static Logger logger = LoggerFactory.getLogger("undernet.android");
 
     //PERMISSIONS
     private static final int REQUEST_CAMERA_PERMISSION = 200;
@@ -33,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         //Initializing the Core library.
-        UnderNet.setup(AndroidLogger.getLogger("undernet.android"));
+        UnderNet.setup();
 
         //Initializing all the components.
         init();

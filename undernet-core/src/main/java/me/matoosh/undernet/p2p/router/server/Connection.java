@@ -1,10 +1,9 @@
 package me.matoosh.undernet.p2p.router.server;
 
 import java.net.Socket;
-import java.util.logging.Logger;
 
+import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.p2p.node.Node;
-import me.matoosh.undernet.p2p.router.server.Server;
 
 /**
  * Represents a single connection with the server.
@@ -40,7 +39,7 @@ public class Connection {
      */
     private void session() throws Exception {
         //Listen and accept the connection.
-        Logger.getGlobal().info("Listening for connections on: " + server.port);
+        UnderNet.logger.info("Listening for connections on: " + server.port);
         Socket clientSocket = server.serverSocket.accept();
 
         //TODO: Connection establishment logic.
@@ -55,7 +54,7 @@ public class Connection {
 
         //Session logic.
         while(!thread.isInterrupted()) {
-            System.out.println("Connection logic running.");
+            UnderNet.logger.info("Connection logic running.");
             //TODO: Logic
         }
     }

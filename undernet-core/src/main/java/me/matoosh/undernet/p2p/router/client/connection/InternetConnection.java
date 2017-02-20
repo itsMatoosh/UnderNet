@@ -2,10 +2,8 @@ package me.matoosh.undernet.p2p.router.client.connection;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.util.Random;
 
-import me.matoosh.undernet.p2p.node.KnownNode;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.client.Client;
 

@@ -1,7 +1,9 @@
 package me.matoosh.undernet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
-import java.util.logging.Logger;
 
 import me.matoosh.undernet.p2p.cache.NodeCache;
 import me.matoosh.undernet.p2p.node.Node;
@@ -24,12 +26,12 @@ public class UnderNet {
     /**
      * Currently used logger.
      */
-    public static Logger logger;
+    public static Logger logger = LoggerFactory.getLogger("undernet.core");
 
     /**
      * Sets up UnderNet.
      */
-    public static void setup(Logger logger) {
+    public static void setup() {
         //Loading up the node cache.
         NodeCache.load();
 
@@ -45,7 +47,7 @@ public class UnderNet {
      */
     public static void connect() {
         //Connecting the client to the network.
-        System.out.println("Connecting to UnderNet...");
+        logger.info("Connecting to UnderNet...");
         try {
             //Starting the server.
             usedServer.start();
@@ -53,13 +55,14 @@ public class UnderNet {
             //Attempting to connect to each of the 5 most reliable nodes.
             ArrayList<Node> nodesToConnectTo = NodeCache.getMostReliable(5, null);
             if(nodesToConnectTo == null) {
-
-            }
-            for(Node node : nodesToConnectTo) {
-                usedClient.connect(node);
+                logger.error("No nodes cached, can't connect to UnderNet!");
+            } else {
+                for(Node node : nodesToConnectTo) {
+                    usedClient.connect(node);
+                }
             }
         } catch (Exception e) {
-            System.out.println("There was a problem while connecting to UnderNet: " + e.toString());
+            logger.error("There was a problem while connecting to UnderNet: " + e.toString());
             e.printStackTrace();
         }
     }

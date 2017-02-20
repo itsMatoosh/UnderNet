@@ -1,13 +1,9 @@
 package me.matoosh.undernet.p2p.router.client.connection;
 
 import java.io.IOException;
-import java.net.Socket;
-import java.util.logging.Logger;
 
-import me.matoosh.undernet.p2p.node.KnownNode;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.client.Client;
-import me.matoosh.undernet.p2p.router.server.Server;
 
 /**
  * Represents a single connection with the server.

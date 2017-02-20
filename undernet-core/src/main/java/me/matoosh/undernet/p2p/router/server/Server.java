@@ -3,7 +3,8 @@ package me.matoosh.undernet.p2p.router.server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
-import java.util.logging.Logger;
+
+import me.matoosh.undernet.UnderNet;
 
 /**
  * Server part of the router.
@@ -71,7 +72,7 @@ public class Server {
                                 try {
                                     connections.add(new Connection(Server.this, Thread.currentThread()));
                                 } catch (Exception e) {
-                                    Logger.getGlobal().info("Connection error: " + e.toString());
+                                    UnderNet.logger.error("Connection error: " + e.toString());
                                 }
                             }
                         });
@@ -110,7 +111,7 @@ public class Server {
      * @param c
      */
     public void onConnectionEstablished(Connection c) {
-        System.out.println("New connection established with " + c.node);
+        UnderNet.logger.info("New connection established with " + c.node);
         //Accepting new connections.
         acceptingConnections = true;
     }

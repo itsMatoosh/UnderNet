@@ -1,9 +1,7 @@
 package me.matoosh.undernet.p2p.router.client;
 
-import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.logging.Logger;
 
 import me.matoosh.undernet.UnderNet;
@@ -64,9 +62,9 @@ public class Client {
                     connections.add(new InternetConnection(Client.this, node, Thread.currentThread()));
                 } catch (Exception e) {
                     if(node.getClass() == KnownNode.class){
-                        UnderNet.logger.("Error while connecting to node: " + ((KnownNode) node).username + " - " + node.address + " by Internet.");
+                        UnderNet.logger.error("Error while connecting to node: " + ((KnownNode) node).username + " - " + node.address + " by Internet.");
                     } else {
-                        System.out.println("Error while connecting to node: " + node.address + " by Internet.");
+                        UnderNet.logger.error("Error while connecting to node: " + node.address + " by Internet.");
                     }
                     Logger.getGlobal().info("Connection error: " + e.toString());
                 }

@@ -4,8 +4,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
-import me.matoosh.undernet.MainActivity;
-import me.matoosh.undernet.ui.view.section.Section;
 import me.matoosh.undernet.ui.view.section.TabbedSection;
 
 /**
