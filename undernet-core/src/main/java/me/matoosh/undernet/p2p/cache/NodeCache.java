@@ -30,21 +30,28 @@ public class NodeCache {
      * @return
      */
     public static ArrayList<Node> getMostReliable(int amount, ArrayList<Node> exclude) {
-        ArrayList<Node> resultList = (ArrayList<Node>) cachedNodes.clone();
-
         //Skipping if there are no cached nodes.
         if(cachedNodes.size() == 0) {
             return null;
         }
+
+        ArrayList<Node> resultList = (ArrayList<Node>) cachedNodes.clone();
 
         //Excluding nodes.
         if(exclude != null) {
             resultList.removeAll(exclude);
         }
 
+        //Adjusting the amount.
+        if(amount > resultList.size()) {
+            amount = resultList.size();
+        }
+
         //Removing nodes with lowest reliability until reached the amount.
         for(int i = 0; i < amount; i++) {
-            //Getting the most reliable node in the remaining set.
+            if(amount == resultList.size()) break;
+
+            //Getting the least reliable node in the remaining set.
             Node lowestRel = resultList.get(0);
             for(Node node : resultList) {
                 if(node.reliability < lowestRel.reliability) {
@@ -66,6 +73,11 @@ public class NodeCache {
         cachedNodes.add(node);
         save();
         UnderNet.logger.info("Added node " + node.address + " to cache");
+
+        for (Node n:
+             cachedNodes) {
+            UnderNet.logger.info("  Node " + n.address + " also registered.");
+        }
     }
 
     /**
@@ -73,8 +85,9 @@ public class NodeCache {
      */
     public static void load() {
         //Checking whether the file exists.
-        File nodesCacheFile = new File(UnderNet.fileManager.getContentFolder() + "/nodesCache.uni");
+        File nodesCacheFile = new File(UnderNet.fileManager.getAppFolder() + "/nodesCache.uni");
         try {
+            UnderNet.logger.info("Loading the node cache from: " + nodesCacheFile.toString());
             FileInputStream fileIn = new FileInputStream(nodesCacheFile);
             ObjectInputStream in = new ObjectInputStream(fileIn);
             cachedNodes = (ArrayList<Node>) in.readObject();
@@ -84,6 +97,7 @@ public class NodeCache {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (FileNotFoundException e) {
+            UnderNet.logger.warn("Node cache file not found, creating a new one...");
             try {
                 cachedNodes = new ArrayList<Node>();
                 nodesCacheFile.createNewFile();

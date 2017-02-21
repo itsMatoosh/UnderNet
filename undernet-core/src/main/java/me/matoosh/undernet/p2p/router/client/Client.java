@@ -42,6 +42,7 @@ public class Client {
      * Connects the client to the network.
      */
     public void connect(Node node) {
+        UnderNet.logger.info("Connecting to node: " + node.address);
         //Attempting to connect directly to the node.
         if(!connectDirectly(node)) {
             connectByInternet(node);
