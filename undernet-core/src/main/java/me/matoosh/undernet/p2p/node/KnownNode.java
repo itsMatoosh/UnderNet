@@ -1,7 +1,7 @@
 package me.matoosh.undernet.p2p.node;
 
 /**
- * Created by matoosh on 29.01.2017.
+ * Created by Mateusz Rębacz on 29.01.2017.
  */
 
 public class KnownNode extends Node {
