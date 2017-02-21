@@ -1,7 +1,16 @@
 package me.matoosh.undernet.p2p.cache;
 
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
+import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.p2p.node.Node;
 
 /**
@@ -54,8 +63,7 @@ public class NodeCache {
      * @param node
      */
     public static void addNode(me.matoosh.undernet.p2p.node.Node node) {
-        //TODO: ADD NODE LOGIC
-
+        cachedNodes.add(node);
         save();
     }
 
@@ -63,13 +71,45 @@ public class NodeCache {
      * Loading the node cache from disk.
      */
     public static void load() {
-        cachedNodes = new ArrayList<Node>();
+        //Checking whether the file exists.
+        File nodesCacheFile = new File(UnderNet.fileManager.getContentFolder() + "/nodesCache.uni");
+        try {
+            FileInputStream fileIn = new FileInputStream(nodesCacheFile);
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+            cachedNodes = (ArrayList<Node>) in.readObject();
+            //Log.i("palval", "dir.exists()");
+            in.close();
+            fileIn.close();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (FileNotFoundException e) {
+            try {
+                cachedNodes = new ArrayList<Node>();
+                nodesCacheFile.createNewFile();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        } catch (EOFException e) {
+            cachedNodes = new ArrayList<Node>();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * Saves the node cache to disk.
      */
     public static void save() {
-
+        try {
+            FileOutputStream fileOut = new FileOutputStream(UnderNet.fileManager.getAppFolder() + "/nodesCache.uni");
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(cachedNodes);
+            out.close();
+            fileOut.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

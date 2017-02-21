@@ -1,5 +1,6 @@
 package me.matoosh.undernet.p2p.node;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 
 /**
@@ -7,7 +8,7 @@ import java.net.InetAddress;
  * Created by Mateusz Rębacz on 26.01.2017.
  */
 
-public class Node {
+public class Node implements Serializable{
     /**
      * Address of this node.
      */
