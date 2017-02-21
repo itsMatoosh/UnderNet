@@ -8,7 +8,7 @@ import java.net.InetAddress;
  * Created by Mateusz Rębacz on 26.01.2017.
  */
 
-public class Node implements Serializable{
+public class Node implements Serializable {
     /**
      * Address of this node.
      */

@@ -10,10 +10,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import me.matoosh.undernet.MainActivity;
 import me.matoosh.undernet.R;
 import me.matoosh.undernet.UnderNet;
+import me.matoosh.undernet.p2p.cache.NodeCache;
+import me.matoosh.undernet.p2p.node.Node;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -35,7 +41,7 @@ public class StatusTab extends Fragment implements ITab {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_status, container, false);
+        final View view = inflater.inflate(R.layout.fragment_status, container, false);
 
         //Registering the connect button.
         Button b = (Button)view.findViewById(R.id.connect_button);
@@ -44,6 +50,29 @@ public class StatusTab extends Fragment implements ITab {
             public void onClick(View v) {
                 //Starting the UnderNet connection process.
                 UnderNet.connect();
+            }
+        });
+
+        //Registering the add node button.
+        Button addNodeButton = (Button) view.findViewById(R.id.add_node);
+        addNodeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                UnderNet.logger.info("Clicked on the add node button.");
+                //Adding node to the node cache.
+                Node node = new Node();
+                InetAddress address;
+                try {
+                    address = InetAddress.getByName(((EditText)view.findViewById(R.id.nodeAddress)).getText().toString());
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                    address = null;
+                }
+
+                if(address != null) {
+                    node.address = address;
+                    NodeCache.addNode(node);
+                }
             }
         });
 

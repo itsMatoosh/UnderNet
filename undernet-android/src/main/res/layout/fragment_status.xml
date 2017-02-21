@@ -27,6 +27,24 @@
         android:layout_width="match_parent"
         android:layout_height="20dp" />
 
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:ems="10"
+        android:id="@+id/nodeAddress"
+        android:hint="Address" />
+
+    <Button
+        android:text="Add node"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/add_node" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="20dp" />
+
     <TextView
         android:text="Cached Nodes"
         android:layout_width="match_parent"

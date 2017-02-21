@@ -65,6 +65,7 @@ public class NodeCache {
     public static void addNode(me.matoosh.undernet.p2p.node.Node node) {
         cachedNodes.add(node);
         save();
+        UnderNet.logger.info("Added node " + node.address + " to cache");
     }
 
     /**
