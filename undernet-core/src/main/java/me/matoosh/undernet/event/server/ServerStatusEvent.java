@@ -8,4 +8,5 @@ import me.matoosh.undernet.event.Event;
  */
 
 public class ServerStatusEvent extends Event {
+
 }
