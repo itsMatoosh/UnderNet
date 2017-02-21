@@ -23,6 +23,28 @@
         android:layout_centerHorizontal="true"
         android:elevation="2dp"/>
 
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="30dp">
+
+        <TextView
+            android:text="Server:"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@+id/server_status"
+            android:layout_weight="0.41"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small.Inverse" />
+
+        <TextView
+            android:text="Client: "
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@+id/client_status"
+            android:layout_weight="0.41"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small.Inverse" />
+    </LinearLayout>
+
     <Space
         android:layout_width="match_parent"
         android:layout_height="20dp" />
@@ -35,11 +57,24 @@
         android:id="@+id/nodeAddress"
         android:hint="Address" />
 
-    <Button
-        android:text="Add node"
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/add_node" />
+        android:layout_height="wrap_content">
+
+        <Button
+            android:text="Add node"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/add_node"
+            android:layout_weight="1" />
+
+        <Button
+            android:text="Clear cache"
+            android:layout_height="wrap_content"
+            android:id="@+id/clear_node_cache"
+            android:layout_width="180dp" />
+    </LinearLayout>
 
     <Space
         android:layout_width="match_parent"

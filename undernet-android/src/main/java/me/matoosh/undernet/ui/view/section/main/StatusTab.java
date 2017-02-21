@@ -76,6 +76,17 @@ public class StatusTab extends Fragment implements ITab {
             }
         });
 
+        //Registering the clear cache button.
+        Button clearCacheButton = (Button) view.findViewById(R.id.clear_node_cache);
+        clearCacheButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                UnderNet.logger.info("Clicked on the clear node cache button.");
+                //Clearing the node cache.
+                NodeCache.clear();
+            }
+        });
+
         return view;
     }
 

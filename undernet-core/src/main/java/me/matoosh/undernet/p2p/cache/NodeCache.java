@@ -73,11 +73,6 @@ public class NodeCache {
         cachedNodes.add(node);
         save();
         UnderNet.logger.info("Added node " + node.address + " to cache");
-
-        for (Node n:
-             cachedNodes) {
-            UnderNet.logger.info("  Node " + n.address + " also registered.");
-        }
     }
 
     /**
@@ -126,5 +121,13 @@ public class NodeCache {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Clears the node cache.
+     */
+    public static void clear() {
+        cachedNodes.clear();
+        save();
     }
 }

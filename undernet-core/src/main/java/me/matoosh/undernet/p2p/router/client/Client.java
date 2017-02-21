@@ -2,7 +2,6 @@ package me.matoosh.undernet.p2p.router.client;
 
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.logging.Logger;
 
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.p2p.node.KnownNode;
@@ -67,7 +66,8 @@ public class Client {
                     } else {
                         UnderNet.logger.error("Error while connecting to node: " + node.address + " by Internet.");
                     }
-                    Logger.getGlobal().info("Connection error: " + e.toString());
+                    e.printStackTrace();
+                    UnderNet.logger.info("Connection error: " + e.toString());
                 }
             }
         });
@@ -79,7 +79,7 @@ public class Client {
      * Connects to a node directly.
      * Uses Wifi-Direct/Bluetooth
      * @param node
-     * @return whether the direct connection was succesful.
+     * @return whether the direct connection was successful.
      */
     private boolean connectDirectly(Node node) {
         //TODO: Add logic.
