@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import me.matoosh.undernet.camera.CamHost;
+import me.matoosh.undernet.file.AndroidFileManager;
 import me.matoosh.undernet.ui.view.ViewManager;
 
 /**
@@ -36,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         //Initializing the Core library.
-        UnderNet.setup();
+        UnderNet.setup(new AndroidFileManager());
 
         //Initializing all the components.
         init();

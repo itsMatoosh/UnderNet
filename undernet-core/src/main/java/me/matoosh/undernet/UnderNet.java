@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 
+import me.matoosh.undernet.file.FileManager;
 import me.matoosh.undernet.p2p.cache.NodeCache;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.client.Client;
@@ -27,11 +28,18 @@ public class UnderNet {
      * Currently used logger.
      */
     public static Logger logger = LoggerFactory.getLogger("undernet.core");
+    /**
+     * File manager of the current platform.
+     */
+    public static FileManager fileManager;
 
     /**
      * Sets up UnderNet.
      */
-    public static void setup() {
+    public static void setup(FileManager fileManager) {
+        //Setting the file manager.
+        UnderNet.fileManager = fileManager;
+
         //Loading up the node cache.
         NodeCache.load();
 
