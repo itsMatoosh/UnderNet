@@ -1,6 +1,7 @@
 package me.matoosh.undernet.ui.view;
 
 import android.animation.Animator;
+import android.os.Build;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewAnimationUtils;
@@ -68,7 +69,11 @@ public class ViewManager {
 
         //Calculating the final radius.
         float finalRadius = (float) Math.hypot(toView.getHeight(), toView.getWidth());
-        transitionAnimator = ViewAnimationUtils.createCircularReveal(toView, (int)posX, (int)posY, 0, finalRadius);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            transitionAnimator = ViewAnimationUtils.createCircularReveal(toView, (int)posX, (int)posY, 0, finalRadius);
+        } else {
+            //TODO: Legacy transition.
+        }
 
         // make the view visible and start the animation
         toView.setVisibility(View.VISIBLE);

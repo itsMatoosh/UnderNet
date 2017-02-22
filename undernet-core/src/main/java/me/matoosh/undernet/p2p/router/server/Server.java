@@ -5,6 +5,8 @@ import java.net.ServerSocket;
 import java.util.ArrayList;
 
 import me.matoosh.undernet.UnderNet;
+import me.matoosh.undernet.event.EventManager;
+import me.matoosh.undernet.event.server.ServerStatusEvent;
 
 /**
  * Server part of the router.
@@ -22,9 +24,13 @@ public class Server {
      */
     public ServerSocket serverSocket;
     /**
-     * Whether the server is running.
+     * Current status of the server.
      */
-    public boolean running = false;
+    public ServerStatus status = ServerStatus.NOT_STARTED;
+    /**
+     * Whether the server should stop.
+     */
+    private boolean shouldStop = false;
     /**
      * Whether the server is accpeting connections.
      */
@@ -47,18 +53,22 @@ public class Server {
      * @throws Exception
      */
     public void start() throws Exception {
+        //Registering events
+        registerEvents();
+
         //The server loop.
         Thread connectionAssignmentThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                running = true;
+                EventManager.callEvent(new ServerStatusEvent(Server.this, ServerStatus.STARTING));
                 acceptingConnections = true;
 
                 try {
+                    //Creating and binding a server socket.
                     serverSocket = new ServerSocket(42069);
+                    EventManager.callEvent(new ServerStatusEvent(Server.this, ServerStatus.RUNNING));
 
-
-                    while(running) {
+                    while(!shouldStop) {
                         //If no new connections are awaiting, continue the loop.
                         if(!acceptingConnections) continue;
 
@@ -72,7 +82,7 @@ public class Server {
                                 try {
                                     connections.add(new Connection(Server.this, Thread.currentThread()));
                                 } catch (Exception e) {
-                                    UnderNet.logger.error("Connection error: " + e.toString());
+                                    UnderNet.logger.error("Error handling incoming connection: " + e.toString());
                                 }
                             }
                         });
@@ -80,10 +90,15 @@ public class Server {
                         t.start();
                     }
                 } catch (IOException e) {
+                    //And error occurred in the server logic.
                     e.printStackTrace();
+                    EventManager.callEvent(new ServerStatusEvent(Server.this, ServerStatus.ERROR));
                 } finally {
                     //Server stopped.
-                    running = false;
+                    if(status != ServerStatus.ERROR) {
+                        EventManager.callEvent(new ServerStatusEvent(Server.this, ServerStatus.STOPPED));
+                    }
+                    shouldStop = false;
                 }
             }
         });
@@ -91,11 +106,19 @@ public class Server {
     }
 
     /**
+     * Registers the server events.
+     */
+    private void registerEvents() {
+        //ServerStatusEvent
+        EventManager.registerEvent(ServerStatusEvent.class);
+    }
+
+    /**
      * Stops the server.
      */
     public void stop() {
         //Stopping the server loop.
-        running = false;
+        shouldStop = true;
 
         //Interrupting all the connections.
         for (Connection c:

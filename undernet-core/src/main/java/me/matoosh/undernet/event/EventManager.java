@@ -1,7 +1,5 @@
 package me.matoosh.undernet.event;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -16,16 +14,16 @@ public class EventManager {
     /**
      * List of all the registered event handlers.
      */
-    public static HashMap<Class<Event>, ArrayList<Method>> eventHandlers = new HashMap<>();
+    public static HashMap<Class, ArrayList<EventHandler>> eventHandlers = new HashMap<>();
 
     /**
      * Registers an event.
      * @param eventType
      */
-    public static void registerEvent(Class<Event> eventType) {
+    public static void registerEvent(Class eventType) {
         if (!eventHandlers.containsKey(eventType)) {
             UnderNet.logger.info("Registered event type " + eventType.toString());
-            eventHandlers.put(eventType, new ArrayList<Method>());
+            eventHandlers.put(eventType, new ArrayList<EventHandler>());
         } else {
             UnderNet.logger.warn("Event type " + eventType.toString() + " already registered!");
         }
@@ -33,11 +31,15 @@ public class EventManager {
 
     /**
      * Registers an event handler.
-     * @param method
+     * @param handler
      * @param eventType
      */
-    public static void registerHandler(Method method, Class<Event> eventType) {
-        eventHandlers.get(eventType).add(method);
+    public static void registerHandler(EventHandler handler, Class eventType) {
+        if(!eventHandlers.containsKey(eventType)) {
+            registerEvent(eventType);
+        }
+
+        eventHandlers.get(eventType).add(handler);
     }
 
     /**
@@ -45,17 +47,11 @@ public class EventManager {
      * @param event
      */
     public static void callEvent(Event event) {
-        for (Method method :
+        event.onCalled();
+        for (EventHandler handler :
             eventHandlers.get(event.getClass()))
         {
-            //TODO: Implement EventHandler type.
-            try {
-                method.invoke(null, event);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
+            handler.onEventCalled(event);
         }
     }
 }

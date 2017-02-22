@@ -5,6 +5,9 @@ package me.matoosh.undernet.event;
  * Created by Mateusz Rębacz on 21.02.2017.
  */
 
-public class Event {
-
+public abstract class Event {
+    /**
+     * Called when the event is called.
+     */
+    public abstract void onCalled();
 }

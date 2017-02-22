@@ -28,6 +28,8 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="jcabi-aspects-0.22.5" level="project" />
+    <orderEntry type="library" exported="" name="tiny-async-core-1.11.0" level="project" />
+    <orderEntry type="library" exported="" name="tiny-async-api-1.11.0" level="project" />
     <orderEntry type="library" exported="" name="jcabi-log-0.17" level="project" />
     <orderEntry type="library" exported="" name="aspectjrt-1.8.7" level="project" />
     <orderEntry type="library" exported="" name="validation-api-1.1.0.Final" level="project" />

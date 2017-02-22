@@ -8,4 +8,8 @@ import me.matoosh.undernet.event.Event;
  */
 
 public class ClientConnectionEvent extends Event {
+    @Override
+    public void onCalled() {
+
+    }
 }

@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="tiny-async-api-1.11.0">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/eu.toolchain.async/tiny-async-api/1.11.0/7a2ff9b01e19d946ddb184d5e25a273f2153b691/tiny-async-api-1.11.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/eu.toolchain.async/tiny-async-api/1.11.0/e23827e8172f78d10e8ddff05910528bf674ebee/tiny-async-api-1.11.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -18,13 +19,17 @@ import java.net.UnknownHostException;
 import me.matoosh.undernet.MainActivity;
 import me.matoosh.undernet.R;
 import me.matoosh.undernet.UnderNet;
+import me.matoosh.undernet.event.Event;
+import me.matoosh.undernet.event.EventHandler;
+import me.matoosh.undernet.event.EventManager;
+import me.matoosh.undernet.event.server.ServerStatusEvent;
 import me.matoosh.undernet.p2p.cache.NodeCache;
 import me.matoosh.undernet.p2p.node.Node;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class StatusTab extends Fragment implements ITab {
+public class StatusTab extends Tab {
 
 
     public StatusTab() {
@@ -87,6 +92,15 @@ public class StatusTab extends Fragment implements ITab {
             }
         });
 
+        //Registering server status event.
+        final TextView serverStatus = (TextView)view.findViewById(R.id.server_status);
+        EventManager.registerHandler(new EventHandler() {
+            @Override
+            public void onEventCalled(Event e) {
+                serverStatus.setText("Server: " + ((ServerStatusEvent)e).newStatus.toString());
+            }
+        }, ServerStatusEvent.class);
+
         return view;
     }
 
@@ -100,7 +114,7 @@ public class StatusTab extends Fragment implements ITab {
         MainActivity.instance.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         ActionBar actionBar = MainActivity.instance.getSupportActionBar();
         if (actionBar != null) {
-            actionBar.hide();
+            actionBar.show();
         }
     }
 

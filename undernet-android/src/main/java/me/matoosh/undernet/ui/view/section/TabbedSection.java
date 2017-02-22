@@ -5,7 +5,7 @@ import android.support.v4.view.ViewPager;
 import java.util.ArrayList;
 
 import me.matoosh.undernet.ui.view.ViewType;
-import me.matoosh.undernet.ui.view.section.main.ITab;
+import me.matoosh.undernet.ui.view.section.main.Tab;
 
 /**
  * Section of the app divided into tabs.
@@ -25,12 +25,12 @@ public class TabbedSection extends Section {
     /**
      * Currently visible tab.
      */
-    public ITab currentView;
+    public Tab currentView;
 
     /**
      * List of the registered tabs.
      */
-    public ArrayList<ITab> registeredTabs;
+    public ArrayList<Tab> registeredTabs;
 
     /**
      * Sets the current tab of the section.
@@ -44,14 +44,14 @@ public class TabbedSection extends Section {
         pager.setCurrentItem(type.ordinal());
         currentView.OnVisible();
     }
-    public ITab getView(int id) {
+    public Tab getView(int id) {
         return registeredTabs.get(id);
     }
 
     @Override
     public void setup() {
         super.setup();
-        for (ITab tab:
+        for (Tab tab:
              registeredTabs) {
             tab.OnCreate();
         }

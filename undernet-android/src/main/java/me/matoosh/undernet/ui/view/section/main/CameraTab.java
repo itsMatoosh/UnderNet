@@ -15,7 +15,7 @@ import me.matoosh.undernet.R;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class CameraTab extends Fragment implements ITab {
+public class CameraTab extends Tab {
 
 
     public CameraTab() {

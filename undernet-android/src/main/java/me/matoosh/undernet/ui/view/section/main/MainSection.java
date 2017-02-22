@@ -29,7 +29,7 @@ public class MainSection extends TabbedSection {
         TAG = "MAIN";
 
         //Registering tabs for this section.
-        registeredTabs = new ArrayList<ITab>();
+        registeredTabs = new ArrayList<Tab>();
         registeredTabs.add(new CameraTab());
         registeredTabs.add(new StatusTab());
 
