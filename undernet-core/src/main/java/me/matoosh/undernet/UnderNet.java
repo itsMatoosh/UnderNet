@@ -32,6 +32,14 @@ public class UnderNet {
      * File manager of the current platform.
      */
     public static FileManager fileManager;
+    /**
+     * Number of reconnects during the connection session.
+     */
+    private static int reconnectNum = 0;
+    /**
+     * Whether the client connection session is active.
+     */
+    private static boolean sessionActive = false;
 
     /**
      * Sets up UnderNet.
@@ -56,6 +64,7 @@ public class UnderNet {
     public static void connect() {
         //Connecting the client to the network.
         logger.info("Connecting to UnderNet...");
+        sessionActive = true;
         try {
             //Starting the server.
             usedServer.start();
@@ -63,15 +72,15 @@ public class UnderNet {
             //Attempting to connect to each of the 5 most reliable nodes.
             ArrayList<Node> nodesToConnectTo = NodeCache.getMostReliable(5, null);
             if(nodesToConnectTo == null) {
-                logger.error("No nodes cached, can't connect to UnderNet!");
+                onConnectionError("No nodes cached, can't connect to UnderNet!", null, false);
+
             } else {
                 for(Node node : nodesToConnectTo) {
                     usedClient.connect(node);
                 }
             }
         } catch (Exception e) {
-            logger.error("There was a problem while connecting to UnderNet: " + e.toString());
-            e.printStackTrace();
+            onConnectionError(e.toString(), e, true);
         }
     }
 
@@ -81,5 +90,39 @@ public class UnderNet {
     public static void disconnect() {
         usedClient.disconnect();
         usedServer.stop();
+    }
+
+    /**
+     * Called when a connection error occurs.
+     * @param s
+     */
+    public static void onConnectionError(String s, Exception e, boolean reconnect) {
+        //Printing the error.
+        if(s != null) {
+            logger.error("There was a problem with the connection to UnderNet: " + s);
+        }
+        if(e != null) {
+            e.printStackTrace();
+        }
+
+        if(sessionActive && reconnect) {
+            reconnectNum++;
+            //Checking if we should reconnect.
+            if(reconnectNum >= 5) {
+                logger.error("Exceeded the maximum number of reconnect attempts!");
+                onConnectionEnded();
+            }
+
+            logger.info("Attempting to reconnect for: " + reconnectNum + " time...");
+        }
+    }
+
+    /**
+     * Called when the connection ends.
+     */
+    public  static void onConnectionEnded() {
+        //Resetting the reconn variables.
+        sessionActive = false;
+        reconnectNum = 0;
     }
 }

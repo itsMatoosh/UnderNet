@@ -13,16 +13,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import me.matoosh.undernet.MainActivity;
 import me.matoosh.undernet.R;
 import me.matoosh.undernet.UnderNet;
-import me.matoosh.undernet.event.Event;
-import me.matoosh.undernet.event.EventHandler;
-import me.matoosh.undernet.event.EventManager;
-import me.matoosh.undernet.event.server.ServerStatusEvent;
 import me.matoosh.undernet.p2p.cache.NodeCache;
 import me.matoosh.undernet.p2p.node.Node;
 
@@ -92,14 +89,13 @@ public class StatusTab extends Tab {
             }
         });
 
-        //Registering server status event.
-        final TextView serverStatus = (TextView)view.findViewById(R.id.server_status);
-        EventManager.registerHandler(new EventHandler() {
-            @Override
-            public void onEventCalled(Event e) {
-                serverStatus.setText("Server: " + ((ServerStatusEvent)e).newStatus.toString());
-            }
-        }, ServerStatusEvent.class);
+        //Registering local ip text.
+        final TextView localIp = (TextView)view.findViewById(R.id.self_local_ip);
+        try {
+            localIp.setText("Local ip: " + Inet4Address.getLocalHost().getHostAddress());
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
 
         return view;
     }

@@ -4,8 +4,6 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.jcabi:jcabi-aspects:0.22.5'
     compile 'org.slf4j:slf4j-parent:1.7.23'
-    compile 'eu.toolchain.async:tiny-async-core:1.11.0'
-    compile 'eu.toolchain.async:tiny-async-api:1.11.0'
 }
 
 sourceCompatibility = "1.7"
