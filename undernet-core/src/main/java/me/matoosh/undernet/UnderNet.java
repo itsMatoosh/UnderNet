@@ -105,6 +105,10 @@ public class UnderNet {
             e.printStackTrace();
         }
 
+        //Resetting the network devices.
+        resetNetworkDevices();
+
+        //Reconnecting if possible.
         if(sessionActive && reconnect) {
             reconnectNum++;
             //Checking if we should reconnect.
@@ -115,6 +119,14 @@ public class UnderNet {
 
             logger.info("Attempting to reconnect for: " + reconnectNum + " time...");
         }
+    }
+
+    /**
+     * Resets the network devices to be ready to reconnect.
+     */
+    private static void resetNetworkDevices() {
+        usedServer.stop();
+        usedClient.disconnect();
     }
 
     /**
