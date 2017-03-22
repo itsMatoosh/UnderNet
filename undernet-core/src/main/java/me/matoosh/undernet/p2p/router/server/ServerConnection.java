@@ -4,13 +4,14 @@ import java.net.Socket;
 
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.p2p.node.Node;
+import me.matoosh.undernet.p2p.router.connection.Connection;
 
 /**
  * Represents a single connection with the server.
  * Created by Mateusz Rębacz on 18.02.2017.
  */
 
-public class Connection {
+public class ServerConnection extends Connection {
     /**
      * Server making this connection.
      */
@@ -24,25 +25,29 @@ public class Connection {
      */
     public Node node;
 
-    //Creates a new connection on a specific thread.
-    public Connection(Server server, Thread thread) throws Exception {
-        //Setting the variables.
+    /**
+     * Constructs a server connection.
+     * @param server
+     * @param thread
+     * @throws Exception
+     */
+    public ServerConnection(Server server, Thread thread) throws Exception {
+        super(thread);
         this.server = server;
-        this.thread = thread;
-
-        //Starting the connection session.
-        session();
+        setup();
     }
 
     /**
-     * A single connection session of the server.
+     * Establishes the connection.
+     * Set up before the connection loop begins.
      */
-    private void session() throws Exception {
+    @Override
+    protected void establish() throws Exception {
         //Listen and accept the connection.
         UnderNet.logger.info("Listening for connections on: " + server.port);
         Socket clientSocket = server.serverSocket.accept();
 
-        //TODO: Connection establishment logic.
+        //TODO: ServerConnection establishment logic.
         //The node sends its current id.
         //If the id is empty, create an id based on our node id and send it back.
         //If the id is not empty, proceed.
@@ -51,12 +56,14 @@ public class Connection {
 
         //The connection has been established, calling the event on the server.
         server.onConnectionEstablished(this);
+    }
 
-        //Session logic.
-        while(!thread.isInterrupted()) {
-            UnderNet.logger.info("Connection logic running.");
-            //TODO: Logic
-        }
+    /**
+     * A single connection session of the server.
+     */
+    protected void session() throws Exception {
+        UnderNet.logger.info("ServerConnection logic running.");
+        //TODO: Logic
     }
 
     /**
@@ -66,5 +73,13 @@ public class Connection {
         if(thread != null && thread.isAlive()) {
             thread.interrupt();
         }
+    }
+
+    /**
+     * Called when the connection is dropped.
+     */
+    @Override
+    protected void onConnectionDropped() {
+
     }
 }

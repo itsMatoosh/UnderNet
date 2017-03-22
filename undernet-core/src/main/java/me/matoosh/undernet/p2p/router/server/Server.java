@@ -32,13 +32,13 @@ public class Server {
      */
     private boolean shouldStop = false;
     /**
-     * Whether the server is accpeting connections.
+     * Whether the server is accpeting serverConnections.
      */
     private boolean acceptingConnections = false;
     /**
-     * List of the active connections.
+     * List of the active serverConnections.
      */
-    public ArrayList<Connection> connections = new ArrayList<Connection>();
+    public ArrayList<ServerConnection> serverConnections = new ArrayList<ServerConnection>();
 
     /**
      * Creates a server instance using a specified port.
@@ -72,7 +72,7 @@ public class Server {
                     EventManager.callEvent(new ServerStatusEvent(Server.this, ServerStatus.RUNNING));
 
                     while(!shouldStop) {
-                        //If no new connections are awaiting, continue the loop.
+                        //If no new serverConnections are awaiting, continue the loop.
                         if(!acceptingConnections) continue;
 
                         //Set the pending connection flag to false.
@@ -83,7 +83,7 @@ public class Server {
                             @Override
                             public void run() {
                                 try {
-                                    connections.add(new Connection(Server.this, Thread.currentThread()));
+                                    serverConnections.add(new ServerConnection(Server.this, Thread.currentThread()));
                                 } catch (Exception e) {
                                     UnderNet.logger.error("Error handling incoming connection: " + e.toString());
                                 }
@@ -92,12 +92,24 @@ public class Server {
 
                         t.start();
                     }
+
                 } catch (IOException e) {
                     //And error occurred in the server logic.
                     e.printStackTrace();
                     EventManager.callEvent(new ServerStatusEvent(Server.this, ServerStatus.ERROR));
                 } finally {
                     //Server stopped.
+                    //Closing the socket.
+                    try {
+                        if(serverSocket != null) {
+                            serverSocket.close();
+                            serverSocket = null;
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    //Changing the status of the server.
                     if(status != ServerStatus.ERROR) {
                         EventManager.callEvent(new ServerStatusEvent(Server.this, ServerStatus.STOPPED));
                     }
@@ -123,32 +135,21 @@ public class Server {
         //Stopping the server loop.
         shouldStop = true;
 
-        //Interrupting all the connections.
-        for (Connection c:
-             connections) {
+        //Interrupting all the serverConnections.
+        for (ServerConnection c:
+                serverConnections) {
             c.drop();
         }
-
-        //Closing the socket.
-        try {
-            if(serverSocket != null) {
-                serverSocket.close();
-                serverSocket = null;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
-
     //Events
 
     /**
      * Called when a connection has been established.
      * @param c
      */
-    public void onConnectionEstablished(Connection c) {
+    public void onConnectionEstablished(ServerConnection c) {
         UnderNet.logger.info("New connection established with " + c.node);
-        //Accepting new connections.
+        //Accepting new serverConnections.
         acceptingConnections = true;
     }
 }
