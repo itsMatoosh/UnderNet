@@ -13,7 +13,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -91,11 +90,11 @@ public class StatusTab extends Tab {
 
         //Registering local ip text.
         final TextView localIp = (TextView)view.findViewById(R.id.self_local_ip);
-        try {
+        /*try {
             localIp.setText("Local ip: " + Inet4Address.getLocalHost().getHostAddress());
         } catch (UnknownHostException e) {
             e.printStackTrace();
-        }
+        }*/
 
         return view;
     }

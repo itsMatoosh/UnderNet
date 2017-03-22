@@ -2,6 +2,7 @@ package me.matoosh.undernet.ui.view.section.communities;
 
 import android.animation.Animator;
 import android.graphics.Rect;
+import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewAnimationUtils;
@@ -30,6 +31,8 @@ public class CommunitiesSection extends Section {
         //Setting the main view of the section.
         recyclerView = (RecyclerView)MainActivity.instance.findViewById(R.id.communities_recycler_view);
         mainView = (View)MainActivity.instance.findViewById(R.id.communities_layout);
+
+        super.setup();
     }
 
     /**
@@ -48,7 +51,9 @@ public class CommunitiesSection extends Section {
                 int centerY = bounds.centerY();
                 int finalRadius = Math.max(bounds.width(), bounds.height());
 
-                transitionAnimator = ViewAnimationUtils.createCircularReveal(mainView, centerX, centerY, 0f, finalRadius);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    transitionAnimator = ViewAnimationUtils.createCircularReveal(mainView, centerX, centerY, 0f, finalRadius);
+                }
             }
 
             // make the view visible and start the animation

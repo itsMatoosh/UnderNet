@@ -1,5 +1,6 @@
 package me.matoosh.undernet.p2p.router.client;
 
+import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 
@@ -42,6 +43,10 @@ public class Client {
      */
     public void connect(Node node) {
         UnderNet.logger.info("Connecting to node: " + node.address);
+
+        //Creating the client socket.
+        clientSocket = new Socket();
+
         //Attempting to connect directly to the node.
         if(!connectDirectly(node)) {
             connectByInternet(node);
@@ -91,9 +96,20 @@ public class Client {
      * Disconnects from the nodes.
      */
     public void disconnect() {
+        //Dropping all the connections.
         for (Connection c:
              connections) {
             c.drop();
+        }
+
+        //Closing the socket.
+        if(clientSocket != null) {
+            try {
+                clientSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            clientSocket = null;
         }
     }
 }

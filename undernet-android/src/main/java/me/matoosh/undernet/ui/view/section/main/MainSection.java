@@ -43,6 +43,9 @@ public class MainSection extends TabbedSection {
         }
         mainView = pager;
         TabAdapter tabAdapter = new TabAdapter(MainActivity.instance.getSupportFragmentManager(), this);
+        if(tabAdapter == null) {
+            Log.println(Log.ERROR, TAG, "No tab adapter!");
+        }
         pager.setAdapter(tabAdapter);
         setView(defaultTab);
 

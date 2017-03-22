@@ -36,9 +36,6 @@ public class MainActivity extends AppCompatActivity {
         //Setting the view to the activity.
         setContentView(R.layout.activity_main);
 
-        //Initializing the Core library.
-        UnderNet.setup(new AndroidFileManager());
-
         //Initializing all the components.
         init();
     }
@@ -47,6 +44,9 @@ public class MainActivity extends AppCompatActivity {
      * Initializes all of the components.
      */
     protected void init() {
+        //Initializing the Core library.
+        UnderNet.setup(new AndroidFileManager());
+
         //Initializing the ViewManager.
         viewManager = new ViewManager();
         viewManager.init();

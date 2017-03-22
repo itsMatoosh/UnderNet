@@ -65,6 +65,9 @@ public class Server {
 
                 try {
                     //Creating and binding a server socket.
+                    if (serverSocket != null) {
+                        UnderNet.logger.error("Server socket already bound?!?!");
+                    }
                     serverSocket = new ServerSocket(42069);
                     EventManager.callEvent(new ServerStatusEvent(Server.this, ServerStatus.RUNNING));
 
@@ -124,6 +127,16 @@ public class Server {
         for (Connection c:
              connections) {
             c.drop();
+        }
+
+        //Closing the socket.
+        try {
+            if(serverSocket != null) {
+                serverSocket.close();
+                serverSocket = null;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

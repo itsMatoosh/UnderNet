@@ -74,7 +74,7 @@ public class UnderNet {
             //Attempting to connect to each of the 5 most reliable nodes.
             ArrayList<Node> nodesToConnectTo = NodeCache.getMostReliable(5, null);
             if(nodesToConnectTo == null) {
-                onConnectionError("No nodes cached, can't connect to UnderNet!", null, false);
+                onConnectionError("No nodes cached!", null, false);
 
             } else {
                 for(Node node : nodesToConnectTo) {
