@@ -4,6 +4,7 @@ import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.p2p.router.server.Server;
 
 /**
+ * Represents a server event.
  * Created by Mateusz Rębacz on 22.02.2017.
  */
 

@@ -37,13 +37,21 @@ public class Server {
      */
     private boolean shouldStop = false;
     /**
+<<<<<<< HEAD
      * Whether the server is accpeting clientConnections.
      */
     private boolean acceptingConnections = false;
     /**
      * List of the active clientConnections.
+=======
+     * Whether the server is accpeting serverConnections.
      */
-    public ArrayList<Connection> connections = new ArrayList<Connection>();
+    private boolean acceptingConnections = false;
+    /**
+     * List of the active serverConnections.
+>>>>>>> origin/master
+     */
+    public ArrayList<ServerConnection> serverConnections = new ArrayList<ServerConnection>();
 
     /**
      * Creates a server instance using a specified port.
@@ -81,7 +89,11 @@ public class Server {
 
                     //Connection accepting loop.
                     while(!shouldStop) {
+<<<<<<< HEAD
                         //If no new clientConnections are awaiting, continue the loop.
+=======
+                        //If no new serverConnections are awaiting, continue the loop.
+>>>>>>> origin/master
                         if(!acceptingConnections) continue;
 
                         //Set the pending connection flag to false.
@@ -92,7 +104,11 @@ public class Server {
                             @Override
                             public void run() {
                                 try {
+<<<<<<< HEAD
                                     connections.add(new InternetConnection(Node.self, null, Thread.currentThread(), ConnectionSide.SERVER));
+=======
+                                    serverConnections.add(new ServerConnection(Server.this, Thread.currentThread()));
+>>>>>>> origin/master
                                 } catch (Exception e) {
                                     UnderNet.logger.error("Error handling incoming connection: " + e.toString());
                                 }
@@ -103,12 +119,24 @@ public class Server {
 
                         acceptingConnections = true;
                     }
+
                 } catch (IOException e) {
                     //And error occurred in the server logic.
                     e.printStackTrace();
                     EventManager.callEvent(new ServerStatusEvent(Server.this, ServerStatus.ERROR));
                 } finally {
                     //Server stopped.
+                    //Closing the socket.
+                    try {
+                        if(serverSocket != null) {
+                            serverSocket.close();
+                            serverSocket = null;
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    //Changing the status of the server.
                     if(status != ServerStatus.ERROR) {
                         EventManager.callEvent(new ServerStatusEvent(Server.this, ServerStatus.STOPPED));
                     }
@@ -134,22 +162,19 @@ public class Server {
         //Stopping the server loop.
         shouldStop = true;
 
+<<<<<<< HEAD
         //Interrupting all the clientConnections.
         for (ServerConnection c:
              connections) {
+=======
+        //Interrupting all the serverConnections.
+        for (ServerConnection c:
+                serverConnections) {
+>>>>>>> origin/master
             c.drop();
         }
-
-        //Closing the socket.
-        try {
-            if(serverSocket != null) {
-                serverSocket.close();
-                serverSocket = null;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
+<<<<<<< HEAD
 
     /**
      * Sends a message to a connection.
@@ -168,6 +193,8 @@ public class Server {
 
     }
 
+=======
+>>>>>>> origin/master
     //Events
 
     /**
@@ -176,7 +203,11 @@ public class Server {
      */
     public void onConnectionEstablished(ServerConnection c) {
         UnderNet.logger.info("New connection established with " + c.node);
+<<<<<<< HEAD
         //Accepting new clientConnections.
+=======
+        //Accepting new serverConnections.
+>>>>>>> origin/master
         acceptingConnections = true;
     }
 }

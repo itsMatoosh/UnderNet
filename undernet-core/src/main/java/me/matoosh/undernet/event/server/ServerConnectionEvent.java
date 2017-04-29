@@ -1,5 +1,6 @@
 package me.matoosh.undernet.event.server;
 
+import me.matoosh.undernet.p2p.router.server.ServerConnection;
 import me.matoosh.undernet.p2p.router.server.Server;
 
 /**
@@ -9,7 +10,7 @@ import me.matoosh.undernet.p2p.router.server.Server;
 
 public class ServerConnectionEvent extends ServerEvent {
 
-    public ServerConnectionEvent(Server server) {
+    public ServerConnectionEvent(Server server, ServerConnection serverConnection) {
         super(server);
     }
 
