@@ -7,8 +7,7 @@ import java.util.ArrayList;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.p2p.node.KnownNode;
 import me.matoosh.undernet.p2p.node.Node;
-import me.matoosh.undernet.p2p.router.client.connection.Connection;
-import me.matoosh.undernet.p2p.router.client.connection.InternetConnection;
+import me.matoosh.undernet.p2p.router.connection.Connection;
 
 /**
  * Client part of the router.
@@ -26,9 +25,9 @@ public class Client {
      */
     public Socket clientSocket;
     /**
-     * List of the active connections.
+     * List of the active clientConnections.
      */
-    public ArrayList<Connection> connections = new ArrayList<Connection>();
+    public ArrayList<Connection> clientConnections = new ArrayList<Connection>();
 
     /**
      * Instantiates a client.
@@ -64,7 +63,7 @@ public class Client {
             public void run() {
                 try {
                     //Adding the connection to the list and starting the connection session.
-                    connections.add(new InternetConnection(Client.this, node, Thread.currentThread()));
+                    clientConnections.add(new InternetConnection(Client.this, node, Thread.currentThread()));
                 } catch (Exception e) {
                     if(node.getClass() == KnownNode.class){
                         UnderNet.logger.error("Error while connecting to node: " + ((KnownNode) node).username + " - " + node.address + " by Internet.");
@@ -96,9 +95,9 @@ public class Client {
      * Disconnects from the nodes.
      */
     public void disconnect() {
-        //Dropping all the connections.
+        //Dropping all the clientConnections.
         for (Connection c:
-             connections) {
+                clientConnections) {
             c.drop();
         }
 

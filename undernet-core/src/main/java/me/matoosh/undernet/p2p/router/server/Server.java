@@ -7,6 +7,11 @@ import java.util.ArrayList;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.server.ServerStatusEvent;
+import me.matoosh.undernet.p2p.node.Node;
+import me.matoosh.undernet.p2p.router.client.InternetConnection;
+import me.matoosh.undernet.p2p.router.connection.Connection;
+import me.matoosh.undernet.p2p.router.connection.ConnectionSide;
+import me.matoosh.undernet.p2p.router.messages.NetworkMessage;
 
 /**
  * Server part of the router.
@@ -32,11 +37,11 @@ public class Server {
      */
     private boolean shouldStop = false;
     /**
-     * Whether the server is accpeting connections.
+     * Whether the server is accpeting clientConnections.
      */
     private boolean acceptingConnections = false;
     /**
-     * List of the active connections.
+     * List of the active clientConnections.
      */
     public ArrayList<Connection> connections = new ArrayList<Connection>();
 
@@ -53,6 +58,9 @@ public class Server {
      * @throws Exception
      */
     public void start() throws Exception {
+        //Setting this as the currently used server.
+        Node.self.server = this;
+
         //Registering events
         registerEvents();
 
@@ -66,13 +74,14 @@ public class Server {
                 try {
                     //Creating and binding a server socket.
                     if (serverSocket != null) {
-                        UnderNet.logger.error("Server socket already bound?!?!");
+                        UnderNet.logger.error("Server socket already bound");
                     }
                     serverSocket = new ServerSocket(42069);
                     EventManager.callEvent(new ServerStatusEvent(Server.this, ServerStatus.RUNNING));
 
+                    //Connection accepting loop.
                     while(!shouldStop) {
-                        //If no new connections are awaiting, continue the loop.
+                        //If no new clientConnections are awaiting, continue the loop.
                         if(!acceptingConnections) continue;
 
                         //Set the pending connection flag to false.
@@ -83,7 +92,7 @@ public class Server {
                             @Override
                             public void run() {
                                 try {
-                                    connections.add(new Connection(Server.this, Thread.currentThread()));
+                                    connections.add(new InternetConnection(Node.self, null, Thread.currentThread(), ConnectionSide.SERVER));
                                 } catch (Exception e) {
                                     UnderNet.logger.error("Error handling incoming connection: " + e.toString());
                                 }
@@ -91,6 +100,8 @@ public class Server {
                         });
 
                         t.start();
+
+                        acceptingConnections = true;
                     }
                 } catch (IOException e) {
                     //And error occurred in the server logic.
@@ -123,8 +134,8 @@ public class Server {
         //Stopping the server loop.
         shouldStop = true;
 
-        //Interrupting all the connections.
-        for (Connection c:
+        //Interrupting all the clientConnections.
+        for (ServerConnection c:
              connections) {
             c.drop();
         }
@@ -140,15 +151,32 @@ public class Server {
         }
     }
 
+    /**
+     * Sends a message to a connection.
+     * @param message
+     * @param connection
+     */
+    public void sendMessage(NetworkMessage message, ServerConnection connection) {
+
+    }
+
+    /**
+     * Called when a message has been received.
+     * @param sender
+     */
+    private void onMessageReceived(NetworkMessage message, ServerConnection sender) {
+
+    }
+
     //Events
 
     /**
      * Called when a connection has been established.
      * @param c
      */
-    public void onConnectionEstablished(Connection c) {
+    public void onConnectionEstablished(ServerConnection c) {
         UnderNet.logger.info("New connection established with " + c.node);
-        //Accepting new connections.
+        //Accepting new clientConnections.
         acceptingConnections = true;
     }
 }
