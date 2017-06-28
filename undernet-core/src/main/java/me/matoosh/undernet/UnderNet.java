@@ -8,22 +8,15 @@ import java.util.ArrayList;
 import me.matoosh.undernet.file.FileManager;
 import me.matoosh.undernet.p2p.cache.NodeCache;
 import me.matoosh.undernet.p2p.node.Node;
+import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.client.Client;
 import me.matoosh.undernet.p2p.router.server.Server;
 
 /**
  * Core of the UnderNet package.
  */
-public class UnderNet {
-
-    /**
-     * Currently used client.
-     */
-    public static Client usedClient;
-    /**
-     * Currently used server.
-     */
-    public static Server usedServer;
+public class UnderNet
+{
     /**
      * Currently used logger.
      */
@@ -53,11 +46,8 @@ public class UnderNet {
         //Loading up the node cache.
         NodeCache.load();
 
-        //Setting up the client.
-        usedClient = new Client(new Node() /* TODO: Get the node represented by this client. */);
-
-        //Starting the server.
-        usedServer = new Server(42069);
+        //Setting up the self node.
+        Node.self = new Node();
     }
 
     /**
@@ -67,6 +57,10 @@ public class UnderNet {
         //Connecting the client to the network.
         logger.info("Connecting to UnderNet...");
         sessionActive = true;
+
+        //Starting the router.
+        new Router().start();
+
         try {
             //Starting the server.
             usedServer.start();
@@ -90,8 +84,7 @@ public class UnderNet {
      * Disconnects from the network.
      */
     public static void disconnect() {
-        usedClient.disconnect();
-        usedServer.stop();
+        Node.self.router.stop();
     }
 
     /**

@@ -3,8 +3,7 @@ package me.matoosh.undernet.p2p.node;
 import java.io.Serializable;
 import java.net.InetAddress;
 
-import me.matoosh.undernet.p2p.router.client.Client;
-import me.matoosh.undernet.p2p.router.server.Server;
+import me.matoosh.undernet.p2p.router.Router;
 
 /**
  * A single node within the network.
@@ -18,21 +17,15 @@ public class Node implements Serializable {
     public InetAddress address;
 
     /**
-     * Relative reliability of the node.
+     * Reliability of the node.
      */
     public float reliability;
 
     /**
-     * The server of this node.
+     * The router of this node.
      * Known only for self.
-     */
-    public Server server;
-
-    /**
-     * The client of this node.
-     * Known only for self.
-     */
-    public Client client;
+     **/
+    public Router router;
 
     /**
      * The self node.

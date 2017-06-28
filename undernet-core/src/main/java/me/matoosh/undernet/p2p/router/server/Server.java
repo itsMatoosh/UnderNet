@@ -8,10 +8,7 @@ import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.server.ServerStatusEvent;
 import me.matoosh.undernet.p2p.node.Node;
-import me.matoosh.undernet.p2p.router.client.InternetConnection;
 import me.matoosh.undernet.p2p.router.connection.Connection;
-import me.matoosh.undernet.p2p.router.connection.ConnectionSide;
-import me.matoosh.undernet.p2p.router.messages.NetworkMessage;
 
 /**
  * Server part of the router.
@@ -19,46 +16,27 @@ import me.matoosh.undernet.p2p.router.messages.NetworkMessage;
  * Created by Mateusz Rębacz on 30.01.2017.
  */
 
-public class Server {
-    /**
-     * Port used by the server.
-     */
-    public int port;
-    /**
-     * Server socket of the server.
-     */
-    public ServerSocket serverSocket;
+public class Server
+{
     /**
      * Current status of the server.
      */
     public ServerStatus status = ServerStatus.NOT_STARTED;
     /**
-     * Whether the server should stop.
+     * The network listener of this server.
      */
-    private boolean shouldStop = false;
+    public NetworkListener networkListener;
     /**
-<<<<<<< HEAD
-     * Whether the server is accpeting clientConnections.
+     * The direct listener of this server.
      */
-    private boolean acceptingConnections = false;
-    /**
-     * List of the active clientConnections.
-=======
-     * Whether the server is accpeting serverConnections.
-     */
-    private boolean acceptingConnections = false;
-    /**
-     * List of the active serverConnections.
->>>>>>> origin/master
-     */
-    public ArrayList<ServerConnection> serverConnections = new ArrayList<ServerConnection>();
+    public DirectListener directListener;
 
     /**
      * Creates a server instance using a specified port.
-     * @param port
      */
-    public Server(int port) {
-        this.port = port;
+    public Server(NetworkListener networkListener, DirectListener directListener) {
+        this.networkListener = networkListener;
+        this.directListener = directListener;
     }
 
     /**
@@ -66,85 +44,17 @@ public class Server {
      * @throws Exception
      */
     public void start() throws Exception {
-        //Setting this as the currently used server.
-        Node.self.server = this;
+        //Changine the server status to starting.
+        EventManager.callEvent(new ServerStatusEvent(Server.this, ServerStatus.STARTING));
 
         //Registering events
         registerEvents();
 
-        //The server loop.
-        Thread connectionAssignmentThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                EventManager.callEvent(new ServerStatusEvent(Server.this, ServerStatus.STARTING));
-                acceptingConnections = true;
+        //Listening for network connections.
+        networkListener.start();
 
-                try {
-                    //Creating and binding a server socket.
-                    if (serverSocket != null) {
-                        UnderNet.logger.error("Server socket already bound");
-                    }
-                    serverSocket = new ServerSocket(42069);
-                    EventManager.callEvent(new ServerStatusEvent(Server.this, ServerStatus.RUNNING));
-
-                    //Connection accepting loop.
-                    while(!shouldStop) {
-<<<<<<< HEAD
-                        //If no new clientConnections are awaiting, continue the loop.
-=======
-                        //If no new serverConnections are awaiting, continue the loop.
->>>>>>> origin/master
-                        if(!acceptingConnections) continue;
-
-                        //Set the pending connection flag to false.
-                        acceptingConnections = false;
-
-                        //Listening for the incoming connection and accepting it on a separate thread.
-                        Thread t = new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-<<<<<<< HEAD
-                                    connections.add(new InternetConnection(Node.self, null, Thread.currentThread(), ConnectionSide.SERVER));
-=======
-                                    serverConnections.add(new ServerConnection(Server.this, Thread.currentThread()));
->>>>>>> origin/master
-                                } catch (Exception e) {
-                                    UnderNet.logger.error("Error handling incoming connection: " + e.toString());
-                                }
-                            }
-                        });
-
-                        t.start();
-
-                        acceptingConnections = true;
-                    }
-
-                } catch (IOException e) {
-                    //And error occurred in the server logic.
-                    e.printStackTrace();
-                    EventManager.callEvent(new ServerStatusEvent(Server.this, ServerStatus.ERROR));
-                } finally {
-                    //Server stopped.
-                    //Closing the socket.
-                    try {
-                        if(serverSocket != null) {
-                            serverSocket.close();
-                            serverSocket = null;
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    //Changing the status of the server.
-                    if(status != ServerStatus.ERROR) {
-                        EventManager.callEvent(new ServerStatusEvent(Server.this, ServerStatus.STOPPED));
-                    }
-                    shouldStop = false;
-                }
-            }
-        });
-        connectionAssignmentThread.start();
+        //Listening for direct connections.
+        directListener.start();
     }
 
     /**
@@ -159,42 +69,10 @@ public class Server {
      * Stops the server.
      */
     public void stop() {
-        //Stopping the server loop.
-        shouldStop = true;
-
-<<<<<<< HEAD
-        //Interrupting all the clientConnections.
-        for (ServerConnection c:
-             connections) {
-=======
-        //Interrupting all the serverConnections.
-        for (ServerConnection c:
-                serverConnections) {
->>>>>>> origin/master
-            c.drop();
-        }
+        //Stopping the listeners.
+        networkListener.stop();
+        directListener.stop();
     }
-<<<<<<< HEAD
-
-    /**
-     * Sends a message to a connection.
-     * @param message
-     * @param connection
-     */
-    public void sendMessage(NetworkMessage message, ServerConnection connection) {
-
-    }
-
-    /**
-     * Called when a message has been received.
-     * @param sender
-     */
-    private void onMessageReceived(NetworkMessage message, ServerConnection sender) {
-
-    }
-
-=======
->>>>>>> origin/master
     //Events
 
     /**
@@ -203,11 +81,7 @@ public class Server {
      */
     public void onConnectionEstablished(ServerConnection c) {
         UnderNet.logger.info("New connection established with " + c.node);
-<<<<<<< HEAD
-        //Accepting new clientConnections.
-=======
         //Accepting new serverConnections.
->>>>>>> origin/master
         acceptingConnections = true;
     }
 }

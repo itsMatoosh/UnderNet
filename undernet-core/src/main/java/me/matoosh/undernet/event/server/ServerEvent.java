@@ -10,7 +10,7 @@ import me.matoosh.undernet.p2p.router.server.Server;
 
 public abstract class ServerEvent extends Event {
     /**
-     * Server generating the event.
+     * The server the event is about.
      */
     public Server server;
 

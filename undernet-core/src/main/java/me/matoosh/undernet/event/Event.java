@@ -7,7 +7,7 @@ package me.matoosh.undernet.event;
 
 public abstract class Event {
     /**
-     * Called when the event is called.
+     * Executed when the event is called, but before it is delivered to the handlers.
      */
     public abstract void onCalled();
 }
