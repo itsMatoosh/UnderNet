@@ -1,10 +1,14 @@
 package me.matoosh.undernet.p2p.router.connection;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 
+import me.matoosh.undernet.event.EventManager;
+import me.matoosh.undernet.event.connection.ConnectionDroppedEvent;
 import me.matoosh.undernet.p2p.node.Node;
+import me.matoosh.undernet.p2p.router.client.Client;
+import me.matoosh.undernet.p2p.router.server.Server;
 
 /**
  * Represents a connection.
@@ -18,6 +22,16 @@ public abstract class Connection {
      */
     public Thread thread;
     /**
+     * The server of this connection.
+     * Only set if side == ConnectionSide.Server
+     */
+    public Server server;
+    /**
+     * The client of this connection.
+     * Only set if side == ConnectionSide.Client
+     */
+    public Client client;
+    /**
      * The information of the node on the other side.
      */
     public Node other;
@@ -29,10 +43,6 @@ public abstract class Connection {
      * The id of this connection.
      */
     public int id;
-    /**
-     * List of the registered event listeners for this connection.
-     */
-    public ArrayList<ConnectionEventListener> connectionEventListeners = new ArrayList<ConnectionEventListener>();
 
     /**
      * Input stream of this connection.
@@ -48,18 +58,30 @@ public abstract class Connection {
     /**
      * Establishes the connection with the specified node on a new thread.
      * Needs to call runSession().
+     * @param client the client establishing the connection.
      * @param other the node to connect to.
-     * @throws Exception
      */
-    public abstract void establish(Node other);
+    protected void establish(Client client, Node other) {
+        this.side = ConnectionSide.CLIENT;
+        this.client = client;
+        this.other = other;
+
+        onEstablishingConnection();
+    }
 
     /**
      * Handles the incoming connection on a new thread.
      * Needs to call runSession().
-     * @param other the node to connect to.
-     * @throws Exception
+     * @param server the server receiving the connection.
+     * @param other the node connecting.
      */
-    public abstract void receive(Node other);
+    protected void receive(Server server, Node other) {
+        this.side = ConnectionSide.SERVER;
+        this.server = server;
+        this.other = other;
+
+        onReceivingConnection();
+    }
 
     /**
      * Drops the connection.
@@ -69,33 +91,39 @@ public abstract class Connection {
         if(thread != null && thread.isAlive()) {
             thread.interrupt();
         }
-        onConnectionDropped();
+        EventManager.callEvent(new ConnectionDroppedEvent(this, other));
+        try {
+            inputStream.close();
+            outputStream.close();
+            inputStream = null;
+            outputStream = null;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
+     * Called when the connecton is being established.
+     */
+    protected abstract void onEstablishingConnection();
+    /**
+     * Called when the connection is being received.
+     */
+    protected abstract void onReceivingConnection();
+    /**
      * Called when a connection error occurs.
      */
-    private void onConnectionError(ConnectionException e) {
-        for (ConnectionEventListener listener:
-             connectionEventListeners) {
-            listener.onConnectionError(e);
-        }
-    }
+    public abstract void onConnectionError(ConnectionException e);
     /**
      * Called when the connection is dropped.
      */
-    private void onConnectionDropped() {
-        for (ConnectionEventListener listener:
-             connectionEventListeners) {
-            listener.onConnectionDropped(this);
-        }
-    }
+    public abstract void onConnectionDropped();
 
     /**
      * Runs the connection session.
      * @throws Exception
      */
-    private void runSession() throws Exception {
+    protected void runSession() {
         //Starting the connection session.
         while (!thread.isInterrupted()) {
             session();
@@ -105,5 +133,5 @@ public abstract class Connection {
     /**
      * A single connection session.
      */
-    protected abstract void session() throws Exception;
+    protected abstract void session();
 }

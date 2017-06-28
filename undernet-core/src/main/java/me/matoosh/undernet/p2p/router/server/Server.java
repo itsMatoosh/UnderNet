@@ -44,7 +44,7 @@ public class Server
      * Starts the server.
      * @throws Exception
      */
-    public void start() throws Exception {
+    public void start() {
         //Changine the server status to starting.
         EventManager.callEvent(new ServerStatusEvent(Server.this, ServerStatus.STARTING));
 

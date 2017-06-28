@@ -29,6 +29,6 @@ public class ConnectionDroppedEvent extends ConnectionEvent {
      */
     @Override
     public void onCalled() {
-
+        connection.onConnectionDropped();
     }
 }

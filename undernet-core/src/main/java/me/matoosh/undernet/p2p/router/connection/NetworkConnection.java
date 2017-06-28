@@ -1,14 +1,11 @@
 package me.matoosh.undernet.p2p.router.connection;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Random;
 
 import me.matoosh.undernet.UnderNet;
-import me.matoosh.undernet.p2p.node.KnownNode;
-import me.matoosh.undernet.p2p.node.Node;
-
-import static me.matoosh.undernet.p2p.node.Node.self;
 
 /**
  * Represents a connection over Internet.
@@ -19,72 +16,99 @@ public class NetworkConnection extends Connection {
 
     /**
      * The local socket.
+     * Used only in client mode.
      */
-    public Socket selfSocket;
+    public Socket connectionSocket;
 
     /**
-     * Establishes the connection with the specified node.
-     * Needs to call runSession().
-     *
-     * @param other the node to connect to.
-     * @return whether the connection was established correctly.
+     * Called when the connecton is being established.
      */
     @Override
-    public void establish(Node other) {
+    protected void onEstablishingConnection() {
         //Starting the connection thread.
         Thread connectionThread = new Thread(() -> {
             //Connecting to the node.
             try {
                 UnderNet.logger.info("Connecting to: " + other.address);
-                selfSocket.connect(new InetSocketAddress(other.address, new Random().nextInt(49151)));
-                UnderNet.logger.info("Connected to: " + other.address);
-                inputStream = selfSocket.getInputStream();
-                outputStream = selfSocket.getOutputStream();
-
-                //TODO: Start the connection session.
+                connectionSocket.connect(new InetSocketAddress(other.address, new Random().nextInt(49151)));
             } catch (Exception e) {
-                //Debugging
-                if(other.getClass() == KnownNode.class){
-                    UnderNet.logger.error("Error while connecting to node: " + ((KnownNode) other).username + " - " + other.address + " over Internet.");
-                } else {
-                    UnderNet.logger.error("Error while connecting to node: " + other.address + " by Internet.");
-                }
-                e.printStackTrace();
-                UnderNet.logger.info("Connection error: " + e.toString());
+                //ConnectionErrorEvent
+                onConnectionError((ConnectionException)e);
             }
+            try {
+                UnderNet.logger.info("Connected to: " + other.address);
+                inputStream = connectionSocket.getInputStream();
+                outputStream = connectionSocket.getOutputStream();
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+                onConnectionError(new ConnectionIOException(this));
+            }
+
+            //Starting the connection session.
+            runSession();
         });
     }
 
     /**
-     * Handles the received connection.
-     * Needs to call runSession().
-     *
-     * @param other
-     * @throws Exception
+     * Called when the connection is being received.
      */
     @Override
-    public void receive(Node other) {
-        //Listen and accept the connection.
-        UnderNet.logger.info("Listening for connections on: " + self.server.port);
-        Socket clientSocket = self.server.serverSocket.accept();
-        UnderNet.logger.info("Accepted connection from: " + clientSocket.getInetAddress());
-        inputStream = clientSocket.getInputStream();
-        outputStream = clientSocket.getOutputStream();
+    protected void onReceivingConnection() {
+        //Accepting the server connection.
+        try {
+            UnderNet.logger.info("Listening for connections on: " + server.networkListener.port);
+            connectionSocket = server.networkListener.listenSocket.accept();
+            UnderNet.logger.info("Accepted connection from: " + connectionSocket.getInetAddress());
+        } catch (Exception e) {
+            //ConnectionErrorEvent
+            onConnectionError((ConnectionException)e);
+        }
+        try {
+            inputStream = connectionSocket.getInputStream();
+            outputStream = connectionSocket.getOutputStream();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            onConnectionError(new ConnectionIOException(this));
+        }
+
+        //Starting the session.
+        runSession();
+    }
+
+    /**
+     * Called when a connection error occurs.
+     *
+     * @param e
+     */
+    @Override
+    public void onConnectionError(ConnectionException e) {
+        //TODO
     }
 
     /**
      * Called when the connection is dropped.
      */
     @Override
-    protected void onConnectionDropped() {
-
+    public void onConnectionDropped() {
+        //Closing the socket.
+        try {
+            connectionSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * A single connection session.
      */
     @Override
-    protected void session() throws Exception {
-
+    protected void session() {
+        if(side == ConnectionSide.CLIENT) {
+            //Client
+        } else {
+            //Server
+        }
     }
 }

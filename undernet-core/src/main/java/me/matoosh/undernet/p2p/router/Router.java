@@ -23,7 +23,7 @@ import static me.matoosh.undernet.UnderNet.logger;
  * Created by Mateusz Rębacz on 27.06.2017.
  */
 
-public class Router extends EventHandler{
+public class Router extends EventHandler {
     /**
      * The client of this router.
      * Used for establishing connections with other nodes.

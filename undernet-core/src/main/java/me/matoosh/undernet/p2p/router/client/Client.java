@@ -8,9 +8,12 @@ import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.client.ClientErrorEvent;
 import me.matoosh.undernet.event.client.ClientStatusEvent;
+import me.matoosh.undernet.event.connection.ConnectionErrorEvent;
 import me.matoosh.undernet.p2p.cache.NodeCache;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.connection.Connection;
+import me.matoosh.undernet.p2p.router.connection.ConnectionNotAvailableException;
+import me.matoosh.undernet.p2p.router.connection.ConnectionSide;
 import me.matoosh.undernet.p2p.router.connection.DirectConnection;
 import me.matoosh.undernet.p2p.router.connection.NetworkConnection;
 
@@ -53,19 +56,19 @@ public class Client {
     public void connect(Node node) {
         UnderNet.logger.info("Connecting to node: " + node.address);
 
-        //Creating a new connection instance.
-        Connection connection = new DirectConnection();
-        if(!connection.establish(node)) {
-            connection = new NetworkConnection();
-            success = connection.establish(node);
-        } else {
-            success = true;
-        }
-
-        //If the connection is successfull, adding it to the connections list.
-        if(success) {
-            connections.add(connection);
-        }
+        EventManager.registerHandler(new EventHandler() {
+            @Override
+            public void onEventCalled(Event e) {
+                ConnectionErrorEvent errorEvent = (ConnectionErrorEvent)e;
+                if(errorEvent.exception.getClass() == ConnectionNotAvailableException.class && errorEvent.connection.side == ConnectionSide.CLIENT) {
+                    //Establishing the network connection.
+                    new NetworkConnection().establish(Client.this, errorEvent.connection.other);
+                }
+            }
+        }, ConnectionErrorEvent.class);
+        //Establishing a new connection. If this connection fails, another way of connecting will be used.
+        //TODO: Make smarter connection choices to reduce connection time.
+        new DirectConnection().establish(this, node);
     }
 
     /**

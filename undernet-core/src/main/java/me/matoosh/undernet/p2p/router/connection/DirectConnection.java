@@ -1,6 +1,7 @@
 package me.matoosh.undernet.p2p.router.connection;
 
-import me.matoosh.undernet.p2p.node.Node;
+import me.matoosh.undernet.event.EventManager;
+import me.matoosh.undernet.event.connection.ConnectionErrorEvent;
 
 /**
  * Represents a direct connection.
@@ -11,32 +12,35 @@ import me.matoosh.undernet.p2p.node.Node;
 public class DirectConnection extends Connection
 {
     /**
-     * Establishes the connection with the specified node.
-     * Needs to call runSession().
-     *
-     * @param other the node to connect to.
-     * @return whether the connection was established correctly.
-     * @throws Exception
+     * Called when the connecton is being established.
      */
     @Override
-    protected boolean establish(Node other) throws Exception {
+    protected void onEstablishingConnection() {
         //TODO: Check for the node availability.
         //TODO: Establish connection.
 
-        //For now the direct connection is just a place holder.
-        return false;
+        //For now the connection is gonna throw an error unconditionally.
+        EventManager.callEvent(new ConnectionErrorEvent(this, new ConnectionNotAvailableException(this)));
     }
 
-
     /**
-     * Handles the received connection.
-     * Needs to call runSession().
-     *
-     * @param other
-     * @throws Exception
+     * Called when the connection is being received.
      */
     @Override
-    protected void receive(Node other) throws Exception {
+    protected void onReceivingConnection() {
+        //TODO
+
+        //For now the connection is gonna throw an error unconditionally.
+        EventManager.callEvent(new ConnectionErrorEvent(this, new ConnectionNotAvailableException(this)));
+    }
+
+    /**
+     * Called when a connection error occurs.
+     *
+     * @param e
+     */
+    @Override
+    public void onConnectionError(ConnectionException e) {
 
     }
 
@@ -44,15 +48,15 @@ public class DirectConnection extends Connection
      * Called when the connection is dropped.
      */
     @Override
-    protected void onConnectionDropped() {
-
+    public void onConnectionDropped() {
+        //TODO
     }
 
     /**
      * A single connection session.
      */
     @Override
-    protected void session() throws Exception {
-
+    protected void session() {
+        //TODO
     }
 }
