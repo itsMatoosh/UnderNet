@@ -31,4 +31,13 @@ public class Node implements Serializable {
      * The self node.
      */
     public static Node self;
+
+    /**
+     * Returns the address of the node.
+     * @return
+     */
+    @Override
+    public String toString() {
+        return address.toString();
+    }
 }

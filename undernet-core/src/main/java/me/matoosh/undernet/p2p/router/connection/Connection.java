@@ -26,6 +26,10 @@ public abstract class Connection {
      */
     public ConnectionSide side;
     /**
+     * The id of this connection.
+     */
+    public int id;
+    /**
      * List of the registered event listeners for this connection.
      */
     public ArrayList<ConnectionEventListener> connectionEventListeners = new ArrayList<ConnectionEventListener>();

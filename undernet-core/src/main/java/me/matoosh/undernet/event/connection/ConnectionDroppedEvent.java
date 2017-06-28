@@ -1,5 +1,6 @@
 package me.matoosh.undernet.event.connection;
 
+import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.connection.Connection;
 
 /**
@@ -9,12 +10,18 @@ import me.matoosh.undernet.p2p.router.connection.Connection;
 
 public class ConnectionDroppedEvent extends ConnectionEvent {
     /**
+     * The node with which the connection was dropped.
+     */
+    public Node other;
+
+    /**
      * Creates a new connection event, given connection.
      *
      * @param c
      */
-    public ConnectionDroppedEvent(Connection c) {
+    public ConnectionDroppedEvent(Connection c, Node other) {
         super(c);
+        this.other = other;
     }
 
     /**

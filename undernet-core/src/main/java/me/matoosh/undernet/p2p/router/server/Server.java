@@ -1,14 +1,7 @@
 package me.matoosh.undernet.p2p.router.server;
 
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.util.ArrayList;
-
-import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.server.ServerStatusEvent;
-import me.matoosh.undernet.p2p.node.Node;
-import me.matoosh.undernet.p2p.router.connection.Connection;
 
 /**
  * Server part of the router.
@@ -40,6 +33,14 @@ public class Server
     }
 
     /**
+     * Sets up the server.
+     */
+    public void setup() {
+        //Registering events.
+        registerEvents();
+    }
+
+    /**
      * Starts the server.
      * @throws Exception
      */
@@ -47,22 +48,11 @@ public class Server
         //Changine the server status to starting.
         EventManager.callEvent(new ServerStatusEvent(Server.this, ServerStatus.STARTING));
 
-        //Registering events
-        registerEvents();
-
         //Listening for network connections.
         networkListener.start();
 
         //Listening for direct connections.
         directListener.start();
-    }
-
-    /**
-     * Registers the server events.
-     */
-    private void registerEvents() {
-        //ServerStatusEvent
-        EventManager.registerEvent(ServerStatusEvent.class);
     }
 
     /**
@@ -73,15 +63,11 @@ public class Server
         networkListener.stop();
         directListener.stop();
     }
-    //Events
 
     /**
-     * Called when a connection has been established.
-     * @param c
+     * Registers the server events.
      */
-    public void onConnectionEstablished(ServerConnection c) {
-        UnderNet.logger.info("New connection established with " + c.node);
-        //Accepting new serverConnections.
-        acceptingConnections = true;
+    private void registerEvents() {
+        EventManager.registerEvent(ServerStatusEvent.class);
     }
 }
