@@ -8,6 +8,7 @@ import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.connection.ConnectionDroppedEvent;
 import me.matoosh.undernet.event.connection.ConnectionErrorEvent;
 import me.matoosh.undernet.event.connection.ConnectionEstablishedEvent;
+import me.matoosh.undernet.event.router.RouterErrorEvent;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.client.Client;
@@ -35,10 +36,6 @@ public class Router extends EventHandler {
      */
     public Server server;
     /**
-     * The router handler of this router.
-     */
-    public RouterHandler routerHandler;
-    /**
      * The current status of the router.
      */
     public RouterStatus status = RouterStatus.STOPPED;
@@ -47,6 +44,11 @@ public class Router extends EventHandler {
      * List of the currently active connections.
      */
     public ArrayList<Connection> connections = new ArrayList<Connection>();
+
+    /**
+     * The number of reconnect attempts, the router attempted.
+     */
+    private int reconnectNum = 0;
 
     /**
      * Sets up the router.
@@ -66,10 +68,6 @@ public class Router extends EventHandler {
 
         //Registering handlers.
         registerHandlers();
-
-        //Creating router handler.
-        routerHandler = new RouterHandler();
-        routerHandler.setup();
 
         //Creating server.
         server = new Server(new NetworkListener(), new DirectListener());
@@ -137,6 +135,8 @@ public class Router extends EventHandler {
      * Registers the router handlers.
      */
     private void registerHandlers() {
+        EventManager.registerHandler(this, RouterStatusEvent.class);
+        EventManager.registerHandler(this, RouterErrorEvent.class);
         EventManager.registerHandler(this, ConnectionEstablishedEvent.class);
         EventManager.registerHandler(this, ConnectionDroppedEvent.class);
         EventManager.registerHandler(this, ConnectionErrorEvent.class);
@@ -166,6 +166,59 @@ public class Router extends EventHandler {
             ConnectionErrorEvent errorEvent = (ConnectionErrorEvent)e;
             logger.warn("There was an error with the connection: " + errorEvent.connection.id);
             //TODO: Handle the error.
+        } else if(e.getClass() == RouterStatusEvent.class) {
+            RouterStatusEvent statusEvent = (RouterStatusEvent)e;
+            switch(statusEvent.newStatus) {
+                case STOPPED:
+                    onConnectionEnded();
+                    break;
+                case STARTING:
+                    break;
+                case CONNECTING:
+                    break;
+                case NETWORK_CONNECTED:
+                    break;
+                case STOPPING:
+                    break;
+            }
+            //TODO: Handle the status change.
+        } else if(e.getClass() == RouterErrorEvent.class) {
+            onRouterError((RouterErrorEvent) e);
+        }
+    }
+    /**
+     * Called when the connection to the network ends.
+     */
+    public void onConnectionEnded() {
+        //Resetting the reconn num.
+        reconnectNum = 0;
+    }
+
+    /**
+     * Called when a router error occurs.
+     * This means we can't continue and have to restart the connection.
+     * @param e
+     */
+    public void onRouterError(RouterErrorEvent e) {
+        //Printing the error.
+        if(e.exception.getMessage() != null) {
+            logger.error("There was a problem with the UnderNet router: " + e.exception.getMessage());
+        }
+        e.exception.printStackTrace();
+
+        //Resetting the network devices.
+        e.router.stop();
+
+        //Reconnecting if possible.
+        if(e.router.status != RouterStatus.STOPPED && e.shouldReconnect) {
+            reconnectNum++;
+            //Checking if we should reconnect.
+            if(reconnectNum >= 5) {
+                logger.error("Exceeded the maximum number of reconnect attempts!");
+                onConnectionEnded();
+            }
+
+            logger.info("Attempting to reconnect for: " + reconnectNum + " time...");
         }
     }
 }
