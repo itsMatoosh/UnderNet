@@ -22,13 +22,15 @@ public class MainActivity extends AppCompatActivity {
      * The ViewManager.
      */
     public static ViewManager viewManager;
-    public static Logger logger = LoggerFactory.getLogger("undernet.android");
+    public static Logger logger = LoggerFactory.getLogger(MainActivity.class);
 
     //PERMISSIONS
     private static final int REQUEST_CAMERA_PERMISSION = 200;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        logger.debug("Starting the app...");
+
         //Super create.
         super.onCreate(savedInstanceState);
         //Setting the instance.

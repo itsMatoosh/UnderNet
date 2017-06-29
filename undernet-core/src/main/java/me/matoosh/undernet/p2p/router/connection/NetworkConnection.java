@@ -28,30 +28,33 @@ public class NetworkConnection extends Connection {
     @Override
     protected void onEstablishingConnection() {
         //Starting the connection thread.
-        thread = new Thread(() -> {
-            //Connecting to the node.
-            try {
-                UnderNet.logger.info("Connecting to: " + other.address);
-                connectionSocket.connect(new InetSocketAddress(other.address, new Random().nextInt(49151)));
-            } catch (Exception e) {
-                //ConnectionErrorEvent
-                onConnectionError((ConnectionException)e);
-            }
-            try {
-                UnderNet.logger.info("Connected to: " + other.address);
-                inputStream = connectionSocket.getInputStream();
-                outputStream = connectionSocket.getOutputStream();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-                onConnectionError(new ConnectionIOException(this));
-            }
+        thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                //Connecting to the node.
+                try {
+                    UnderNet.logger.info("Connecting to: " + other.address);
+                    connectionSocket.connect(new InetSocketAddress(other.address, new Random().nextInt(49151)));
+                } catch (Exception e) {
+                    //ConnectionErrorEvent
+                    onConnectionError((ConnectionException)e);
+                }
+                try {
+                    UnderNet.logger.info("Connected to: " + other.address);
+                    inputStream = connectionSocket.getInputStream();
+                    outputStream = connectionSocket.getOutputStream();
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                    onConnectionError(new ConnectionIOException(NetworkConnection.this));
+                }
 
-            //Calling the connection established event.
-            EventManager.callEvent(new ConnectionEstablishedEvent(this, other));
+                //Calling the connection established event.
+                EventManager.callEvent(new ConnectionEstablishedEvent(NetworkConnection.this, other));
 
-            //Starting the connection session.
-            runSession();
+                //Starting the connection session.
+                runSession();
+            }
         });
         thread.start();
     }
@@ -84,8 +87,11 @@ public class NetworkConnection extends Connection {
         EventManager.callEvent(new ConnectionEstablishedEvent(this, other));
 
         //Starting the session.
-        thread = new Thread(() -> {
-            runSession();
+        thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                runSession();
+            }
         });
         thread.run();
     }

@@ -41,19 +41,22 @@ public class NetworkListener extends NodeListener {
     @Override
     public void start() {
         //Creating a new thread.
-        listenThread = new Thread(() -> {
-            //Starting the listen socket.
-            try {
-                listenSocket = new ServerSocket(port);
-            } catch (IOException e) {
-                EventManager.callEvent(new ServerErrorEvent(NetworkListener.this.server, new ServerIOException(NetworkListener.this.server)));
-            }
+        listenThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                //Starting the listen socket.
+                try {
+                    listenSocket = new ServerSocket(port);
+                } catch (IOException e) {
+                    EventManager.callEvent(new ServerErrorEvent(NetworkListener.this.server, new ServerIOException(NetworkListener.this.server)));
+                }
 
-            //Running the loop until we need to stop.
-            while (!listenThread.isInterrupted()) {
-                //Creating a new NetworkConnection instance and accepting connections.
-                NetworkConnection connection = new NetworkConnection();
-                connection.receive(server, new Node());
+                //Running the loop until we need to stop.
+                while (!listenThread.isInterrupted()) {
+                    //Creating a new NetworkConnection instance and accepting connections.
+                    NetworkConnection connection = new NetworkConnection();
+                    connection.receive(server, new Node());
+                }
             }
         });
         listenThread.start();
