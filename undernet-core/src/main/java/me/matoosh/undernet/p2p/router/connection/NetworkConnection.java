@@ -6,6 +6,8 @@ import java.net.Socket;
 import java.util.Random;
 
 import me.matoosh.undernet.UnderNet;
+import me.matoosh.undernet.event.EventManager;
+import me.matoosh.undernet.event.connection.ConnectionEstablishedEvent;
 
 /**
  * Represents a connection over Internet.
@@ -26,7 +28,7 @@ public class NetworkConnection extends Connection {
     @Override
     protected void onEstablishingConnection() {
         //Starting the connection thread.
-        Thread connectionThread = new Thread(() -> {
+        thread = new Thread(() -> {
             //Connecting to the node.
             try {
                 UnderNet.logger.info("Connecting to: " + other.address);
@@ -45,9 +47,13 @@ public class NetworkConnection extends Connection {
                 onConnectionError(new ConnectionIOException(this));
             }
 
+            //Calling the connection established event.
+            EventManager.callEvent(new ConnectionEstablishedEvent(this, other));
+
             //Starting the connection session.
             runSession();
         });
+        thread.start();
     }
 
     /**
@@ -59,7 +65,8 @@ public class NetworkConnection extends Connection {
         try {
             UnderNet.logger.info("Listening for connections on: " + server.networkListener.port);
             connectionSocket = server.networkListener.listenSocket.accept();
-            UnderNet.logger.info("Accepted connection from: " + connectionSocket.getInetAddress());
+            other.setAddress(connectionSocket.getInetAddress());
+            UnderNet.logger.info("Accepted connection from: " + other);
         } catch (Exception e) {
             //ConnectionErrorEvent
             onConnectionError((ConnectionException)e);
@@ -73,8 +80,14 @@ public class NetworkConnection extends Connection {
             onConnectionError(new ConnectionIOException(this));
         }
 
+        //Calling the connection established event.
+        EventManager.callEvent(new ConnectionEstablishedEvent(this, other));
+
         //Starting the session.
-        runSession();
+        thread = new Thread(() -> {
+            runSession();
+        });
+        thread.run();
     }
 
     /**

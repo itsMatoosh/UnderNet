@@ -71,7 +71,7 @@ public class StatusTab extends Tab {
                 }
 
                 if(address != null) {
-                    node.address = address;
+                    node.setAddress(address);
                     NodeCache.addNode(node);
                 }
             }

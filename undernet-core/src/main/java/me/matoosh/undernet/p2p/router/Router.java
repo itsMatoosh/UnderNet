@@ -13,8 +13,6 @@ import me.matoosh.undernet.event.router.RouterStatusEvent;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.client.Client;
 import me.matoosh.undernet.p2p.router.connection.Connection;
-import me.matoosh.undernet.p2p.router.server.DirectListener;
-import me.matoosh.undernet.p2p.router.server.NetworkListener;
 import me.matoosh.undernet.p2p.router.server.Server;
 
 import static me.matoosh.undernet.UnderNet.logger;
@@ -70,11 +68,11 @@ public class Router extends EventHandler {
         registerHandlers();
 
         //Creating server.
-        server = new Server(new NetworkListener(), new DirectListener());
+        server = new Server(this);
         server.setup();
 
         //Creating client.
-        client = new Client();
+        client = new Client(this);
         client.setup();
     }
     /**

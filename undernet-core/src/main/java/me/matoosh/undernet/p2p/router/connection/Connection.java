@@ -6,6 +6,7 @@ import java.io.OutputStream;
 
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.connection.ConnectionDroppedEvent;
+import me.matoosh.undernet.event.connection.ConnectionErrorEvent;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.client.Client;
 import me.matoosh.undernet.p2p.router.server.Server;
@@ -57,11 +58,11 @@ public abstract class Connection {
 
     /**
      * Establishes the connection with the specified node on a new thread.
-     * Needs to call runSession().
+     * Needs to call runSession() AND onConnectionEstablished event.
      * @param client the client establishing the connection.
      * @param other the node to connect to.
      */
-    protected void establish(Client client, Node other) {
+    public void establish(Client client, Node other) {
         this.side = ConnectionSide.CLIENT;
         this.client = client;
         this.other = other;
@@ -71,11 +72,11 @@ public abstract class Connection {
 
     /**
      * Handles the incoming connection on a new thread.
-     * Needs to call runSession().
+     * Needs to call runSession() AND onConnectionEstablished event.
      * @param server the server receiving the connection.
      * @param other the node connecting.
      */
-    protected void receive(Server server, Node other) {
+    public void receive(Server server, Node other) {
         this.side = ConnectionSide.SERVER;
         this.server = server;
         this.other = other;
@@ -126,12 +127,16 @@ public abstract class Connection {
     protected void runSession() {
         //Starting the connection session.
         while (!thread.isInterrupted()) {
-            session();
+            try {
+                session();
+            } catch (ConnectionSessionException e) {
+                EventManager.callEvent(new ConnectionErrorEvent(this, e));
+            }
         }
     }
 
     /**
      * A single connection session.
      */
-    protected abstract void session();
+    protected abstract void session() throws ConnectionSessionException;
 }

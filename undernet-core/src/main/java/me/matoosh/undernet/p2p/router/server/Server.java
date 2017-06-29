@@ -1,7 +1,10 @@
 package me.matoosh.undernet.p2p.router.server;
 
 import me.matoosh.undernet.event.EventManager;
+import me.matoosh.undernet.event.server.ServerErrorEvent;
 import me.matoosh.undernet.event.server.ServerStatusEvent;
+import me.matoosh.undernet.p2p.router.Router;
+import me.matoosh.undernet.p2p.router.connection.Connection;
 
 /**
  * Server part of the router.
@@ -11,6 +14,10 @@ import me.matoosh.undernet.event.server.ServerStatusEvent;
 
 public class Server
 {
+    /**
+     * The router.
+     */
+    public Router router;
     /**
      * Current status of the server.
      */
@@ -27,9 +34,10 @@ public class Server
     /**
      * Creates a server instance using a specified port.
      */
-    public Server(NetworkListener networkListener, DirectListener directListener) {
-        this.networkListener = networkListener;
-        this.directListener = directListener;
+    public Server(Router router) {
+        this.router = router;
+        this.networkListener = new NetworkListener(this);
+        this.directListener = new DirectListener();
     }
 
     /**
@@ -62,6 +70,14 @@ public class Server
         //Stopping the listeners.
         networkListener.stop();
         directListener.stop();
+
+        //Disconnecting the clients.
+        for (Connection c:
+             router.connections) {
+            if(c.server == this) {
+                c.drop();
+            }
+        }
     }
 
     /**
@@ -69,5 +85,6 @@ public class Server
      */
     private void registerEvents() {
         EventManager.registerEvent(ServerStatusEvent.class);
+        EventManager.registerEvent(ServerErrorEvent.class);
     }
 }

@@ -11,6 +11,7 @@ import me.matoosh.undernet.event.client.ClientStatusEvent;
 import me.matoosh.undernet.event.connection.ConnectionErrorEvent;
 import me.matoosh.undernet.p2p.cache.NodeCache;
 import me.matoosh.undernet.p2p.node.Node;
+import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.connection.Connection;
 import me.matoosh.undernet.p2p.router.connection.ConnectionNotAvailableException;
 import me.matoosh.undernet.p2p.router.connection.ConnectionSide;
@@ -25,9 +26,13 @@ import me.matoosh.undernet.p2p.router.connection.NetworkConnection;
 
 public class Client {
     /**
-     * List of the active serverConnections.
+     * The router.
      */
-    public ArrayList<Connection> connections = new ArrayList<Connection>();
+    public Router router;
+
+    public Client(Router router) {
+        this.router = router;
+    }
 
     /**
      * Sets up the client.
@@ -84,8 +89,10 @@ public class Client {
     public void disconnectAll() {
         //Dropping all the serverConnections.
         for (Connection c:
-             connections) {
-            c.drop();
+             router.connections) {
+            if(c.client == this) {
+                c.drop();
+            }
         }
     }
 

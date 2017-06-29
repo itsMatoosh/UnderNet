@@ -40,4 +40,13 @@ public class Node implements Serializable {
     public String toString() {
         return address.toString();
     }
+
+    /**
+     * Sets the address of the node.
+     * @param address
+     */
+    public void setAddress(InetAddress address) {
+        //TODO: Caching integration.
+        this.address = address;
+    }
 }
