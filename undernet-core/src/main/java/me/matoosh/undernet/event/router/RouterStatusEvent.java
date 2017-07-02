@@ -1,7 +1,9 @@
 package me.matoosh.undernet.event.router;
 
 import me.matoosh.undernet.p2p.router.Router;
-import me.matoosh.undernet.p2p.router.RouterStatus;
+import me.matoosh.undernet.p2p.router.InterfaceStatus;
+
+import static me.matoosh.undernet.UnderNet.logger;
 
 /**
  * Called when the status of a router changes.
@@ -12,9 +14,9 @@ public class RouterStatusEvent extends RouterEvent {
     /**
      * The new status of the router.
      */
-    public RouterStatus newStatus;
+    public InterfaceStatus newStatus;
 
-    public RouterStatusEvent(Router r, RouterStatus newStatus) {
+    public RouterStatusEvent(Router r, InterfaceStatus newStatus) {
         super(r);
         this.newStatus = newStatus;
     }
@@ -24,6 +26,8 @@ public class RouterStatusEvent extends RouterEvent {
      */
     @Override
     public void onCalled() {
+        //Sets the server status to the new status.
+        logger.info("Router status changed to: " + newStatus);
         router.status = newStatus;
     }
 }

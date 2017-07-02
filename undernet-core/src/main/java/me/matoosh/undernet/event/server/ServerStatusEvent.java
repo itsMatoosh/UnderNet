@@ -1,6 +1,5 @@
 package me.matoosh.undernet.event.server;
 
-import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.p2p.router.server.Server;
 import me.matoosh.undernet.p2p.router.server.ServerStatus;
 
@@ -25,6 +24,6 @@ public class ServerStatusEvent extends ServerEvent {
     public void onCalled() {
         //Sets the server status to the new status.
         server.status = newStatus;
-        UnderNet.logger.info("Server status changed to: " + newStatus);
+        Server.logger.info("Server status changed to: " + newStatus);
     }
 }

@@ -2,6 +2,7 @@ package me.matoosh.undernet;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        logger.debug("Starting the app...");
+        Log.d("TEST", "Launching the app.");
 
         //Super create.
         super.onCreate(savedInstanceState);

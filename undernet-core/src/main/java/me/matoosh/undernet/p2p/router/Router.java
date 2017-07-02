@@ -1,5 +1,8 @@
 package me.matoosh.undernet.p2p.router;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 
 import me.matoosh.undernet.event.Event;
@@ -14,8 +17,6 @@ import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.client.Client;
 import me.matoosh.undernet.p2p.router.connection.Connection;
 import me.matoosh.undernet.p2p.router.server.Server;
-
-import static me.matoosh.undernet.UnderNet.logger;
 
 /**
  * The network router.
@@ -36,7 +37,7 @@ public class Router extends EventHandler {
     /**
      * The current status of the router.
      */
-    public RouterStatus status = RouterStatus.STOPPED;
+    public InterfaceStatus status = InterfaceStatus.STOPPED;
 
     /**
      * List of the currently active connections.
@@ -49,11 +50,16 @@ public class Router extends EventHandler {
     private int reconnectNum = 0;
 
     /**
+     * The logger.
+     */
+    public static Logger logger = LoggerFactory.getLogger(Router.class);
+
+    /**
      * Sets up the router.
      */
     public void setup() {
         //Checking if the router is not running.
-        if(status != RouterStatus.STOPPED) {
+        if(status != InterfaceStatus.STOPPED) {
             logger.warn("Can't setup the router, while it's running!");
             return;
         }
@@ -81,7 +87,7 @@ public class Router extends EventHandler {
      */
     public void start() {
         //Checking whether the router is already running.
-        if(status != RouterStatus.STOPPED) {
+        if(status != InterfaceStatus.STOPPED) {
             logger.warn("Can't start, because the router is already running!");
             return;
         }
@@ -92,7 +98,7 @@ public class Router extends EventHandler {
         }
 
         //Setting the status to starting.
-        EventManager.callEvent(new RouterStatusEvent(this, RouterStatus.STARTING));
+        EventManager.callEvent(new RouterStatusEvent(this, InterfaceStatus.STARTING));
 
         //Starting the server.
         server.start();
@@ -106,7 +112,7 @@ public class Router extends EventHandler {
      */
     public void stop() {
         //Checking if the server is running.
-        if(status == RouterStatus.STOPPED) {
+        if(status == InterfaceStatus.STOPPED) {
             logger.debug("Can't stop the router, as it is not running!");
             return;
         }
@@ -174,7 +180,7 @@ public class Router extends EventHandler {
                     break;
                 case CONNECTING:
                     break;
-                case NETWORK_CONNECTED:
+                case STARTED:
                     break;
                 case STOPPING:
                     break;
@@ -208,7 +214,7 @@ public class Router extends EventHandler {
         e.router.stop();
 
         //Reconnecting if possible.
-        if(e.router.status != RouterStatus.STOPPED && e.shouldReconnect) {
+        if(e.router.status != InterfaceStatus.STOPPED && e.shouldReconnect) {
             reconnectNum++;
             //Checking if we should reconnect.
             if(reconnectNum >= 5) {

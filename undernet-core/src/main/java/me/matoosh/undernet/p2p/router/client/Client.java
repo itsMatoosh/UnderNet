@@ -1,8 +1,10 @@
 package me.matoosh.undernet.p2p.router.client;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 
-import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
@@ -11,6 +13,7 @@ import me.matoosh.undernet.event.client.ClientStatusEvent;
 import me.matoosh.undernet.event.connection.ConnectionErrorEvent;
 import me.matoosh.undernet.p2p.cache.NodeCache;
 import me.matoosh.undernet.p2p.node.Node;
+import me.matoosh.undernet.p2p.router.InterfaceStatus;
 import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.connection.Connection;
 import me.matoosh.undernet.p2p.router.connection.ConnectionNotAvailableException;
@@ -29,6 +32,15 @@ public class Client {
      * The router.
      */
     public Router router;
+    /**
+     * The current status of the client.
+     */
+    public InterfaceStatus status;
+
+    /**
+     * The logger.
+     */
+    public static Logger logger = LoggerFactory.getLogger(Client.class);
 
     public Client(Router router) {
         this.router = router;
@@ -59,7 +71,7 @@ public class Client {
      * Connects the client to a node.
      */
     public void connect(Node node) {
-        UnderNet.logger.info("Connecting to node: " + node.address);
+        logger.info("Connecting to node: " + node.address);
 
         EventManager.registerHandler(new EventHandler() {
             @Override

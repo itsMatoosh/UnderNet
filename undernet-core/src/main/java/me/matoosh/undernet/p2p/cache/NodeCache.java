@@ -31,7 +31,7 @@ public class NodeCache {
      */
     public static ArrayList<Node> getMostReliable(int amount, ArrayList<Node> exclude) {
         //Skipping if there are no cached nodes.
-        if(cachedNodes.size() == 0) {
+        if(cachedNodes == null || cachedNodes.size() == 0) {
             return null;
         }
 
@@ -80,7 +80,7 @@ public class NodeCache {
      */
     public static void load() {
         //Checking whether the file exists.
-        File nodesCacheFile = new File(UnderNet.fileManager.getAppFolder() + "/nodesCache.uni");
+        File nodesCacheFile = new File(UnderNet.fileManager.getAppFolder() + "/nodesCache.unc");
         try {
             UnderNet.logger.info("Loading the node cache from: " + nodesCacheFile.toString());
             FileInputStream fileIn = new FileInputStream(nodesCacheFile);

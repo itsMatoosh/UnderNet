@@ -3,6 +3,7 @@ package me.matoosh.undernet.file;
 import java.io.File;
 
 /**
+ * Used to manage files in the app.
  * Created by Mateusz Rębacz on 21.02.2017.
  */
 

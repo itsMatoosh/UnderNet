@@ -1,5 +1,8 @@
 package me.matoosh.undernet.p2p.router.server;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.server.ServerErrorEvent;
 import me.matoosh.undernet.event.server.ServerStatusEvent;
@@ -30,6 +33,11 @@ public class Server
      * The direct listener of this server.
      */
     public DirectListener directListener;
+
+    /**
+     * The logger.
+     */
+    public static Logger logger = LoggerFactory.getLogger(Server.class);
 
     /**
      * Creates a server instance using a specified port.
