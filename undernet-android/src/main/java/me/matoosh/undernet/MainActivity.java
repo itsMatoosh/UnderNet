@@ -7,9 +7,11 @@ import android.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import layout.section.SectionType;
+import layout.section.commmunities.CommunitiesSection;
+import layout.section.main.MainSection;
 import me.matoosh.undernet.camera.CamHost;
 import me.matoosh.undernet.file.AndroidFileManager;
-import me.matoosh.undernet.ui.view.ViewManager;
 
 /**
  * The main activity of the app.
@@ -20,9 +22,25 @@ public class MainActivity extends AppCompatActivity {
      */
     public static MainActivity instance;
     /**
-     * The ViewManager.
+     * Main section of the app.
      */
-    public static ViewManager viewManager;
+    public MainSection mainSection;
+    /**
+     * Communities section of the app.
+     */
+    public CommunitiesSection communitiesSection;
+    /**
+     * Currently open section.
+     */
+    public SectionType currentSection = SectionType.MAIN;
+    /**
+     * Whether the app is currently transitioning between sections.
+     */
+    public boolean isTransitioning = false;
+
+    /**
+     * The logger of the class.
+     */
     public static Logger logger = LoggerFactory.getLogger(MainActivity.class);
 
     //PERMISSIONS
@@ -50,9 +68,6 @@ public class MainActivity extends AppCompatActivity {
         //Initializing the Core library.
         UnderNet.setup(new AndroidFileManager());
 
-        //Initializing the ViewManager.
-        viewManager = new ViewManager();
-        viewManager.init();
         //Initializing the CamHost.
         CamHost.init();
     }

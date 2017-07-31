@@ -1,4 +1,4 @@
-package me.matoosh.undernet.ui.view;
+package layout.section;
 
 /**
  * Types of views in the app.
@@ -6,7 +6,7 @@ package me.matoosh.undernet.ui.view;
  */
 
 public enum ViewType {
-    EXPLORE, //Content within the current community.
+    CONTENT, //Content within the current community.
     CAMERA, //Camera for posting to the community.
-    FRIENDS //Quick access to direct send.
+    NODES //List of nodes we're connected to within the community..
 }

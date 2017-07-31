@@ -1,10 +1,8 @@
-package me.matoosh.undernet.ui.view.section.main;
+package layout.section.main;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-
-import me.matoosh.undernet.ui.view.section.TabbedSection;
 
 /**
  * Manages tabs within the main section.
@@ -15,9 +13,9 @@ public class TabAdapter extends FragmentPagerAdapter {
     /**
      * Section using this TabAdapter.
      */
-    private TabbedSection section;
+    private MainSection section;
 
-    public TabAdapter(FragmentManager fragmentManager, TabbedSection section) {
+    public TabAdapter(FragmentManager fragmentManager, MainSection section) {
         super(fragmentManager);
         this.section = section;
     }
@@ -29,7 +27,7 @@ public class TabAdapter extends FragmentPagerAdapter {
      */
     @Override
     public Fragment getItem(int position) {
-        return section.getView(position);
+        return section.getTab(position);
     }
 
 

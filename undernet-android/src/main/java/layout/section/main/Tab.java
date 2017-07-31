@@ -1,4 +1,4 @@
-package me.matoosh.undernet.ui.view.section.main;
+package layout.section.main;
 
 import android.support.v4.app.Fragment;
 
@@ -7,11 +7,7 @@ import android.support.v4.app.Fragment;
  * Created by Mateusz Rębacz on 22.02.2017.
  */
 
-public abstract class Tab extends Fragment{
-    /**
-     * Called when the view is created.
-     */
-    public abstract void OnCreate();
+public abstract class Tab extends Fragment {
     /**
      * Called when the view becomes visible
      */
@@ -22,12 +18,12 @@ public abstract class Tab extends Fragment{
      */
     public abstract void OnInvisible();
 
-    @Override
+    /*@Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         if (isVisibleToUser) {
             OnVisible();
         } else {
             OnInvisible();
         }
-    }
+    }*/
 }

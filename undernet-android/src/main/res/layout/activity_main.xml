@@ -1,29 +1,20 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/community_pager"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="me.matoosh.undernet.MainActivity">
 
-    <android.support.v4.view.ViewPager
+    <fragment class="layout.section.main.MainSection"
+        android:id="@+id/main_section"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/main_pager"
-        android:background="@color/colorPrimaryDark"
-        android:visibility="visible">
-    </android.support.v4.view.ViewPager>
 
-    <RelativeLayout
+        tools:layout="@layout/fragment_main_section">
+    </fragment>
+    <fragment class="layout.section.commmunities.CommunitiesSection"
+        android:id="@+id/communities_section"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/colorAccent"
-        android:visibility="invisible"
-        android:id="@+id/communities_layout">
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/communities_recycler_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-    </RelativeLayout>
+        tools:layout="@layout/fragment_communites_section"></fragment>
 
 </RelativeLayout>

@@ -1,6 +1,7 @@
-package me.matoosh.undernet.ui.view.section.main;
+package layout.section.main.status;
 
 
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
@@ -20,6 +21,7 @@ import me.matoosh.undernet.R;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.p2p.cache.NodeCache;
 import me.matoosh.undernet.p2p.node.Node;
+import layout.section.main.Tab;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -99,21 +101,16 @@ public class StatusTab extends Tab {
     }
 
     @Override
-    public void OnCreate() {
-
-    }
-
-    @Override
     public void OnVisible() {
-        MainActivity.instance.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        MainActivity.instance.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         ActionBar actionBar = MainActivity.instance.getSupportActionBar();
         if (actionBar != null) {
-            actionBar.show();
+            actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.colorPrimary)));
         }
     }
 
     @Override
     public void OnInvisible() {
-        MainActivity.instance.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+
     }
 }
