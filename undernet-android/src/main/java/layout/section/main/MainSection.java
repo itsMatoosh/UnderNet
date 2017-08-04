@@ -31,18 +31,13 @@ import me.matoosh.undernet.R;
  */
 public class MainSection extends Fragment {
     /**
-     * The listener of the fragment.
-     */
-    //private OnFragmentInteractionListener mListener;
-
-    /**
-     * The view pager, that handles the section's tabs.
+     * The view pager, which handles the section's tabs.
      */
     public ViewPager pager;
     /**
      * The default tab.
      */
-    public TabType defaultTab;
+    public TabType defaultTab = TabType.CAMERA;
 
     /**
      * Currently visible tab.
@@ -54,14 +49,6 @@ public class MainSection extends Fragment {
      */
     public ArrayList<Tab> registeredTabs;
 
-    /**
-     * Transition animator of this section.
-     */
-    private Animator transitionAnimator;
-    /**
-     * Gesture detector of this section.
-     */
-    private GestureDetector gestureDetector;
 
     /**
      * The logger of this section.
@@ -82,12 +69,6 @@ public class MainSection extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        /*if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }*/
     }
 
     /**
@@ -114,6 +95,8 @@ public class MainSection extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //Registering this section.
+        MainActivity.instance.mainSection = this;
     }
 
     /**
@@ -137,9 +120,6 @@ public class MainSection extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        //Registering this section.
-        MainActivity.instance.mainSection = this;
-
         //Inflating the layout.
         View layout = inflater.inflate(R.layout.fragment_main_section, container, false);
         layout.setVisibility(View.VISIBLE);
@@ -150,41 +130,19 @@ public class MainSection extends Fragment {
         registeredTabs.add(new CameraTab());
         registeredTabs.add(new StatusTab());
 
-        //Setting the default tab.
-        defaultTab = TabType.CAMERA;
-
         //Setting up the main section pager.
         pager = (ViewPager) layout.findViewById(R.id.main_pager);
         if(pager == null) {
             logger.error("No view pager!");
         }
-        TabAdapter tabAdapter = new TabAdapter(MainActivity.instance.getSupportFragmentManager(), this);
+        TabAdapter tabAdapter = new TabAdapter(MainActivity.instance.getFragmentManager(), this);
         if(tabAdapter == null) {
             logger.error("No tab adapter!");
         }
         pager.setAdapter(tabAdapter);
         setTab(defaultTab);
 
-        //Setting up the communities pager transition.
-        gestureDetector = new GestureDetector(layout.getContext(), new GestureDetector.SimpleOnGestureListener() {
-            @Override
-            public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-                //Handling the communities section transition.
-                handleCommunitiesRevealAnim(e1, e2, distanceX, distanceY);
 
-                return super.onScroll(e1, e2, distanceX, distanceY);
-            }
-
-        });
-        //Adding the touch listener to the gesture detector.
-        pager.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                gestureDetector.onTouchEvent(event);
-
-                return false;
-            }
-        });
         pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -257,17 +215,6 @@ public class MainSection extends Fragment {
         }
         currentTab = getTab(position);
         currentTab.OnVisible();
-    }
-
-    /**
-     * Handles the reveal transition to the communities section.
-     */
-    private void handleCommunitiesRevealAnim(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-        //Making sure no accidental swipes happen.
-        if(distanceY < -20f && Math.abs(distanceX) < 10f) {
-            getView().setVisibility(View.GONE);
-            MainActivity.instance.communitiesSection.show(e1.getX(), e1.getY());
-        }
     }
 
     /**

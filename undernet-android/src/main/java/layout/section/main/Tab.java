@@ -1,6 +1,6 @@
 package layout.section.main;
 
-import android.support.v4.app.Fragment;
+import android.app.Fragment;
 
 /**
  * Represents a tab from a tabbed section.

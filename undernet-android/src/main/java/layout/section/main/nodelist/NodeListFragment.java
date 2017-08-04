@@ -1,9 +1,9 @@
 package layout.section.main.nodelist;
 
+import android.app.ActionBar;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -12,11 +12,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
-import me.matoosh.undernet.MainActivity;
-import me.matoosh.undernet.R;
 import layout.section.main.Tab;
 import layout.section.main.nodelist.dummy.DummyContent;
 import layout.section.main.nodelist.dummy.DummyContent.DummyItem;
+import me.matoosh.undernet.MainActivity;
+import me.matoosh.undernet.R;
 
 /**
  * A fragment representing a list of known.
@@ -101,7 +101,7 @@ public class NodeListFragment extends Tab {
     @Override
     public void OnVisible() {
         MainActivity.instance.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        ActionBar actionBar = MainActivity.instance.getSupportActionBar();
+        ActionBar actionBar = MainActivity.instance.getActionBar();
         if (actionBar != null) {
             actionBar.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.colorPrimary)));
         }

@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="CircularReveal-2.0.1">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.android/build-cache/392123da1c8641a3ed29d55a247921c29ad89b2f/output/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.android/build-cache/392123da1c8641a3ed29d55a247921c29ad89b2f/output/res" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.ozodrukh/CircularReveal/2.0.1/4c5d4e134c60b1bb316a2b87d3aa13685dee3e96/CircularReveal-2.0.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

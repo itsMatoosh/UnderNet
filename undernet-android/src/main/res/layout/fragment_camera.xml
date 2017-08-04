@@ -7,10 +7,10 @@
 
     <!-- TODO: Update blank fragment layout -->
 
-    <TextureView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/videoView"
+    <SurfaceView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/cameraPreview"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
@@ -29,10 +29,10 @@
             android:layout_weight="1" />
 
         <Button
-            android:text="Button"
+            android:text="Shoot"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:id="@+id/button2"
+            android:id="@+id/shutterButton"
             android:layout_weight="1" />
 
         <Button

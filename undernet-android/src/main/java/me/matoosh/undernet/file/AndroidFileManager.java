@@ -7,7 +7,7 @@ import java.io.File;
 import me.matoosh.undernet.MainActivity;
 
 /**
- * File manager implementation for android.
+ * File manager implementation for Android.
  * Created by Mateusz Rębacz on 21.02.2017.
  */
 

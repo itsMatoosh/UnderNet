@@ -10,11 +10,11 @@ import org.slf4j.LoggerFactory;
 import layout.section.SectionType;
 import layout.section.commmunities.CommunitiesSection;
 import layout.section.main.MainSection;
-import me.matoosh.undernet.camera.CamHost;
 import me.matoosh.undernet.file.AndroidFileManager;
 
 /**
  * The main activity of the app.
+ * Supports the backported material design.
  */
 public class MainActivity extends AppCompatActivity {
     /**
@@ -46,9 +46,13 @@ public class MainActivity extends AppCompatActivity {
     //PERMISSIONS
     private static final int REQUEST_CAMERA_PERMISSION = 200;
 
+    /**
+     * Called when the app is first launched.
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d("TEST", "Launching the app.");
+        Log.d("UnderNet-Android", "Launching the app.");
 
         //Super create.
         super.onCreate(savedInstanceState);
@@ -62,13 +66,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Called when the app is starting.
+     */
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        //Starting UnderNet.
+        UnderNet.connect();
+
+    }
+
+    /**
      * Initializes all of the components.
      */
     protected void init() {
         //Initializing the Core library.
         UnderNet.setup(new AndroidFileManager());
-
-        //Initializing the CamHost.
-        CamHost.init();
     }
 }

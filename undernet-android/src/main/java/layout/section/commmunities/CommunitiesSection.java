@@ -129,8 +129,9 @@ public class CommunitiesSection extends Fragment {
         //mListener = null;
     }
 
+
     /**
-     * Handles the show transition to this section.
+     * Handles the reveal transition to this section.
      */
     public void show(float touchPosX, float touchPosY) {
         if(MainActivity.instance.isTransitioning) {
@@ -138,20 +139,17 @@ public class CommunitiesSection extends Fragment {
         }
 
         //Getting the main view of the new section.
-        final View toView = getView();
-        if(toView == null) {
-            logger.error("Transition to section's main view couldn't be found.");
+        final View commView = getView();
+        if(commView == null) {
+            logger.error("Communities main view couldn't be found.");
         }
 
-        //Instantiating a new animator.
-        Animator transitionAnimator = null;
-
         //Calculating the final radius.
-        float finalRadius = (float) Math.hypot(toView.getHeight(), toView.getWidth());
+        float finalAnimRadius = (float) Math.hypot(commView.getHeight(), commView.getWidth());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            transitionAnimator = ViewAnimationUtils.createCircularReveal(toView, (int)touchPosX, (int)touchPosY, 0, finalRadius);
+            transitionAnimator = ViewAnimationUtils.createCircularReveal(commView, (int)touchPosX, (int)touchPosY, 0, finalAnimRadius);
         } else {
-            //TODO: Legacy transition.
+            transitionAnimator = io.codetail.animation.ViewAnimationUtils.createCircularReveal(commView, (int)touchPosX, (int)touchPosY, 0, finalAnimRadius);
         }
 
         //Make the view visible and start the animation
@@ -174,7 +172,7 @@ public class CommunitiesSection extends Fragment {
             @Override
             public void onAnimationCancel(Animator animation) {
                 //Setting the transitioning flag.
-                toView.setVisibility(View.GONE);
+                commView.setVisibility(View.GONE);
                 MainActivity.instance.isTransitioning = false;
             }
 
