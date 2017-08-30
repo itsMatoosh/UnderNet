@@ -54,6 +54,20 @@ public class CameraTab extends Tab{
      */
     private SurfaceView mSurfaceView;
 
+    //Buttons
+    /**
+     * The left button.
+     */
+    private Button leftButton;
+    /**
+     * The right button.
+     */
+    private Button rightButton;
+    /**
+     * The button releasing the shutter.
+     */
+    private Button shutterButton;
+
     /**
      * The callback of the camera preview surface.
      */
@@ -88,8 +102,14 @@ public class CameraTab extends Tab{
         View layout = inflater.inflate(R.layout.fragment_camera, container, false);
 
         //Registering click listeners.
-        Button shutterBtn = (Button) layout.findViewById(R.id.shutterButton);
-        shutterBtn.setOnClickListener(new View.OnClickListener() {
+        leftButton = (Button) layout.findViewById(R.id.leftButton);
+        //TODO: Make the left button transition to node list.
+        rightButton = (Button) layout.findViewById(R.id.rightButton);
+        //TODO: Make the right button transition to content.
+
+        shutterButton = (Button) layout.findViewById(R.id.shutterButton);
+        //TODO: Add hold for video.
+        shutterButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onTakePicture(v);

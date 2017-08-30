@@ -25,7 +25,7 @@
             android:text="Button"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:id="@+id/button3"
+            android:id="@+id/leftButton"
             android:layout_weight="1" />
 
         <Button
@@ -39,7 +39,7 @@
             android:text="Button"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:id="@+id/button"
+            android:id="@+id/rightButton"
             android:layout_weight="1" />
     </LinearLayout>
 

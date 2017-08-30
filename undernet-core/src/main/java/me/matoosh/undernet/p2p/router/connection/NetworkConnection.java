@@ -1,5 +1,7 @@
 package me.matoosh.undernet.p2p.router.connection;
 
+import org.slf4j.Logger;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -7,6 +9,7 @@ import java.util.Random;
 
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventManager;
+import me.matoosh.undernet.event.connection.ConnectionAcceptedEvent;
 import me.matoosh.undernet.event.connection.ConnectionEstablishedEvent;
 
 /**
@@ -21,6 +24,10 @@ public class NetworkConnection extends Connection {
      * Used only in client mode.
      */
     public Socket connectionSocket;
+    /**
+     * The logger of the class.
+     */
+    public Logger logger;
 
     /**
      * Called when the connecton is being established.
@@ -49,6 +56,17 @@ public class NetworkConnection extends Connection {
                     onConnectionError(new ConnectionIOException(NetworkConnection.this));
                 }
 
+                //Initiating connection.
+                try {
+                    handshake();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    onConnectionError(new ConnectionHandshakeException(NetworkConnection.this));
+                } catch (ConnectionHandshakeException e) {
+                    e.printStackTrace();
+                    onConnectionError(e);
+                }
+
                 //Calling the connection established event.
                 EventManager.callEvent(new ConnectionEstablishedEvent(NetworkConnection.this, other));
 
@@ -69,7 +87,7 @@ public class NetworkConnection extends Connection {
             UnderNet.logger.info("Listening for connections on: " + server.networkListener.port);
             connectionSocket = server.networkListener.listenSocket.accept();
             other.setAddress(connectionSocket.getInetAddress());
-            UnderNet.logger.info("Accepted connection from: " + other);
+            EventManager.callEvent(new ConnectionAcceptedEvent(this));
         } catch (Exception e) {
             //ConnectionErrorEvent
             onConnectionError((ConnectionException)e);
@@ -81,6 +99,18 @@ public class NetworkConnection extends Connection {
         catch (IOException e) {
             e.printStackTrace();
             onConnectionError(new ConnectionIOException(this));
+        }
+
+        //Handshake.
+        try {
+            //Initiating connection.
+            handshake();
+        } catch (IOException e) {
+            e.printStackTrace();
+            onConnectionError(new ConnectionHandshakeException(this));
+        } catch (ConnectionHandshakeException e) {
+            e.printStackTrace();
+            onConnectionError(e);
         }
 
         //Calling the connection established event.
@@ -97,13 +127,32 @@ public class NetworkConnection extends Connection {
     }
 
     /**
+     * Initiates the handshake process.
+     */
+    private void handshake() throws IOException, ConnectionHandshakeException {
+        switch (side) {
+            case CLIENT:
+                //Reading the server stream.
+                if(inputStream.read() != 1) {
+                    throw new ConnectionHandshakeException(this);
+                }
+                break;
+            case SERVER:
+                //Writing a positive byte to check connection.
+                outputStream.write(1);
+                break;
+        }
+    }
+
+    /**
      * Called when a connection error occurs.
      *
      * @param e
      */
     @Override
     public void onConnectionError(ConnectionException e) {
-        //TODO
+        logger.error("An error occured with the connection: " + e.getMessage());
+        //TODO: Recovery procedure.
     }
 
     /**
@@ -124,10 +173,30 @@ public class NetworkConnection extends Connection {
      */
     @Override
     protected void session() {
-        if(side == ConnectionSide.CLIENT) {
-            //Client
-        } else {
-            //Server
+        try {
+            if(inputStream.read() == 1) {
+                //Message
+                switch(side) {
+                    case CLIENT:
+
+                        break;
+                    case SERVER:
+
+                        break;
+                }
+            } else {
+                //Byte stream
+                switch(side) {
+                    case CLIENT:
+
+                        break;
+                    case SERVER:
+
+                        break;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
