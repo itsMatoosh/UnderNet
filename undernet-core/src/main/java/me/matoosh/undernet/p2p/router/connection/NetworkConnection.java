@@ -11,6 +11,9 @@ import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.connection.ConnectionAcceptedEvent;
 import me.matoosh.undernet.event.connection.ConnectionEstablishedEvent;
+import me.matoosh.undernet.event.connection.message.ConnectionMessageReceivedEvent;
+import me.matoosh.undernet.p2p.router.messages.NetworkMessage;
+import me.matoosh.undernet.p2p.router.messages.NetworkSerializer;
 
 /**
  * Represents a connection over Internet.
@@ -174,18 +177,23 @@ public class NetworkConnection extends Connection {
     @Override
     protected void session() {
         try {
-            if(inputStream.read() == 1) {
+            //Reads the next message ID from the stream.
+            int messageId = inputStream.read();
+            int messageLenght = inputStream.read();
+            byte[] messagePayload = new byte[messageLenght];
+            inputStream.read(messagePayload, 0, messageLenght);
+
+            //Checking if the received byte is a message.
+            if(messageId > 0) {
                 //Message
-                switch(side) {
-                    case CLIENT:
-
-                        break;
-                    case SERVER:
-
-                        break;
-                }
+                //Deserializing.
+                NetworkMessage deserialisedMessage = NetworkSerializer.read(messageId, messagePayload);
+                EventManager.callEvent(new ConnectionMessageReceivedEvent(this, deserialisedMessage));
+            } else if (messageId == -1) {
+                //End of stream.
             } else {
                 //Byte stream
+                //TODO: Maybe it'll be useful someday.
                 switch(side) {
                     case CLIENT:
 
