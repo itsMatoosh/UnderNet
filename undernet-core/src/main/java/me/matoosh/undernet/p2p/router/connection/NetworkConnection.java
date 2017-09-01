@@ -11,6 +11,7 @@ import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.connection.ConnectionAcceptedEvent;
 import me.matoosh.undernet.event.connection.ConnectionEstablishedEvent;
+import me.matoosh.undernet.event.connection.bytestream.ConnectionBytestreamReceivedEvent;
 import me.matoosh.undernet.event.connection.message.ConnectionMessageReceivedEvent;
 import me.matoosh.undernet.p2p.router.messages.NetworkMessage;
 import me.matoosh.undernet.p2p.router.messages.NetworkSerializer;
@@ -193,15 +194,7 @@ public class NetworkConnection extends Connection {
                 //End of stream.
             } else {
                 //Byte stream
-                //TODO: Maybe it'll be useful someday.
-                switch(side) {
-                    case CLIENT:
-
-                        break;
-                    case SERVER:
-
-                        break;
-                }
+                EventManager.callEvent(new ConnectionBytestreamReceivedEvent(this, messagePayload));
             }
         } catch (IOException e) {
             e.printStackTrace();

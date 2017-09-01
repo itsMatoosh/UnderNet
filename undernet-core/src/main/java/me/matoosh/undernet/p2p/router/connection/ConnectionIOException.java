@@ -11,7 +11,7 @@ public class ConnectionIOException extends ConnectionException {
      */
     public Connection connection;
 
-    public ConnectionIOException(Connection connection) {
-        super(connection);
+    public ConnectionIOException(Connection connection, ConnectionThreadType threadType) {
+        super(connection, threadType);
     }
 }

@@ -6,7 +6,7 @@ package me.matoosh.undernet.p2p.router.connection;
  */
 
 public class ConnectionNotAvailableException extends ConnectionException {
-    public ConnectionNotAvailableException(Connection c) {
-        super(c);
+    public ConnectionNotAvailableException(Connection c, ConnectionThreadType threadType) {
+        super(c, threadType);
     }
 }

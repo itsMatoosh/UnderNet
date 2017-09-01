@@ -18,10 +18,15 @@ import me.matoosh.undernet.p2p.router.server.Server;
 
 public abstract class Connection {
     /**
-     * The Thread used for this connection.
+     * The Thread used for sending packets on this connection.
      * Assigned when the connection is established.
      */
-    public Thread thread;
+    public Thread sendingThread;
+    /**
+     * The Thread used for receiving packets on this connection.
+     * Assigned when the connection is establish.
+     */
+    public Thread receivingThread;
     /**
      * The server of this connection.
      * Only set if side == ConnectionSide.Server
@@ -89,9 +94,13 @@ public abstract class Connection {
      * Interrupts the connection loop thread.
      */
     public void drop() {
-        if(thread != null && thread.isAlive()) {
-            thread.interrupt();
+        if(sendingThread != null && sendingThread.isAlive()) {
+            sendingThread.interrupt();
         }
+        if(receivingThread != null && receivingThread.isAlive()) {
+            receivingThread.interrupt();
+        }
+
         EventManager.callEvent(new ConnectionDroppedEvent(this, other));
         try {
             inputStream.close();
@@ -121,14 +130,14 @@ public abstract class Connection {
     public abstract void onConnectionDropped();
 
     /**
-     * Runs the connection session.
+     * Runs the receiving tick.
      * @throws Exception
      */
-    protected void runSession() {
+    protected void receiveTick() {
         //Starting the connection session.
-        while (!thread.isInterrupted()) {
+        while (!receivingThread.isInterrupted()) {
             try {
-                session();
+                receive();
             } catch (ConnectionSessionException e) {
                 EventManager.callEvent(new ConnectionErrorEvent(this, e));
             }
@@ -136,7 +145,27 @@ public abstract class Connection {
     }
 
     /**
-     * A single connection session.
+     * Runs the sending tick.
      */
-    protected abstract void session() throws ConnectionSessionException;
+    protected void sendTick() {
+        //Starting the connection session.
+        while (!sendingThread.isInterrupted()) {
+            try {
+                send();
+            } catch (ConnectionSessionException e) {
+                EventManager.callEvent(new ConnectionErrorEvent(this, e));
+            }
+        }
+    }
+
+    /**
+     * Receiving logic.
+     */
+    protected abstract void receive() throws ConnectionSessionException;
+
+    /**
+     * Sending logic.
+     * @throws ConnectionSessionException
+     */
+    protected abstract void send() throws ConnectionSessionException;
 }
