@@ -133,7 +133,7 @@ public abstract class Connection {
      * Runs the receiving tick.
      * @throws Exception
      */
-    protected void receiveTick() {
+    protected void startReceiveLoop() {
         //Starting the connection session.
         while (!receivingThread.isInterrupted()) {
             try {
@@ -147,7 +147,7 @@ public abstract class Connection {
     /**
      * Runs the sending tick.
      */
-    protected void sendTick() {
+    protected void startSendLoop() {
         //Starting the connection session.
         while (!sendingThread.isInterrupted()) {
             try {

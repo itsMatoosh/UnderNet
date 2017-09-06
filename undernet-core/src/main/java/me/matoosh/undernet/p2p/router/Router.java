@@ -35,6 +35,10 @@ public class Router extends EventHandler {
      */
     public Server server;
     /**
+     * Message queue of the router.
+     */
+    public MessageQueue messageQueue;
+    /**
      * The current status of the router.
      */
     public InterfaceStatus status = InterfaceStatus.STOPPED;

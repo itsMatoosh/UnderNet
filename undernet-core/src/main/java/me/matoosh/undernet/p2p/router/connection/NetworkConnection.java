@@ -39,7 +39,7 @@ public class NetworkConnection extends Connection {
     @Override
     protected void onEstablishingConnection() {
         //Starting the connection thread.
-        thread = new Thread(new Runnable() {
+        sendingThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 //Connecting to the node.
@@ -57,7 +57,7 @@ public class NetworkConnection extends Connection {
                 }
                 catch (IOException e) {
                     e.printStackTrace();
-                    onConnectionError(new ConnectionIOException(NetworkConnection.this));
+                    onConnectionError(new ConnectionIOException(NetworkConnection.this, ConnectionThreadType.SEND));
                 }
 
                 //Initiating connection.
@@ -65,7 +65,7 @@ public class NetworkConnection extends Connection {
                     handshake();
                 } catch (IOException e) {
                     e.printStackTrace();
-                    onConnectionError(new ConnectionHandshakeException(NetworkConnection.this));
+                    onConnectionError(new ConnectionHandshakeException(NetworkConnection.this, ConnectionThreadType.SEND));
                 } catch (ConnectionHandshakeException e) {
                     e.printStackTrace();
                     onConnectionError(e);
@@ -75,10 +75,19 @@ public class NetworkConnection extends Connection {
                 EventManager.callEvent(new ConnectionEstablishedEvent(NetworkConnection.this, other));
 
                 //Starting the connection session.
-                runSession();
+                startSendLoop();
             }
         });
-        thread.start();
+        receivingThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                //Starting the connection session.
+                startReceiveLoop();
+            }
+        });
+
+        sendingThread.start();
+        receivingThread.start();
     }
 
     /**
@@ -102,7 +111,7 @@ public class NetworkConnection extends Connection {
         }
         catch (IOException e) {
             e.printStackTrace();
-            onConnectionError(new ConnectionIOException(this));
+            onConnectionError(new ConnectionIOException(this, ConnectionThreadType.SEND));
         }
 
         //Handshake.
@@ -111,7 +120,7 @@ public class NetworkConnection extends Connection {
             handshake();
         } catch (IOException e) {
             e.printStackTrace();
-            onConnectionError(new ConnectionHandshakeException(this));
+            onConnectionError(new ConnectionHandshakeException(this, ConnectionThreadType.SEND));
         } catch (ConnectionHandshakeException e) {
             e.printStackTrace();
             onConnectionError(e);
@@ -120,14 +129,23 @@ public class NetworkConnection extends Connection {
         //Calling the connection established event.
         EventManager.callEvent(new ConnectionEstablishedEvent(this, other));
 
-        //Starting the session.
-        thread = new Thread(new Runnable() {
+        //Starting the connection loops.
+        receivingThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                runSession();
+                startReceiveLoop();
             }
         });
-        thread.run();
+        sendingThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                startSendLoop();
+            }
+        });
+
+        //Starting the session.
+        receivingThread.run();
+        sendingThread.run();
     }
 
     /**
@@ -138,7 +156,7 @@ public class NetworkConnection extends Connection {
             case CLIENT:
                 //Reading the server stream.
                 if(inputStream.read() != 1) {
-                    throw new ConnectionHandshakeException(this);
+                    throw new ConnectionHandshakeException(this, ConnectionThreadType.SEND);
                 }
                 break;
             case SERVER:
@@ -173,10 +191,10 @@ public class NetworkConnection extends Connection {
     }
 
     /**
-     * A single connection session.
+     * Receiving logic.
      */
     @Override
-    protected void session() {
+    protected void receive() throws ConnectionSessionException {
         try {
             //Reads the next message ID from the stream.
             int messageId = inputStream.read();
@@ -191,7 +209,7 @@ public class NetworkConnection extends Connection {
                 NetworkMessage deserialisedMessage = NetworkSerializer.read(messageId, messagePayload);
                 EventManager.callEvent(new ConnectionMessageReceivedEvent(this, deserialisedMessage));
             } else if (messageId == -1) {
-                //End of stream.
+                //Skipping
             } else {
                 //Byte stream
                 EventManager.callEvent(new ConnectionBytestreamReceivedEvent(this, messagePayload));
@@ -199,5 +217,15 @@ public class NetworkConnection extends Connection {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Sending logic.
+     *
+     * @throws ConnectionSessionException
+     */
+    @Override
+    protected void send() throws ConnectionSessionException {
+
     }
 }
