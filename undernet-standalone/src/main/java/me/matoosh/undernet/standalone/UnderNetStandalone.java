@@ -2,6 +2,8 @@ package me.matoosh.undernet.standalone;
 
 import java.awt.EventQueue;
 
+import me.matoosh.undernet.UnderNet;
+import me.matoosh.undernet.standalone.file.StandaloneFileManager;
 import me.matoosh.undernet.standalone.ui.AppFrame;
 
 /**
@@ -11,6 +13,10 @@ import me.matoosh.undernet.standalone.ui.AppFrame;
 
 public class UnderNetStandalone {
     public static void main (String[] args) {
+        //Setting up UnderNet.
+        UnderNet.setup(new StandaloneFileManager());
+
+        //Starting the ui.
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {

@@ -20,7 +20,7 @@ public class DirectConnection extends Connection
         //TODO: Establish connection.
 
         //For now the connection is gonna throw an error unconditionally.
-        EventManager.callEvent(new ConnectionErrorEvent(this, new ConnectionNotAvailableException(this)));
+        EventManager.callEvent(new ConnectionErrorEvent(this, new ConnectionNotAvailableException(this, ConnectionThreadType.SEND)));
     }
 
     /**
@@ -31,7 +31,7 @@ public class DirectConnection extends Connection
         //TODO
 
         //For now the connection is gonna throw an error unconditionally.
-        EventManager.callEvent(new ConnectionErrorEvent(this, new ConnectionNotAvailableException(this)));
+        EventManager.callEvent(new ConnectionErrorEvent(this, new ConnectionNotAvailableException(this, ConnectionThreadType.SEND)));
     }
 
     /**
@@ -53,10 +53,20 @@ public class DirectConnection extends Connection
     }
 
     /**
-     * A single connection session.
+     * Receiving logic.
      */
     @Override
-    protected void session() {
-        //TODO
+    protected void receive() throws ConnectionSessionException {
+
+    }
+
+    /**
+     * Sending logic.
+     *
+     * @throws ConnectionSessionException
+     */
+    @Override
+    protected void send() throws ConnectionSessionException {
+
     }
 }

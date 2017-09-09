@@ -80,7 +80,7 @@ public class NodeCache {
      */
     public static void load() {
         //Checking whether the file exists.
-        File nodesCacheFile = new File(UnderNet.fileManager.getAppFolder() + "/nodesCache.unc");
+        File nodesCacheFile = new File(UnderNet.fileManager.getAppFolder() + "/known.nodes");
         try {
             UnderNet.logger.info("Loading the node cache from: " + nodesCacheFile.toString());
             FileInputStream fileIn = new FileInputStream(nodesCacheFile);
@@ -111,7 +111,7 @@ public class NodeCache {
      */
     public static void save() {
         try {
-            FileOutputStream fileOut = new FileOutputStream(UnderNet.fileManager.getAppFolder() + "/nodesCache.uni");
+            FileOutputStream fileOut = new FileOutputStream(UnderNet.fileManager.getAppFolder() + "/known.nodes");
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
             out.writeObject(cachedNodes);
             out.close();

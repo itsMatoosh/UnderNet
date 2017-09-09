@@ -5,4 +5,13 @@ package me.matoosh.undernet.p2p.router.messages;
  */
 
 public class IDMessage extends NetworkMessage {
+    /**
+     * Creates a message object with message data.
+     *
+     * @param type
+     * @param payload
+     */
+    public IDMessage(int type, byte[] payload) {
+        super(type, payload);
+    }
 }

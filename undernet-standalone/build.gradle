@@ -1,19 +1,36 @@
 apply plugin: 'java'
-apply plugin: 'application'
+apply plugin: 'java-library-distribution'
 
-mainClassName = 'me.matoosh.undernet.standalone.UnderNetStandalone'
-
-dependencies {
-    compile fileTree(dir: 'bins', include: ['*.jar'])
+repositories {
+    mavenCentral()
 }
 
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile project(path: ':undernet-core')
+    compile 'org.slf4j:slf4j-simple:1.8.0-alpha2'
+}
+
+distZip.shouldRunAfter(build)
+
 jar {
+    // Keep jar clean:
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.MF'
+
     manifest {
         attributes(
-                'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+                'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' '),
                 'Main-Class': 'me.matoosh.undernet.standalone.UnderNetStandalone'
         )
     }
+}
+
+task run(dependsOn: classes, type: JavaExec) {
+    main = 'me.matoosh.undernet.standalone.UnderNetStandalone'
+    classpath = sourceSets.main.runtimeClasspath
+    //defaultInput = System.in
+    workingDir = '/debug'
+    ignoreExitValue = true
 }
 
 sourceCompatibility = "1.7"
