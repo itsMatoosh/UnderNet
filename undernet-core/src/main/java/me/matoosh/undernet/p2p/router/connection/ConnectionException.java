@@ -10,8 +10,13 @@ public class ConnectionException extends Exception {
      * The connection.
      */
     public Connection connection;
+    /**
+     * The type of thread that produced this exception.
+     */
+    public ConnectionThreadType connectionThreadType;
 
-    public ConnectionException(Connection c) {
+    public ConnectionException(Connection c, ConnectionThreadType threadType) {
         this.connection = c;
+        this.connectionThreadType = threadType;
     }
 }

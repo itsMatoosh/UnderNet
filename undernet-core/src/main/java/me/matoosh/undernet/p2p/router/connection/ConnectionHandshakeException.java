@@ -6,7 +6,7 @@ package me.matoosh.undernet.p2p.router.connection;
  */
 
 public class ConnectionHandshakeException extends ConnectionException {
-    public ConnectionHandshakeException(Connection c) {
-        super(c);
+    public ConnectionHandshakeException(Connection c, ConnectionThreadType threadType) {
+        super(c, threadType);
     }
 }

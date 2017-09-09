@@ -7,9 +7,22 @@ import java.io.Serializable;
  * Created by Mateusz Rębacz on 29.04.2017.
  */
 
-public abstract class NetworkMessage implements Serializable {
+public class NetworkMessage implements Serializable {
     /**
      * The type of the message.
      */
     public int messageType;
+    /**
+     * The payload of the message.
+     */
+    public byte[] payload;
+
+    /**
+     * Creates a message object with message data.
+     * @param payload
+     */
+    public NetworkMessage(int type, byte[] payload) {
+        this.messageType = type;
+        this.payload = payload;
+    }
 }

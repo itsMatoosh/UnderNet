@@ -11,8 +11,8 @@ public class ConnectionSessionException extends ConnectionException {
      */
     public String message;
 
-    public ConnectionSessionException(Connection c, String message) {
-        super(c);
+    public ConnectionSessionException(Connection c, ConnectionThreadType threadType, String message) {
+        super(c, threadType);
         this.message = message;
     }
 

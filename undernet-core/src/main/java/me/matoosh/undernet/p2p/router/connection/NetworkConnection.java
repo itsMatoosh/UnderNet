@@ -11,6 +11,10 @@ import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.connection.ConnectionAcceptedEvent;
 import me.matoosh.undernet.event.connection.ConnectionEstablishedEvent;
+import me.matoosh.undernet.event.connection.bytestream.ConnectionBytestreamReceivedEvent;
+import me.matoosh.undernet.event.connection.message.ConnectionMessageReceivedEvent;
+import me.matoosh.undernet.p2p.router.messages.NetworkMessage;
+import me.matoosh.undernet.p2p.router.messages.NetworkSerializer;
 
 /**
  * Represents a connection over Internet.
@@ -35,7 +39,7 @@ public class NetworkConnection extends Connection {
     @Override
     protected void onEstablishingConnection() {
         //Starting the connection thread.
-        thread = new Thread(new Runnable() {
+        sendingThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 //Connecting to the node.
@@ -53,7 +57,7 @@ public class NetworkConnection extends Connection {
                 }
                 catch (IOException e) {
                     e.printStackTrace();
-                    onConnectionError(new ConnectionIOException(NetworkConnection.this));
+                    onConnectionError(new ConnectionIOException(NetworkConnection.this, ConnectionThreadType.SEND));
                 }
 
                 //Initiating connection.
@@ -61,7 +65,7 @@ public class NetworkConnection extends Connection {
                     handshake();
                 } catch (IOException e) {
                     e.printStackTrace();
-                    onConnectionError(new ConnectionHandshakeException(NetworkConnection.this));
+                    onConnectionError(new ConnectionHandshakeException(NetworkConnection.this, ConnectionThreadType.SEND));
                 } catch (ConnectionHandshakeException e) {
                     e.printStackTrace();
                     onConnectionError(e);
@@ -71,10 +75,19 @@ public class NetworkConnection extends Connection {
                 EventManager.callEvent(new ConnectionEstablishedEvent(NetworkConnection.this, other));
 
                 //Starting the connection session.
-                runSession();
+                startSendLoop();
             }
         });
-        thread.start();
+        receivingThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                //Starting the connection session.
+                startReceiveLoop();
+            }
+        });
+
+        sendingThread.start();
+        receivingThread.start();
     }
 
     /**
@@ -98,7 +111,7 @@ public class NetworkConnection extends Connection {
         }
         catch (IOException e) {
             e.printStackTrace();
-            onConnectionError(new ConnectionIOException(this));
+            onConnectionError(new ConnectionIOException(this, ConnectionThreadType.SEND));
         }
 
         //Handshake.
@@ -107,7 +120,7 @@ public class NetworkConnection extends Connection {
             handshake();
         } catch (IOException e) {
             e.printStackTrace();
-            onConnectionError(new ConnectionHandshakeException(this));
+            onConnectionError(new ConnectionHandshakeException(this, ConnectionThreadType.SEND));
         } catch (ConnectionHandshakeException e) {
             e.printStackTrace();
             onConnectionError(e);
@@ -116,14 +129,23 @@ public class NetworkConnection extends Connection {
         //Calling the connection established event.
         EventManager.callEvent(new ConnectionEstablishedEvent(this, other));
 
-        //Starting the session.
-        thread = new Thread(new Runnable() {
+        //Starting the connection loops.
+        receivingThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                runSession();
+                startReceiveLoop();
             }
         });
-        thread.run();
+        sendingThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                startSendLoop();
+            }
+        });
+
+        //Starting the session.
+        receivingThread.run();
+        sendingThread.run();
     }
 
     /**
@@ -134,7 +156,7 @@ public class NetworkConnection extends Connection {
             case CLIENT:
                 //Reading the server stream.
                 if(inputStream.read() != 1) {
-                    throw new ConnectionHandshakeException(this);
+                    throw new ConnectionHandshakeException(this, ConnectionThreadType.SEND);
                 }
                 break;
             case SERVER:
@@ -169,34 +191,41 @@ public class NetworkConnection extends Connection {
     }
 
     /**
-     * A single connection session.
+     * Receiving logic.
      */
     @Override
-    protected void session() {
+    protected void receive() throws ConnectionSessionException {
         try {
-            if(inputStream.read() == 1) {
+            //Reads the next message ID from the stream.
+            int messageId = inputStream.read();
+            int messageLenght = inputStream.read();
+            byte[] messagePayload = new byte[messageLenght];
+            inputStream.read(messagePayload, 0, messageLenght);
+
+            //Checking if the received byte is a message.
+            if(messageId > 0) {
                 //Message
-                switch(side) {
-                    case CLIENT:
-
-                        break;
-                    case SERVER:
-
-                        break;
-                }
+                //Deserializing.
+                NetworkMessage deserialisedMessage = NetworkSerializer.read(messageId, messagePayload);
+                EventManager.callEvent(new ConnectionMessageReceivedEvent(this, deserialisedMessage));
+            } else if (messageId == -1) {
+                //Skipping
             } else {
                 //Byte stream
-                switch(side) {
-                    case CLIENT:
-
-                        break;
-                    case SERVER:
-
-                        break;
-                }
+                EventManager.callEvent(new ConnectionBytestreamReceivedEvent(this, messagePayload));
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Sending logic.
+     *
+     * @throws ConnectionSessionException
+     */
+    @Override
+    protected void send() throws ConnectionSessionException {
+
     }
 }
