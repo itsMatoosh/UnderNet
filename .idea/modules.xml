@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/UnderNet.iml" filepath="$PROJECT_DIR$/UnderNet.iml" />
       <module fileurl="file://$PROJECT_DIR$/undernet-android/undernet-android.iml" filepath="$PROJECT_DIR$/undernet-android/undernet-android.iml" />
       <module fileurl="file://$PROJECT_DIR$/undernet-core/undernet-core.iml" filepath="$PROJECT_DIR$/undernet-core/undernet-core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/undernet-standalone/undernet-standalone.iml" filepath="$PROJECT_DIR$/undernet-standalone/undernet-standalone.iml" />
     </modules>
   </component>
 </project>

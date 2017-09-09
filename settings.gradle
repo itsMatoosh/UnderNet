@@ -1,1 +1,1 @@
-include ':undernet-android', ':undernet-core'
+include ':undernet-android', ':undernet-core', ':undernet-standalone'

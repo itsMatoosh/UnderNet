@@ -1,0 +1,20 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+mainClassName = 'me.matoosh.undernet.standalone.UnderNetStandalone'
+
+dependencies {
+    compile fileTree(dir: 'bins', include: ['*.jar'])
+}
+
+jar {
+    manifest {
+        attributes(
+                'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+                'Main-Class': 'me.matoosh.undernet.standalone.UnderNetStandalone'
+        )
+    }
+}
+
+sourceCompatibility = "1.7"
+targetCompatibility = "1.7"
