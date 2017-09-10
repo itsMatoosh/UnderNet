@@ -14,6 +14,12 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 import me.matoosh.undernet.UnderNet;
+import me.matoosh.undernet.event.EventManager;
+import me.matoosh.undernet.event.cache.NodeCacheAddedEvent;
+import me.matoosh.undernet.event.cache.NodeCacheClearEvent;
+import me.matoosh.undernet.event.cache.NodeCacheLoadEvent;
+import me.matoosh.undernet.event.cache.NodeCacheRemovedEvent;
+import me.matoosh.undernet.event.cache.NodeCacheSaveEvent;
 import me.matoosh.undernet.p2p.node.Node;
 
 /**
@@ -77,10 +83,10 @@ public class NodeCache {
      * Adds a node to the node cache.
      * @param node
      */
-    public static void addNode(me.matoosh.undernet.p2p.node.Node node) {
+    public static void addNode(Node node) {
         cachedNodes.add(node);
         save();
-        logger.info("Added node " + node.address + " to cache");
+        EventManager.callEvent(new NodeCacheAddedEvent(node));
     }
 
     /**
@@ -90,7 +96,7 @@ public class NodeCache {
     public static void removeNode(Node node) {
         cachedNodes.remove(node);
         save();
-        logger.info("Removed node " + node.address + " from cache");
+        EventManager.callEvent(new NodeCacheRemovedEvent(node));
     }
 
     /**
@@ -107,6 +113,7 @@ public class NodeCache {
             cachedNodes = (ArrayList<Node>) in.readObject();
             in.close();
             fileIn.close();
+            EventManager.callEvent(new NodeCacheLoadEvent());
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (FileNotFoundException e) {
@@ -135,6 +142,7 @@ public class NodeCache {
             out.writeObject(cachedNodes);
             out.close();
             fileOut.close();
+            EventManager.callEvent(new NodeCacheSaveEvent());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -146,8 +154,8 @@ public class NodeCache {
      * Clears the node cache.
      */
     public static void clear() {
-        logger.info("Clearing the node cache...");
         cachedNodes.clear();
         save();
+        EventManager.callEvent(new NodeCacheClearEvent());
     }
 }
