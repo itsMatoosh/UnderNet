@@ -1,5 +1,8 @@
 package me.matoosh.undernet.p2p.cache;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,9 +23,14 @@ import me.matoosh.undernet.p2p.node.Node;
 
 public class NodeCache {
     /**
-     * All the loaded cached nodes.
+     * All the loaded cached entry nodes.
      */
     public static ArrayList<Node> cachedNodes;
+
+    /**
+     * The logger of the class.
+     */
+    public static Logger logger = LoggerFactory.getLogger(NodeCache.class);
 
     /**
      * Returns a specific number of the most reliable nodes.
@@ -72,7 +80,17 @@ public class NodeCache {
     public static void addNode(me.matoosh.undernet.p2p.node.Node node) {
         cachedNodes.add(node);
         save();
-        UnderNet.logger.info("Added node " + node.address + " to cache");
+        logger.info("Added node " + node.address + " to cache");
+    }
+
+    /**
+     * Removes a node from the cache.
+     * @param node
+     */
+    public static void removeNode(Node node) {
+        cachedNodes.remove(node);
+        save();
+        logger.info("Removed node " + node.address + " from cache");
     }
 
     /**
@@ -81,18 +99,18 @@ public class NodeCache {
     public static void load() {
         //Checking whether the file exists.
         File nodesCacheFile = new File(UnderNet.fileManager.getAppFolder() + "/known.nodes");
+        logger.info("Loading the node cache from: " + nodesCacheFile);
         try {
-            UnderNet.logger.info("Loading the node cache from: " + nodesCacheFile.toString());
+            logger.info("Loading the node cache from: " + nodesCacheFile.toString());
             FileInputStream fileIn = new FileInputStream(nodesCacheFile);
             ObjectInputStream in = new ObjectInputStream(fileIn);
             cachedNodes = (ArrayList<Node>) in.readObject();
-            //Log.i("palval", "dir.exists()");
             in.close();
             fileIn.close();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (FileNotFoundException e) {
-            UnderNet.logger.warn("Node cache file not found, creating a new one...");
+            logger.warn("Node cache file not found, creating a new one...");
             try {
                 cachedNodes = new ArrayList<Node>();
                 nodesCacheFile.createNewFile();
@@ -112,6 +130,7 @@ public class NodeCache {
     public static void save() {
         try {
             FileOutputStream fileOut = new FileOutputStream(UnderNet.fileManager.getAppFolder() + "/known.nodes");
+            logger.info("Saving the node cache to: " + UnderNet.fileManager.getAppFolder() + "/known.nodes");
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
             out.writeObject(cachedNodes);
             out.close();
@@ -127,6 +146,7 @@ public class NodeCache {
      * Clears the node cache.
      */
     public static void clear() {
+        logger.info("Clearing the node cache...");
         cachedNodes.clear();
         save();
     }
