@@ -6,5 +6,5 @@ package me.matoosh.undernet.p2p.router.connection;
  */
 
 public enum ConnectionThreadType {
-    SEND, RECEIVE
+    SEND, RECEIVE, ESTABLISH
 }

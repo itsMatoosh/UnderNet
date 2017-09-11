@@ -1,6 +1,7 @@
 package me.matoosh.undernet.p2p.router.connection;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -31,53 +32,22 @@ public class NetworkConnection extends Connection {
     /**
      * The logger of the class.
      */
-    public Logger logger;
+    public Logger logger = LoggerFactory.getLogger(NetworkConnection.class);
 
     /**
      * Called when the connecton is being established.
      */
     @Override
     protected void onEstablishingConnection() {
-        //Starting the connection thread.
+        //Setting the sending thread.
         sendingThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                //Connecting to the node.
-                try {
-                    UnderNet.logger.info("Connecting to: " + other.address);
-                    connectionSocket.connect(new InetSocketAddress(other.address, new Random().nextInt(49151)));
-                } catch (Exception e) {
-                    //ConnectionErrorEvent
-                    onConnectionError((ConnectionException)e);
-                }
-                try {
-                    UnderNet.logger.info("Connected to: " + other.address);
-                    inputStream = connectionSocket.getInputStream();
-                    outputStream = connectionSocket.getOutputStream();
-                }
-                catch (IOException e) {
-                    e.printStackTrace();
-                    onConnectionError(new ConnectionIOException(NetworkConnection.this, ConnectionThreadType.SEND));
-                }
-
-                //Initiating connection.
-                try {
-                    handshake();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    onConnectionError(new ConnectionHandshakeException(NetworkConnection.this, ConnectionThreadType.SEND));
-                } catch (ConnectionHandshakeException e) {
-                    e.printStackTrace();
-                    onConnectionError(e);
-                }
-
-                //Calling the connection established event.
-                EventManager.callEvent(new ConnectionEstablishedEvent(NetworkConnection.this, other));
-
                 //Starting the connection session.
                 startSendLoop();
             }
         });
+        //Setting the receiving thread.
         receivingThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -86,8 +56,53 @@ public class NetworkConnection extends Connection {
             }
         });
 
-        sendingThread.start();
-        receivingThread.start();
+        //Setting the connection establishing thread.
+        Thread establishThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                //Connecting to the node.
+                try {
+                    logger.info("Connecting to: " + other.address);
+                    connectionSocket = new Socket();
+                    connectionSocket.connect(new InetSocketAddress(other.address, new Random().nextInt(49151)));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    onConnectionError(new ConnectionIOException(NetworkConnection.this, ConnectionThreadType.ESTABLISH));
+                    return;
+                }
+                try {
+                    logger.info("Connected to: " + other.address);
+                    inputStream = connectionSocket.getInputStream();
+                    outputStream = connectionSocket.getOutputStream();
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                    onConnectionError(new ConnectionIOException(NetworkConnection.this, ConnectionThreadType.ESTABLISH));
+                    return;
+                }
+
+                //Initiating connection.
+                try {
+                    handshake();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    onConnectionError(new ConnectionHandshakeException(NetworkConnection.this, ConnectionThreadType.ESTABLISH));
+                    return;
+                } catch (ConnectionHandshakeException e) {
+                    e.printStackTrace();
+                    onConnectionError(e);
+                    return;
+                }
+
+                //Calling the connection established event.
+                EventManager.callEvent(new ConnectionEstablishedEvent(NetworkConnection.this, other));
+
+                //Starting the sending and receiving threads.
+                sendingThread.start();
+                receivingThread.start();
+            }
+        });
+        establishThread.start();
     }
 
     /**
@@ -101,9 +116,10 @@ public class NetworkConnection extends Connection {
             connectionSocket = server.networkListener.listenSocket.accept();
             other.setAddress(connectionSocket.getInetAddress());
             EventManager.callEvent(new ConnectionAcceptedEvent(this));
-        } catch (Exception e) {
-            //ConnectionErrorEvent
-            onConnectionError((ConnectionException)e);
+        } catch (IOException e) {
+            e.printStackTrace();
+            onConnectionError(new ConnectionIOException(this, ConnectionThreadType.ESTABLISH));
+            return;
         }
         try {
             inputStream = connectionSocket.getInputStream();
@@ -111,7 +127,8 @@ public class NetworkConnection extends Connection {
         }
         catch (IOException e) {
             e.printStackTrace();
-            onConnectionError(new ConnectionIOException(this, ConnectionThreadType.SEND));
+            onConnectionError(new ConnectionIOException(this, ConnectionThreadType.ESTABLISH));
+            return;
         }
 
         //Handshake.
@@ -120,10 +137,12 @@ public class NetworkConnection extends Connection {
             handshake();
         } catch (IOException e) {
             e.printStackTrace();
-            onConnectionError(new ConnectionHandshakeException(this, ConnectionThreadType.SEND));
+            onConnectionError(new ConnectionHandshakeException(this, ConnectionThreadType.ESTABLISH));
+            return;
         } catch (ConnectionHandshakeException e) {
             e.printStackTrace();
             onConnectionError(e);
+            return;
         }
 
         //Calling the connection established event.
@@ -173,7 +192,7 @@ public class NetworkConnection extends Connection {
      */
     @Override
     public void onConnectionError(ConnectionException e) {
-        logger.error("An error occured with the connection: " + e.getMessage());
+        logger.error("An error occured with the connection: " + e.connection.id + " on thread " + e.connectionThreadType);
         //TODO: Recovery procedure.
     }
 

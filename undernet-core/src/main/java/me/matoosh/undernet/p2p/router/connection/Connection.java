@@ -103,8 +103,12 @@ public abstract class Connection {
 
         EventManager.callEvent(new ConnectionDroppedEvent(this, other));
         try {
-            inputStream.close();
-            outputStream.close();
+            if(inputStream != null) {
+                inputStream.close();
+            }
+            if(outputStream != null) {
+                outputStream.close();
+            }
             inputStream = null;
             outputStream = null;
         } catch (IOException e) {

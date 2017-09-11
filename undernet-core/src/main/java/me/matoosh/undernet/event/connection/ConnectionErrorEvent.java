@@ -34,9 +34,9 @@ public class ConnectionErrorEvent extends ConnectionEvent {
     public void onCalled() {
         //Debugging
         if(connection.other.getClass() == KnownNode.class){
-            UnderNet.logger.error("Error while connecting to node: " + ((KnownNode) connection.other).username + " - " + connection.other.address + " over the network.");
+            UnderNet.logger.error("Error while connecting to node: " + ((KnownNode) connection.other).username + " - " + connection.other.address);
         } else {
-            UnderNet.logger.error("Error while connecting to node: " + connection.other.address + " by Internet.");
+            UnderNet.logger.error("Error while connecting to node: " + connection.other.address);
         }
         exception.printStackTrace();
         if(exception.getMessage() != null) {

@@ -5,20 +5,14 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 
-import me.matoosh.undernet.event.Event;
-import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.client.ClientErrorEvent;
 import me.matoosh.undernet.event.client.ClientStatusEvent;
-import me.matoosh.undernet.event.connection.ConnectionErrorEvent;
 import me.matoosh.undernet.p2p.cache.NodeCache;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
 import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.connection.Connection;
-import me.matoosh.undernet.p2p.router.connection.ConnectionNotAvailableException;
-import me.matoosh.undernet.p2p.router.connection.ConnectionSide;
-import me.matoosh.undernet.p2p.router.connection.DirectConnection;
 import me.matoosh.undernet.p2p.router.connection.NetworkConnection;
 
 /**
@@ -73,7 +67,7 @@ public class Client {
     public void connect(Node node) {
         logger.info("Connecting to node: " + node.address);
 
-        EventManager.registerHandler(new EventHandler() {
+       /* EventManager.registerHandler(new EventHandler() {
             @Override
             public void onEventCalled(Event e) {
                 ConnectionErrorEvent errorEvent = (ConnectionErrorEvent)e;
@@ -82,10 +76,13 @@ public class Client {
                     new NetworkConnection().establish(Client.this, errorEvent.connection.other);
                 }
             }
-        }, ConnectionErrorEvent.class);
+        }, ConnectionErrorEvent.class);*/
         //Establishing a new connection. If this connection fails, another way of connecting will be used.
         //TODO: Make smarter connection choices to reduce connection time.
-        new DirectConnection().establish(this, node);
+        //new DirectConnection().establish(this, node);
+
+        //Establishing the network connection.
+        new NetworkConnection().establish(Client.this, node);
     }
 
     /**
