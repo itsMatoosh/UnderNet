@@ -102,8 +102,8 @@ public class Client {
      */
     public void disconnectAll() {
         //Dropping all the serverConnections.
-        for (Connection c:
-             router.connections) {
+        for (int i = 0; i < router.connections.size(); i++) {
+            Connection c = router.connections.get(i);
             if(c.client == this) {
                 c.drop();
             }

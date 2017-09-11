@@ -1,6 +1,7 @@
 package me.matoosh.undernet.event.connection;
 
 import me.matoosh.undernet.p2p.node.Node;
+import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.connection.Connection;
 
 /**
@@ -29,6 +30,6 @@ public class ConnectionDroppedEvent extends ConnectionEvent {
      */
     @Override
     public void onCalled() {
-        connection.onConnectionDropped();
+        Router.logger.info(connection.side + " connection id: " + connection.id + " has been dropped");
     }
 }

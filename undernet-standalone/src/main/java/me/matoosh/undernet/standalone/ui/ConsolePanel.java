@@ -1,7 +1,6 @@
 package me.matoosh.undernet.standalone.ui;
 
 import java.awt.BorderLayout;
-import java.io.PrintStream;
 
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
@@ -22,6 +21,6 @@ public class ConsolePanel extends JPanel {
         add(BorderLayout.CENTER, consoleTextArea);
 
         //Attaching console to the output.
-        System.setOut(new PrintStream(textAreaOutputStream));
+        //System.(new PrintStream(textAreaOutputStream));
     }
 }

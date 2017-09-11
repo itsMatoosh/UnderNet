@@ -67,9 +67,14 @@ public class NetworkListener extends NodeListener {
      */
     @Override
     public void stop() {
-        /**
-         * Interrupting the thread.
-         */
+        //Interrupting the thread.
         listenThread.interrupt();
+        //Closing the server socket.
+        try {
+            listenSocket.close();
+            listenSocket = null;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

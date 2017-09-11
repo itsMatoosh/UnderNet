@@ -130,15 +130,15 @@ public class Router extends EventHandler {
         //Setting the status to stopping.
         EventManager.callEvent(new RouterStatusEvent(this, InterfaceStatus.STOPPING));
 
-        //Stops the server.
-        if(server != null) {
-            server.stop();
-            server = null;
-        }
         //Stops the client.
         if(client != null) {
             client.stop();
             client = null;
+        }
+        //Stops the server.
+        if(server != null) {
+            server.stop();
+            server = null;
         }
 
         //Setting the status to stopped.

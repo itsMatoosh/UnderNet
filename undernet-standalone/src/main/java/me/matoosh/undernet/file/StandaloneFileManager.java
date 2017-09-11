@@ -1,8 +1,6 @@
-package me.matoosh.undernet.standalone.file;
+package me.matoosh.undernet.file;
 
 import java.io.File;
-
-import me.matoosh.undernet.file.FileManager;
 
 /**
  * File manager for the standalone version.

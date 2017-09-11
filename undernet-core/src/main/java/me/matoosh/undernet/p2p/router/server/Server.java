@@ -44,8 +44,6 @@ public class Server
      */
     public Server(Router router) {
         this.router = router;
-        this.networkListener = new NetworkListener(this);
-        this.directListener = new DirectListener();
     }
 
     /**
@@ -67,9 +65,15 @@ public class Server
         EventManager.callEvent(new ServerStatusEvent(Server.this, ServerStatus.STARTING));
 
         //Listening for network connections.
+        if(networkListener == null) {
+            this.networkListener = new NetworkListener(this);
+        }
         networkListener.start();
 
         //Listening for direct connections.
+        if(this.directListener == null) {
+            this.directListener = new DirectListener();
+        }
         directListener.start();
     }
 
@@ -84,12 +88,16 @@ public class Server
         directListener.stop();
 
         //Disconnecting the clients.
-        for (Connection c:
-             router.connections) {
+        for (int i = 0; i < router.connections.size(); i++) {
+            Connection c = router.connections.get(i);
             if(c.server == this) {
                 c.drop();
             }
         }
+
+        //Disposing listeners.
+        networkListener = null;
+        directListener = null;
     }
 
     /**

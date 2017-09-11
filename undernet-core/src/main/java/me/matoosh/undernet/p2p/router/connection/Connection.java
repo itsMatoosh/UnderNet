@@ -8,6 +8,7 @@ import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.connection.ConnectionDroppedEvent;
 import me.matoosh.undernet.event.connection.ConnectionErrorEvent;
 import me.matoosh.undernet.p2p.node.Node;
+import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.client.Client;
 import me.matoosh.undernet.p2p.router.server.Server;
 
@@ -49,6 +50,10 @@ public abstract class Connection {
      * The id of this connection.
      */
     public int id;
+    /**
+     * Whether the connection is active.
+     */
+    public boolean active = true;
 
     /**
      * Input stream of this connection.
@@ -94,26 +99,15 @@ public abstract class Connection {
      * Interrupts the connection loop thread.
      */
     public void drop() {
-        if(sendingThread != null && sendingThread.isAlive()) {
-            sendingThread.interrupt();
-        }
-        if(receivingThread != null && receivingThread.isAlive()) {
-            receivingThread.interrupt();
-        }
+        Router.logger.info("Dropping " + side + " connection. ID: " + id);
+
+        //Interrupting the connection threads.
+        active = false;
+
+        //Running the connection drop logic.
+        onConnectionDropped();
 
         EventManager.callEvent(new ConnectionDroppedEvent(this, other));
-        try {
-            if(inputStream != null) {
-                inputStream.close();
-            }
-            if(outputStream != null) {
-                outputStream.close();
-            }
-            inputStream = null;
-            outputStream = null;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -139,13 +133,20 @@ public abstract class Connection {
      */
     protected void startReceiveLoop() {
         //Starting the connection session.
-        while (!receivingThread.isInterrupted()) {
+        Router.logger.debug("Receive loop started side: " + side);
+        while (active) {
             try {
                 receive();
             } catch (ConnectionSessionException e) {
                 EventManager.callEvent(new ConnectionErrorEvent(this, e));
             }
         }
+        try {
+            inputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Router.logger.debug("Receive loop exited side: " + side);
     }
 
     /**
@@ -153,17 +154,26 @@ public abstract class Connection {
      */
     protected void startSendLoop() {
         //Starting the connection session.
-        while (!sendingThread.isInterrupted()) {
+        Router.logger.debug("Send loop started side: " + side);
+        while (active) {
             try {
+                //Router.logger.info("Send loop");
                 send();
             } catch (ConnectionSessionException e) {
                 EventManager.callEvent(new ConnectionErrorEvent(this, e));
             }
         }
+        try {
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Router.logger.debug("Send loop exited side: " + side);
     }
 
     /**
      * Receiving logic.
+     * @throws ConnectionSessionException
      */
     protected abstract void receive() throws ConnectionSessionException;
 

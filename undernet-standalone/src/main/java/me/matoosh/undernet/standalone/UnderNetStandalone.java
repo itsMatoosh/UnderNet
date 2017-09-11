@@ -3,7 +3,7 @@ package me.matoosh.undernet.standalone;
 import java.awt.EventQueue;
 
 import me.matoosh.undernet.UnderNet;
-import me.matoosh.undernet.standalone.file.StandaloneFileManager;
+import me.matoosh.undernet.file.StandaloneFileManager;
 import me.matoosh.undernet.standalone.ui.AppFrame;
 
 /**

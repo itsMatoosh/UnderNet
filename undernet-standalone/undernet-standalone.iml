@@ -28,10 +28,11 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="undernet-core" exported="" />
-    <orderEntry type="library" exported="" name="slf4j-simple-1.8.0-alpha2" level="project" />
+    <orderEntry type="library" exported="" name="logback-core-1.2.3" level="project" />
+    <orderEntry type="library" exported="" name="logback-classic-1.2.3" level="project" />
     <orderEntry type="library" exported="" name="jcabi-aspects-0.22.5" level="project" />
-    <orderEntry type="library" exported="" name="slf4j-android-1.7.25" level="project" />
-    <orderEntry type="library" exported="" name="slf4j-api-1.8.0-alpha2" level="project" />
+    <orderEntry type="library" exported="" name="slf4j-api-1.7.25" level="project" />
+    <orderEntry type="library" exported="" name="slf4j-ext-1.7.25" level="project" />
     <orderEntry type="library" exported="" name="jcabi-log-0.17" level="project" />
     <orderEntry type="library" exported="" name="aspectjrt-1.8.7" level="project" />
     <orderEntry type="library" exported="" name="validation-api-1.1.0.Final" level="project" />

@@ -29,7 +29,7 @@ public class EventManager {
             logger.debug("Registered event type " + eventType.toString());
             eventHandlers.put(eventType, new ArrayList<EventHandler>());
         } else {
-            logger.warn("Event type " + eventType.toString() + " already registered!");
+            logger.debug("Event type " + eventType.toString() + " already registered!");
         }
     }
 

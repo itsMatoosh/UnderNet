@@ -3,9 +3,11 @@ package me.matoosh.undernet.p2p.router.connection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventManager;
@@ -28,6 +30,11 @@ public class NetworkConnection extends Connection {
      * Used only in client mode.
      */
     public Socket connectionSocket;
+    /**
+     * The remote socket.
+     * Used only in server mode.
+     */
+    public Socket clientSocket;
     /**
      * The logger of the class.
      */
@@ -71,6 +78,7 @@ public class NetworkConnection extends Connection {
                 }
                 try {
                     logger.info("Connected to: " + other.address);
+                    connectionSocket.setSoTimeout(2000);
                     inputStream = connectionSocket.getInputStream();
                     outputStream = connectionSocket.getOutputStream();
                 }
@@ -97,7 +105,7 @@ public class NetworkConnection extends Connection {
                 EventManager.callEvent(new ConnectionEstablishedEvent(NetworkConnection.this, other));
 
                 //Starting the sending and receiving threads.
-                sendingThread.start();
+                //sendingThread.start();
                 receivingThread.start();
             }
         });
@@ -112,8 +120,8 @@ public class NetworkConnection extends Connection {
         //Accepting the server connection.
         try {
             UnderNet.logger.info("Listening for connections on: " + server.networkListener.port);
-            connectionSocket = server.networkListener.listenSocket.accept();
-            other.setAddress(connectionSocket.getInetAddress());
+            clientSocket = server.networkListener.listenSocket.accept();
+            other.setAddress(clientSocket.getInetAddress());
             EventManager.callEvent(new ConnectionAcceptedEvent(this));
         } catch (IOException e) {
             e.printStackTrace();
@@ -121,8 +129,9 @@ public class NetworkConnection extends Connection {
             return;
         }
         try {
-            inputStream = connectionSocket.getInputStream();
-            outputStream = connectionSocket.getOutputStream();
+            clientSocket.setSoTimeout(2000);
+            inputStream = clientSocket.getInputStream();
+            outputStream = clientSocket.getOutputStream();
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -163,7 +172,7 @@ public class NetworkConnection extends Connection {
 
         //Starting the session.
         receivingThread.run();
-        sendingThread.run();
+        //sendingThread.run();
     }
 
     /**
@@ -201,10 +210,21 @@ public class NetworkConnection extends Connection {
     @Override
     public void onConnectionDropped() {
         //Closing the socket.
-        try {
-            connectionSocket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        switch (side) {
+            case CLIENT:
+                try {
+                    connectionSocket.shutdownInput();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+            case SERVER:
+                try {
+                    clientSocket.shutdownInput();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
         }
     }
 
@@ -213,12 +233,29 @@ public class NetworkConnection extends Connection {
      */
     @Override
     protected void receive() throws ConnectionSessionException {
+        int messageId = -2;
+
         try {
-            //Reads the next message ID from the stream.
-            int messageId = inputStream.read();
-            int messageLenght = inputStream.read();
-            byte[] messagePayload = new byte[messageLenght];
-            inputStream.read(messagePayload, 0, messageLenght);
+            //Reading the message Id from the stream.
+            logger.info("Waiting for input... side: " + side);
+            messageId = inputStream.read();
+        } catch (SocketTimeoutException timeout) {
+            return;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+        try {
+            //Reads the message length from the stream.
+            int messageLength = inputStream.read();
+            if (messageLength <= 0) {
+                logger.info("EOS: " + messageLength + "::" + receivingThread.isInterrupted());
+                clientSocket.close();
+                receivingThread.interrupt();
+                return;
+            }
+            byte[] messagePayload = new byte[messageLength];
+            inputStream.read(messagePayload, 0, messageLength);
 
             //Checking if the received byte is a message.
             if(messageId > 0) {
@@ -232,6 +269,8 @@ public class NetworkConnection extends Connection {
                 //Byte stream
                 EventManager.callEvent(new ConnectionBytestreamReceivedEvent(this, messagePayload));
             }
+        } catch(EOFException eofException){
+            eofException.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -28,10 +28,10 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="jcabi-aspects-0.22.5" level="project" />
-    <orderEntry type="library" exported="" name="slf4j-android-1.7.25" level="project" />
+    <orderEntry type="library" exported="" name="slf4j-api-1.7.25" level="project" />
+    <orderEntry type="library" exported="" name="slf4j-ext-1.7.25" level="project" />
     <orderEntry type="library" exported="" name="jcabi-log-0.17" level="project" />
     <orderEntry type="library" exported="" name="aspectjrt-1.8.7" level="project" />
     <orderEntry type="library" exported="" name="validation-api-1.1.0.Final" level="project" />
-    <orderEntry type="library" exported="" name="slf4j-api-1.7.25" level="project" />
   </component>
 </module>

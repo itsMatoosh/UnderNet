@@ -139,12 +139,16 @@ public class AppFrame extends JFrame {
                 switch(statusEvent.newStatus) {
                     case STOPPED:
                         connectButton.setText("Connect");
-                        connectButton.removeActionListener(disconnectActionListener);
+                        for( ActionListener al : connectButton.getActionListeners() ) {
+                            connectButton.removeActionListener( al );
+                        }
                         connectButton.addActionListener(connectActionListener);
                         break;
                     default:
                         connectButton.setText("Disconnect");
-                        connectButton.removeActionListener(connectActionListener);
+                        for( ActionListener al : connectButton.getActionListeners() ) {
+                            connectButton.removeActionListener( al );
+                        }
                         connectButton.addActionListener(disconnectActionListener);
                         break;
                 }

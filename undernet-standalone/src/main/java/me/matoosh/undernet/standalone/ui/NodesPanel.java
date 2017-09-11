@@ -21,6 +21,7 @@ import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.cache.NodeCacheAddedEvent;
 import me.matoosh.undernet.event.cache.NodeCacheRemovedEvent;
+import me.matoosh.undernet.event.connection.ConnectionDroppedEvent;
 import me.matoosh.undernet.event.connection.ConnectionEstablishedEvent;
 import me.matoosh.undernet.p2p.cache.NodeCache;
 import me.matoosh.undernet.p2p.node.Node;
@@ -113,6 +114,13 @@ public class NodesPanel extends JPanel {
                 refreshNodesList();
             }
         }, ConnectionEstablishedEvent.class);
+        EventManager.registerHandler(new EventHandler() {
+            @Override
+            public void onEventCalled(Event e) {
+                //Called when a connection has been dropped.
+                refreshNodesList();
+            }
+        }, ConnectionDroppedEvent.class);
     }
 
     /**

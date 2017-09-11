@@ -8,7 +8,8 @@ repositories {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile project(path: ':undernet-core')
-    compile 'org.slf4j:slf4j-simple:1.8.0-alpha2'
+    compile 'ch.qos.logback:logback-core:1.2.3'
+    compile 'ch.qos.logback:logback-classic:1.2.3'
 }
 
 distZip.shouldRunAfter(build)

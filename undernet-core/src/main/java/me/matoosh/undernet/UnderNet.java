@@ -67,6 +67,8 @@ public class UnderNet
      * Disconnects from the network.
      */
     public static void disconnect() {
+        //Disconnecting from the network.
+        logger.info("Disconnecting from UnderNet...");
         Node.self.router.stop();
     }
 
