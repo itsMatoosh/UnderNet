@@ -1,7 +1,6 @@
 package me.matoosh.undernet.standalone.ui;
 
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -9,6 +8,7 @@ import java.util.ArrayList;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -22,6 +22,7 @@ import me.matoosh.undernet.event.cache.NodeCacheAddedEvent;
 import me.matoosh.undernet.event.cache.NodeCacheRemovedEvent;
 import me.matoosh.undernet.p2p.cache.NodeCache;
 import me.matoosh.undernet.p2p.node.Node;
+import me.matoosh.undernet.standalone.UnderNetStandalone;
 import me.matoosh.undernet.standalone.ui.dialog.AddNodeCacheFrame;
 
 /**
@@ -33,7 +34,7 @@ public class NodesPanel extends JPanel {
     /**
      * The list of nodes.
      */
-    JList nodesList;
+    private JList nodesList;
 
     public NodesPanel() {
         //Setting to gridbaglayout.
@@ -59,13 +60,7 @@ public class NodesPanel extends JPanel {
         addButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                //The add button was pressed.
-                EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        new AddNodeCacheFrame();
-                    }
-                });
+                openNodeAddDialog();
             }
         });
         buttonsDrawer.add(addButton);
@@ -106,5 +101,14 @@ public class NodesPanel extends JPanel {
         }
 
         nodesList.setListData(nodes.toArray());
+    }
+
+    /**
+     * Opens the add node dialog.
+     */
+    public void openNodeAddDialog() {
+        //The add button was pressed.
+        JDialog nodeAddDialog = new AddNodeCacheFrame(UnderNetStandalone.mainAppFrame);
+        nodeAddDialog.setVisible(true);
     }
 }

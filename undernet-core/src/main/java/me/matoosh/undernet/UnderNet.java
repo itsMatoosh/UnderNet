@@ -18,6 +18,10 @@ public class UnderNet
      */
     public static Logger logger = LoggerFactory.getLogger("undernet.core");
     /**
+     * The silent logger.
+     */
+    private static Logger silentLogger = LoggerFactory.getLogger("");
+    /**
      * File manager of the current platform.
      */
     public static FileManager fileManager;
@@ -26,10 +30,14 @@ public class UnderNet
      * Sets up UnderNet.
      */
     public static void setup(FileManager fileManager) {
+        //Writing the init message.
+        writeInitMessage();
+
         //Setting the file manager.
         UnderNet.fileManager = fileManager;
 
         //Loading up the node cache.
+        NodeCache.registerEvents();
         NodeCache.load();
 
         //Setting up the self node.
@@ -55,5 +63,30 @@ public class UnderNet
      */
     public static void disconnect() {
         Node.self.router.stop();
+    }
+
+    /// <summary>
+    /// Writes the initial message to the console.
+    /// </summary>
+    private static void writeInitMessage()
+    {
+        silentLogger.info("   xx                 xx  ");
+        silentLogger.info("   x:x               x:x  ");
+        silentLogger.info("   x::x             x::x  ");
+        silentLogger.info("   x:::x           x:::x  ");
+        silentLogger.info("   x::::x         x::::x  ");
+        silentLogger.info("   x:::::x Under x:::::x  ");
+        silentLogger.info("   x:::::x  Net  x:::::x  ");
+        silentLogger.info("   x:::::x       x:::::x  ");
+        silentLogger.info("   x:::::x       x:::::x  ");
+        silentLogger.info("    x:::::x     x:::::x   ");
+        silentLogger.info("     x:::::x   x:::::x    ");
+        silentLogger.info("      x::::::::::::x      ");
+        silentLogger.info("         xxxxxxxxx        ");
+
+        silentLogger.info("");
+        silentLogger.info(" Copyright Mateusz Rebacz");
+        silentLogger.info("");
+        silentLogger.info("");
     }
 }

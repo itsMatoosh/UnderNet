@@ -12,6 +12,11 @@ import me.matoosh.undernet.standalone.ui.AppFrame;
  */
 
 public class UnderNetStandalone {
+    /**
+     * The main frame of the app.
+     */
+    public static AppFrame mainAppFrame;
+
     public static void main (String[] args) {
         //Setting up UnderNet.
         UnderNet.setup(new StandaloneFileManager());
@@ -20,7 +25,8 @@ public class UnderNetStandalone {
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new AppFrame();
+                mainAppFrame = new AppFrame();
+                mainAppFrame.setVisible(true);
             }
         });
     }

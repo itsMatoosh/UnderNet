@@ -100,12 +100,22 @@ public class NodeCache {
     }
 
     /**
+     * Registering the node cache events.
+     */
+    public static void registerEvents() {
+        EventManager.registerEvent(NodeCacheAddedEvent.class);
+        EventManager.registerEvent(NodeCacheRemovedEvent.class);
+        EventManager.registerEvent(NodeCacheLoadEvent.class);
+        EventManager.registerEvent(NodeCacheSaveEvent.class);
+        EventManager.registerEvent(NodeCacheClearEvent.class);
+    }
+    /**
      * Loading the node cache from disk.
      */
     public static void load() {
         //Checking whether the file exists.
         File nodesCacheFile = new File(UnderNet.fileManager.getAppFolder() + "/known.nodes");
-        logger.info("Loading the node cache from: " + nodesCacheFile);
+        logger.info("Loading the node cache from: " + nodesCacheFile.getAbsolutePath());
         try {
             logger.info("Loading the node cache from: " + nodesCacheFile.toString());
             FileInputStream fileIn = new FileInputStream(nodesCacheFile);
@@ -136,8 +146,9 @@ public class NodeCache {
      */
     public static void save() {
         try {
-            FileOutputStream fileOut = new FileOutputStream(UnderNet.fileManager.getAppFolder() + "/known.nodes");
-            logger.info("Saving the node cache to: " + UnderNet.fileManager.getAppFolder() + "/known.nodes");
+            File saveFile = new File(UnderNet.fileManager.getAppFolder() + "/known.nodes");
+            FileOutputStream fileOut = new FileOutputStream(saveFile);
+            logger.info("Saving the node cache to: " + saveFile.getAbsolutePath());
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
             out.writeObject(cachedNodes);
             out.close();
