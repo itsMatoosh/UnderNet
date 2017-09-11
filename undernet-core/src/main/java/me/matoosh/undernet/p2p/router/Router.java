@@ -109,6 +109,9 @@ public class Router extends EventHandler {
 
         //Starting the client.
         client.start();
+
+        //Setting the status to started.
+        EventManager.callEvent(new RouterStatusEvent(this,  InterfaceStatus.STARTED));
     }
 
     /**
@@ -121,12 +124,22 @@ public class Router extends EventHandler {
             return;
         }
 
+        //Setting the status to stopping.
+        EventManager.callEvent(new RouterStatusEvent(this, InterfaceStatus.STOPPING));
+
         //Stops the server.
-        server.stop();
-        server = null;
+        if(server != null) {
+            server.stop();
+            server = null;
+        }
         //Stops the client.
-        client.stop();
-        client = null;
+        if(client != null) {
+            client.stop();
+            client = null;
+        }
+
+        //Setting the status to stopped.
+        EventManager.callEvent(new RouterStatusEvent(this, InterfaceStatus.STOPPED));
     }
 
     /**

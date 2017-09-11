@@ -15,13 +15,16 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 
+import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.cache.NodeCacheAddedEvent;
 import me.matoosh.undernet.event.cache.NodeCacheRemovedEvent;
+import me.matoosh.undernet.event.connection.ConnectionEstablishedEvent;
 import me.matoosh.undernet.p2p.cache.NodeCache;
 import me.matoosh.undernet.p2p.node.Node;
+import me.matoosh.undernet.p2p.router.connection.Connection;
 import me.matoosh.undernet.standalone.UnderNetStandalone;
 import me.matoosh.undernet.standalone.ui.dialog.AddNodeCacheFrame;
 
@@ -65,7 +68,26 @@ public class NodesPanel extends JPanel {
         });
         buttonsDrawer.add(addButton);
         //Remove button
-        buttonsDrawer.add(new JButton("Remove"));
+        JButton removeButton = new JButton("Remove");
+        removeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                if(nodesList.getSelectedValue() == null) return;
+                String selected = (String) nodesList.getSelectedValue();
+                if(selected.equals("No nodes cached...") || selected.equals("Loading nodes...")) return;
+
+                try {
+                    for (Node n : NodeCache.cachedNodes) {
+                        if (n.toString().equals(selected)) {
+                            NodeCache.removeNode(n);
+                        }
+                    }
+                } catch (Exception e) {
+
+                }
+            }
+        });
+        buttonsDrawer.add(removeButton);
         add(buttonsDrawer);
 
         //Refreshing the nodes list.
@@ -84,6 +106,13 @@ public class NodesPanel extends JPanel {
                 refreshNodesList();
             }
         }, NodeCacheRemovedEvent.class);
+        EventManager.registerHandler(new EventHandler() {
+            @Override
+            public void onEventCalled(Event e) {
+                //Called when a connection has been established.
+                refreshNodesList();
+            }
+        }, ConnectionEstablishedEvent.class);
     }
 
     /**
@@ -93,7 +122,19 @@ public class NodesPanel extends JPanel {
         ArrayList<String> nodes = new ArrayList<String>();
 
         for(Node node : NodeCache.cachedNodes) {
-            nodes.add(node.toString());
+            //Whether we are currently connected to the node.
+            boolean connected = false;
+
+            for(Connection conn : UnderNet.router.connections) {
+                if(conn.other == node) {
+                    connected = true;
+                }
+            }
+            if(connected) {
+                nodes.add(node.toString() + " [connected]");
+            } else {
+                nodes.add(node.toString());
+            }
         }
 
         if(nodes.size() == 0) {

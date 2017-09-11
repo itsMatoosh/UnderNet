@@ -61,7 +61,9 @@ public class Server
      * @throws Exception
      */
     public void start() {
-        //Changine the server status to starting.
+        logger.info("Starting the server...");
+
+        //Changing the server status to starting.
         EventManager.callEvent(new ServerStatusEvent(Server.this, ServerStatus.STARTING));
 
         //Listening for network connections.
@@ -75,6 +77,8 @@ public class Server
      * Stops the server.
      */
     public void stop() {
+        logger.info("Stopping the server...");
+
         //Stopping the listeners.
         networkListener.stop();
         directListener.stop();

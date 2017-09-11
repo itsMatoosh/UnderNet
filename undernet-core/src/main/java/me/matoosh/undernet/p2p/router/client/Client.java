@@ -51,6 +51,8 @@ public class Client {
      * Starts the client and connects to cached nodes based on the settings.
      */
     public void start() {
+        logger.info("Starting the client...");
+
         //Attempting to connect to each of the 5 most reliable nodes.
         ArrayList<Node> nodesToConnectTo = NodeCache.getMostReliable(5, null);
         if(nodesToConnectTo == null) {
@@ -89,6 +91,8 @@ public class Client {
      * Stops the client.
      */
     public void stop() {
+        logger.info("Stopping the client...");
+
         //Disconnecting all.
         disconnectAll();
     }

@@ -17,6 +17,10 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
 import me.matoosh.undernet.UnderNet;
+import me.matoosh.undernet.event.Event;
+import me.matoosh.undernet.event.EventHandler;
+import me.matoosh.undernet.event.EventManager;
+import me.matoosh.undernet.event.router.RouterStatusEvent;
 
 /**
  * The main frame of the app.
@@ -113,13 +117,39 @@ public class AppFrame extends JFrame {
         add(nodesPanel, new GridBagConstraints(2, 0, 1, 1, 0.125, 1, GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
 
         //Connect button.
-        JButton connectButton = new JButton("Connect");
-        connectButton.addActionListener(new ActionListener() {
+        final JButton connectButton = new JButton("Connect");
+        final ActionListener connectActionListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 UnderNet.connect();
             }
-        });
+        };
+        final ActionListener disconnectActionListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                UnderNet.disconnect();
+            }
+        };
+        connectButton.addActionListener(connectActionListener);
+        EventManager.registerHandler(new EventHandler() {
+            @Override
+            public void onEventCalled(Event e) {
+                RouterStatusEvent statusEvent = (RouterStatusEvent)e;
+
+                switch(statusEvent.newStatus) {
+                    case STOPPED:
+                        connectButton.setText("Connect");
+                        connectButton.removeActionListener(disconnectActionListener);
+                        connectButton.addActionListener(connectActionListener);
+                        break;
+                    default:
+                        connectButton.setText("Disconnect");
+                        connectButton.removeActionListener(connectActionListener);
+                        connectButton.addActionListener(disconnectActionListener);
+                        break;
+                }
+            }
+        }, RouterStatusEvent.class);
 
         add(connectButton, new GridBagConstraints(0, 1, 3, 1, 1, 0.05, GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
 

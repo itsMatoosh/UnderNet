@@ -25,6 +25,10 @@ public class UnderNet
      * File manager of the current platform.
      */
     public static FileManager fileManager;
+    /**
+     * The currently used router.
+     */
+    public static Router router;
 
     /**
      * Sets up UnderNet.
@@ -44,7 +48,8 @@ public class UnderNet
         Node.self = new Node();
 
         //Setting up the router.
-        new Router().setup();
+        router = new Router();
+        router.setup();
     }
 
     /**
