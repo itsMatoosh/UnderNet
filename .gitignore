@@ -19,6 +19,7 @@ gen/
 # Ignore gradle files
 .gradle/
 build/
+progress/
 
 # Local configuration file (sdk path, etc)
 local.properties

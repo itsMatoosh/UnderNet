@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 
 import me.matoosh.undernet.event.EventManager;
+import me.matoosh.undernet.event.client.ClientConnectionEvent;
 import me.matoosh.undernet.event.client.ClientErrorEvent;
 import me.matoosh.undernet.event.client.ClientStatusEvent;
 import me.matoosh.undernet.p2p.cache.NodeCache;
@@ -113,6 +114,7 @@ public class Client {
      * Registers the client handlers.
      */
     private void registerEvents() {
+        EventManager.registerEvent(ClientConnectionEvent.class);
         EventManager.registerEvent(ClientStatusEvent.class);
         EventManager.registerEvent(ClientErrorEvent.class);
     }

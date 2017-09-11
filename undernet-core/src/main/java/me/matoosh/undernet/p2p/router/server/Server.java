@@ -96,6 +96,7 @@ public class Server
      * Registers the server events.
      */
     private void registerEvents() {
+        //Server events.
         EventManager.registerEvent(ServerStatusEvent.class);
         EventManager.registerEvent(ServerErrorEvent.class);
     }

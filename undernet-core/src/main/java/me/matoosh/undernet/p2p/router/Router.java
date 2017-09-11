@@ -8,9 +8,12 @@ import java.util.ArrayList;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
+import me.matoosh.undernet.event.connection.ConnectionAcceptedEvent;
 import me.matoosh.undernet.event.connection.ConnectionDroppedEvent;
 import me.matoosh.undernet.event.connection.ConnectionErrorEvent;
 import me.matoosh.undernet.event.connection.ConnectionEstablishedEvent;
+import me.matoosh.undernet.event.connection.bytestream.ConnectionBytestreamReceivedEvent;
+import me.matoosh.undernet.event.connection.message.ConnectionMessageReceivedEvent;
 import me.matoosh.undernet.event.router.RouterErrorEvent;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
 import me.matoosh.undernet.p2p.node.Node;
@@ -146,10 +149,19 @@ public class Router extends EventHandler {
      * Registers the router events.
      */
     private void registerEvents() {
+        //Router events
         EventManager.registerEvent(RouterStatusEvent.class);
+        EventManager.registerEvent(RouterErrorEvent.class);
+
+        //Connection events
         EventManager.registerEvent(ConnectionDroppedEvent.class);
         EventManager.registerEvent(ConnectionErrorEvent.class);
+        EventManager.registerEvent(ConnectionAcceptedEvent.class);
         EventManager.registerEvent(ConnectionEstablishedEvent.class);
+
+        //Message events
+        EventManager.registerEvent(ConnectionMessageReceivedEvent.class);
+        EventManager.registerEvent(ConnectionBytestreamReceivedEvent.class);
     }
 
     /**

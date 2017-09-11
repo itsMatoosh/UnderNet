@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.Random;
 
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventManager;
@@ -64,7 +63,7 @@ public class NetworkConnection extends Connection {
                 try {
                     logger.info("Connecting to: " + other.address);
                     connectionSocket = new Socket();
-                    connectionSocket.connect(new InetSocketAddress(other.address, new Random().nextInt(49151)));
+                    connectionSocket.connect(new InetSocketAddress(other.address, 42069));
                 } catch (IOException e) {
                     e.printStackTrace();
                     onConnectionError(new ConnectionIOException(NetworkConnection.this, ConnectionThreadType.ESTABLISH));
