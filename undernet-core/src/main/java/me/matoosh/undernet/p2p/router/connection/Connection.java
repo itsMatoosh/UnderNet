@@ -157,7 +157,6 @@ public abstract class Connection {
         Router.logger.debug("Send loop started side: " + side);
         while (active) {
             try {
-                //Router.logger.info("Send loop");
                 send();
             } catch (ConnectionSessionException e) {
                 EventManager.callEvent(new ConnectionErrorEvent(this, e));

@@ -15,10 +15,6 @@ import me.matoosh.undernet.p2p.router.connection.NetworkConnection;
 
 public class NetworkListener extends NodeListener {
     /**
-     * The port on which the listener is working.
-     */
-    public int port = 42069;
-    /**
      * The listening socket.
      */
     public ServerSocket listenSocket;
@@ -46,7 +42,7 @@ public class NetworkListener extends NodeListener {
             public void run() {
                 //Starting the listen socket.
                 try {
-                    listenSocket = new ServerSocket(port);
+                    listenSocket = new ServerSocket(NetworkConnection.connPort);
                 } catch (IOException e) {
                     EventManager.callEvent(new ServerErrorEvent(NetworkListener.this.server, new ServerIOException(NetworkListener.this.server)));
                 }

@@ -41,6 +41,11 @@ public class NetworkConnection extends Connection {
     public Logger logger = LoggerFactory.getLogger(NetworkConnection.class);
 
     /**
+     * The connection and listen port for the app.
+     */
+    public static int connPort = 2017;
+
+    /**
      * Called when the connecton is being established.
      */
     @Override
@@ -70,7 +75,7 @@ public class NetworkConnection extends Connection {
                 try {
                     logger.info("Connecting to: " + other.address);
                     connectionSocket = new Socket();
-                    connectionSocket.connect(new InetSocketAddress(other.address, 42069));
+                    connectionSocket.connect(new InetSocketAddress(other.address, connPort));
                 } catch (IOException e) {
                     e.printStackTrace();
                     onConnectionError(new ConnectionIOException(NetworkConnection.this, ConnectionThreadType.ESTABLISH));

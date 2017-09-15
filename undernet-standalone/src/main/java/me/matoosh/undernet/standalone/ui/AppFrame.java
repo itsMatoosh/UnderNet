@@ -57,7 +57,7 @@ public class AppFrame extends JFrame {
 
     public AppFrame() {
         super("UnderNet");
-        setSize(800, 800);
+        setSize(800, 600);
 
         centerWindow();
 
@@ -156,8 +156,5 @@ public class AppFrame extends JFrame {
         }, RouterStatusEvent.class);
 
         add(connectButton, new GridBagConstraints(0, 1, 3, 1, 1, 0.05, GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
-
-        //Console panel.
-        add(new ConsolePanel(), new GridBagConstraints(0, 2, 3, 1, 1, 0, GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
     }
 }
