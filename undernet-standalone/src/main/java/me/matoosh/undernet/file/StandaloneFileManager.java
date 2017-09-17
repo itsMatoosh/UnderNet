@@ -25,7 +25,7 @@ public class StandaloneFileManager extends FileManager {
      */
     @Override
     public File getContentFolder() {
-        File content = new File("./content");
+        File content = new File(getAppFolder() + "/content");
         if(!content.exists()) {
             content.mkdir();
         }
@@ -39,7 +39,7 @@ public class StandaloneFileManager extends FileManager {
      */
     @Override
     public File getCacheFolder() {
-        File cache = new File("./cache");
+        File cache = new File(getAppFolder() + "/cache");
         if(!cache.exists()) {
             cache.mkdir();
         }

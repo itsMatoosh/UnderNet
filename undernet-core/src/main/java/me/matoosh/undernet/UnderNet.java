@@ -1,10 +1,12 @@
 package me.matoosh.undernet;
 
+import org.cfg4j.provider.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import me.matoosh.undernet.file.FileManager;
 import me.matoosh.undernet.p2p.cache.NodeCache;
+import me.matoosh.undernet.p2p.config.NetworkConfig;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.Router;
 
@@ -26,6 +28,15 @@ public class UnderNet
      */
     public static FileManager fileManager;
     /**
+     * Currently used config provider.
+     */
+    private static ConfigurationProvider configProvider;
+    /**
+     * The current network config of the app.
+     * Is bound with the config system.
+     */
+    public static NetworkConfig networkConfig;
+    /**
      * The currently used router.
      */
     public static Router router;
@@ -33,12 +44,16 @@ public class UnderNet
     /**
      * Sets up UnderNet.
      */
-    public static void setup(FileManager fileManager) {
+    public static void setup(FileManager fileManager, ConfigurationProvider configProvider) {
         //Writing the init message.
         writeInitMessage();
 
         //Setting the file manager.
         UnderNet.fileManager = fileManager;
+
+        //Setting the config provider.
+        UnderNet.configProvider = configProvider;
+        networkConfig = configProvider.bind("network", NetworkConfig.class);
 
         //Loading up the node cache.
         NodeCache.registerEvents();
@@ -77,6 +92,7 @@ public class UnderNet
     /// </summary>
     private static void writeInitMessage()
     {
+        silentLogger.info("");
         silentLogger.info("   xx                 xx  ");
         silentLogger.info("   x:x               x:x  ");
         silentLogger.info("   x::x             x::x  ");

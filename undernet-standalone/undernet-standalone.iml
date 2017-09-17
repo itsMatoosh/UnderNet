@@ -33,8 +33,13 @@
     <orderEntry type="library" exported="" name="jcabi-aspects-0.22.5" level="project" />
     <orderEntry type="library" exported="" name="slf4j-api-1.7.25" level="project" />
     <orderEntry type="library" exported="" name="slf4j-ext-1.7.25" level="project" />
+    <orderEntry type="library" exported="" name="cfg4j-core-4.4.1" level="project" />
     <orderEntry type="library" exported="" name="jcabi-log-0.17" level="project" />
     <orderEntry type="library" exported="" name="aspectjrt-1.8.7" level="project" />
     <orderEntry type="library" exported="" name="validation-api-1.1.0.Final" level="project" />
+    <orderEntry type="library" exported="" name="json-20160212" level="project" />
+    <orderEntry type="library" exported="" name="metrics-core-3.1.2" level="project" />
+    <orderEntry type="library" exported="" name="type-parser-0.5.0" level="project" />
+    <orderEntry type="library" exported="" name="snakeyaml-1.17" level="project" />
   </component>
 </module>

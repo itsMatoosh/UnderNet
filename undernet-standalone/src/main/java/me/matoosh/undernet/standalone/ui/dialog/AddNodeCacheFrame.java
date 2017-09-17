@@ -79,13 +79,22 @@ public class AddNodeCacheFrame extends JDialog {
 
                 //Getting the address.
                 try {
-                    savedNode.address = InetAddress.getByName(nodeAddressField.getText());
+                    String[] addressSplit = nodeAddressField.getText().split(":");
+                    savedNode.address = InetAddress.getByName(addressSplit[0]);
+                    if(addressSplit.length > 1) {
+                        if(addressSplit[1] != null) {
+                            if(!addressSplit[1].equals("")) {
+                                //Custom port was provided.
+                                savedNode.port = Integer.parseInt(addressSplit[1]);
+                            }
+                        }
+                    }
                 } catch (UnknownHostException e) {
                     e.printStackTrace();
                 }
 
 
-                //Adding the node to the cache.\
+                //Adding the node to the cache.
                 NodeCache.addNode(savedNode);
 
                 //Closing the dialog.

@@ -5,6 +5,7 @@ dependencies {
     compile 'com.jcabi:jcabi-aspects:0.22.5'
     compile 'org.slf4j:slf4j-api:1.7.25'
     compile 'org.slf4j:slf4j-ext:1.7.25'
+    compile 'org.cfg4j:cfg4j-core:4.4.1'
 }
 
 sourceCompatibility = "1.7"

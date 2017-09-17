@@ -3,6 +3,7 @@ package me.matoosh.undernet.p2p.router.server;
 import java.io.IOException;
 import java.net.ServerSocket;
 
+import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.server.ServerErrorEvent;
 import me.matoosh.undernet.p2p.node.Node;
@@ -42,7 +43,7 @@ public class NetworkListener extends NodeListener {
             public void run() {
                 //Starting the listen socket.
                 try {
-                    listenSocket = new ServerSocket(NetworkConnection.connPort);
+                    listenSocket = new ServerSocket(UnderNet.networkConfig.listeningPort());
                 } catch (IOException e) {
                     EventManager.callEvent(new ServerErrorEvent(NetworkListener.this.server, new ServerIOException(NetworkListener.this.server)));
                 }

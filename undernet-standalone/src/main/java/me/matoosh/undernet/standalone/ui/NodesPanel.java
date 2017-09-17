@@ -74,7 +74,7 @@ public class NodesPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 if(nodesList.getSelectedValue() == null) return;
-                String selected = (String) nodesList.getSelectedValue();
+                String selected = ((String) nodesList.getSelectedValue()).split(":")[0];
                 if(selected.equals("No nodes cached...") || selected.equals("Loading nodes...")) return;
 
                 try {
@@ -138,11 +138,15 @@ public class NodesPanel extends JPanel {
                     connected = true;
                 }
             }
-            if(connected) {
-                nodes.add(node.toString() + " [connected]");
-            } else {
-                nodes.add(node.toString());
+
+            String displayName = node.toString();
+            if(node.port != 2017) {
+                displayName = displayName + ":" + node.port;
             }
+            if(connected) {
+                displayName = displayName + " [connected]";
+            }
+            nodes.add(displayName);
         }
 
         if(nodes.size() == 0) {

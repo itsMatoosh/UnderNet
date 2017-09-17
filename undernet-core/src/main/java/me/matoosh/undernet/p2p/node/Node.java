@@ -15,6 +15,11 @@ public class Node implements Serializable {
      * Address of this node.
      */
     public InetAddress address;
+    /**
+     * Port of the node.
+     * Default: 2017
+     */
+    public int port = 2017;
 
     /**
      * Reliability of the node.
@@ -48,5 +53,9 @@ public class Node implements Serializable {
     public void setAddress(InetAddress address) {
         //TODO: Caching integration.
         this.address = address;
+    }
+    public void setPort(int port) {
+        //TODO: Cache update
+        this.port = port;
     }
 }
