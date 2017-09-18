@@ -1,10 +1,10 @@
 package me.matoosh.undernet.standalone.resource;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import me.matoosh.undernet.file.FileManager;
 import me.matoosh.undernet.standalone.UnderNetStandalone;
 
 /**
@@ -20,10 +20,9 @@ public class ResourceManager {
      * @return The path to the exported resource
      * @throws Exception
      */
-    static public String ExportResource(String resourceName) throws Exception {
+    static public String ExportResource(String resourceName, FileManager fileManager) throws Exception {
         InputStream stream = null;
         OutputStream resStreamOut = null;
-        String jarFolder;
         try {
             stream = UnderNetStandalone.class.getResourceAsStream(resourceName);//note that each / is a directory down in the "jar tree" been the jar the root of the tree
             if(stream == null) {
@@ -32,8 +31,8 @@ public class ResourceManager {
 
             int readBytes;
             byte[] buffer = new byte[4096];
-            jarFolder = new File(UnderNetStandalone.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParentFile().getPath().replace('\\', '/');
-            resStreamOut = new FileOutputStream(jarFolder + resourceName);
+
+            resStreamOut = new FileOutputStream(fileManager.getAppFolder() + resourceName);
             while ((readBytes = stream.read(buffer)) > 0) {
                 resStreamOut.write(buffer, 0, readBytes);
             }
@@ -44,6 +43,6 @@ public class ResourceManager {
             resStreamOut.close();
         }
 
-        return jarFolder + resourceName;
+        return fileManager.getAppFolder() + resourceName;
     }
 }

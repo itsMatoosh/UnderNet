@@ -51,24 +51,25 @@ public class UnderNetStandalone {
      */
     private static void setup() {
         //Creating a temp file manager.
-        StandaloneFileManager tmpFileMgr = new Sta
+        final StandaloneFileManager tmpFileMgr = new StandaloneFileManager();
 
         //Checking whether the config files exist.
-        StandaloneConfigManager.checkConfigs();
+        StandaloneConfigManager.checkConfigs(tmpFileMgr);
 
         //Getting the file configuration source.
         //Specify which files to load. Configuration from both files will be merged.
+        System.out.println(tmpFileMgr.getAppFolder());
         ConfigFilesProvider configFilesProvider = new ConfigFilesProvider() {
             @Override
             public Iterable<Path> getConfigFiles() {
-                return Arrays.asList(Paths.get("./network.yaml"), Paths.get("./standalone.yaml"));
+                return Arrays.asList(Paths.get("network.yaml")/*, Paths.get("standalone.yaml")*/);
             }
         };
 
         // Use local files as configuration store
         ConfigurationSource source = new FilesConfigurationSource(configFilesProvider);
 
-        // (optional) Select path to use
+        // Select path to use
         Environment environment = new ImmutableEnvironment(".");
 
         // (optional) Reload configuration every 5 seconds

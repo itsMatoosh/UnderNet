@@ -21,10 +21,18 @@ public class StandaloneConfigManager {
     public static File standaloneConfig;
 
     /**
+     * The temporary file manager.
+     */
+    private static FileManager tmpFileMgr;
+
+    /**
      * Checks whether the the configs for the app are present in the working directory.
      * Creates the files if they're absent.
      */
     public static void checkConfigs(FileManager tmpFileMgr) {
+        //Caching the file manager.
+        StandaloneConfigManager.tmpFileMgr = tmpFileMgr;
+
         //Caching the paths.
         networkConfig = new File(tmpFileMgr.getAppFolder() + "/network.yaml");
         standaloneConfig = new File(tmpFileMgr.getAppFolder() + "/standalone.yaml");
@@ -43,7 +51,7 @@ public class StandaloneConfigManager {
     private static void createNetworkConfig() {
         //Exporting the default config resource.
         try {
-            ResourceManager.ExportResource("/network.yaml");
+            ResourceManager.ExportResource("/network.yaml", tmpFileMgr);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -55,7 +63,7 @@ public class StandaloneConfigManager {
     private static void createStandaloneConfig() {
         //Exporting the default config resource.
         try {
-            ResourceManager.ExportResource("/network.yaml");
+            ResourceManager.ExportResource("/standalone.yaml", tmpFileMgr);
         } catch (Exception e) {
             e.printStackTrace();
         }
