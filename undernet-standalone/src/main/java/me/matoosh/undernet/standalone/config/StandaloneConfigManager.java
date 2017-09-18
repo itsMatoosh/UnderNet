@@ -1,9 +1,9 @@
 package me.matoosh.undernet.standalone.config;
 
 import java.io.File;
-import java.io.IOException;
 
-import me.matoosh.undernet.file.StandaloneFileManager;
+import me.matoosh.undernet.file.FileManager;
+import me.matoosh.undernet.standalone.resource.ResourceManager;
 
 /**
  * Manages the config files.
@@ -24,9 +24,8 @@ public class StandaloneConfigManager {
      * Checks whether the the configs for the app are present in the working directory.
      * Creates the files if they're absent.
      */
-    public static void checkConfigs() {
+    public static void checkConfigs(FileManager tmpFileMgr) {
         //Caching the paths.
-        StandaloneFileManager tmpFileMgr = new StandaloneFileManager();
         networkConfig = new File(tmpFileMgr.getAppFolder() + "/network.yaml");
         standaloneConfig = new File(tmpFileMgr.getAppFolder() + "/standalone.yaml");
 
@@ -42,9 +41,10 @@ public class StandaloneConfigManager {
      * Creates a copy of the default network config in the working directory.
      */
     private static void createNetworkConfig() {
+        //Exporting the default config resource.
         try {
-            networkConfig.createNewFile();
-        } catch (IOException e) {
+            ResourceManager.ExportResource("/network.yaml");
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -53,9 +53,10 @@ public class StandaloneConfigManager {
      * Creates a copy of the default platform specific config in the working directory.
      */
     private static void createStandaloneConfig() {
+        //Exporting the default config resource.
         try {
-            standaloneConfig.createNewFile();
-        } catch (IOException e) {
+            ResourceManager.ExportResource("/network.yaml");
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

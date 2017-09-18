@@ -8,7 +8,6 @@ package me.matoosh.undernet.p2p.config;
 public interface NetworkConfig {
     /**
      * The listening port to be used by the app.
-     * Default: 2017
      * @return
      */
     Integer listeningPort();

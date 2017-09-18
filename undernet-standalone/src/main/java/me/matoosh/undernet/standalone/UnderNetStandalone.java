@@ -50,6 +50,9 @@ public class UnderNetStandalone {
      * Sets up the standalone environment.
      */
     private static void setup() {
+        //Creating a temp file manager.
+        StandaloneFileManager tmpFileMgr = new Sta
+
         //Checking whether the config files exist.
         StandaloneConfigManager.checkConfigs();
 

@@ -10,6 +10,7 @@ dependencies {
     compile project(path: ':undernet-core')
     compile 'ch.qos.logback:logback-core:1.2.3'
     compile 'ch.qos.logback:logback-classic:1.2.3'
+    compile 'com.esotericsoftware.yamlbeans:yamlbeans:1.12'
 }
 
 distZip.shouldRunAfter(build)
