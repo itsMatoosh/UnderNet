@@ -27,7 +27,7 @@ public class DirectConnection extends Connection
      * Called when the connection is being received.
      */
     @Override
-    protected void onReceivingConnection() {
+    protected void onAcceptingConnection() {
         //TODO
 
         //For now the connection is gonna throw an error unconditionally.
@@ -54,9 +54,11 @@ public class DirectConnection extends Connection
 
     /**
      * Receiving logic.
+     *
+     * @throws ConnectionSessionException
      */
     @Override
-    protected void receive() throws ConnectionSessionException {
+    public void receive() throws ConnectionSessionException {
 
     }
 
@@ -66,7 +68,7 @@ public class DirectConnection extends Connection
      * @throws ConnectionSessionException
      */
     @Override
-    protected void send() throws ConnectionSessionException {
+    public void send() throws ConnectionSessionException {
 
     }
 }

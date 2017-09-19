@@ -11,4 +11,10 @@ public interface NetworkConfig {
      * @return
      */
     Integer listeningPort();
+
+    /**
+     * The tickrate of the network.
+     * @return
+     */
+    Integer networkTickRate();
 }

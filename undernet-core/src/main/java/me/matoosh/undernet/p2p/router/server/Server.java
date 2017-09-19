@@ -93,6 +93,7 @@ public class Server
             if(c.server == this) {
                 c.drop();
             }
+            c = null;
         }
 
         //Disposing listeners.

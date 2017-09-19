@@ -1,2 +1,3 @@
 network:
   listeningPort: 2017
+  networkTickRate: 30

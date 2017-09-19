@@ -7,6 +7,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 
 import me.matoosh.undernet.UnderNet;
@@ -14,9 +15,8 @@ import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.connection.ConnectionAcceptedEvent;
 import me.matoosh.undernet.event.connection.ConnectionEstablishedEvent;
 import me.matoosh.undernet.event.connection.bytestream.ConnectionBytestreamReceivedEvent;
-import me.matoosh.undernet.event.connection.message.ConnectionMessageReceivedEvent;
-import me.matoosh.undernet.p2p.router.messages.NetworkMessage;
-import me.matoosh.undernet.p2p.router.messages.NetworkSerializer;
+import me.matoosh.undernet.p2p.router.data.messages.MessageBase;
+import me.matoosh.undernet.p2p.router.data.messages.NetworkMessageSerializer;
 
 /**
  * Represents a connection over Internet.
@@ -45,23 +45,6 @@ public class NetworkConnection extends Connection {
      */
     @Override
     protected void onEstablishingConnection() {
-        //Setting the sending thread.
-        sendingThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                //Starting the connection session.
-                startSendLoop();
-            }
-        });
-        //Setting the receiving thread.
-        receivingThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                //Starting the connection session.
-                startReceiveLoop();
-            }
-        });
-
         //Setting the connection establishing thread.
         Thread establishThread = new Thread(new Runnable() {
             @Override
@@ -79,7 +62,6 @@ public class NetworkConnection extends Connection {
                 }
                 try {
                     logger.info("Connected to: " + other.address);
-                    connectionSocket.setSoTimeout(2000);
                     inputStream = connectionSocket.getInputStream();
                     outputStream = connectionSocket.getOutputStream();
                 }
@@ -87,6 +69,13 @@ public class NetworkConnection extends Connection {
                     e.printStackTrace();
                     onConnectionError(new ConnectionIOException(NetworkConnection.this, ConnectionThreadType.ESTABLISH));
                     return;
+                }
+
+                //Setting the so timeout.
+                try {
+                    connectionSocket.setSoTimeout(0);
+                } catch (SocketException e) {
+                    e.printStackTrace();
                 }
 
                 //Initiating connection.
@@ -102,12 +91,15 @@ public class NetworkConnection extends Connection {
                     return;
                 }
 
+                //Setting the so timeout.
+                try {
+                    connectionSocket.setSoTimeout(client.router.networkTickTime/1000 - 1);
+                } catch (SocketException e) {
+                    e.printStackTrace();
+                }
+
                 //Calling the connection established event.
                 EventManager.callEvent(new ConnectionEstablishedEvent(NetworkConnection.this, other));
-
-                //Starting the sending and receiving threads.
-                //sendingThread.start();
-                receivingThread.start();
             }
         });
         establishThread.start();
@@ -117,7 +109,7 @@ public class NetworkConnection extends Connection {
      * Called when the connection is being received.
      */
     @Override
-    protected void onReceivingConnection() {
+    protected void onAcceptingConnection() {
         //Accepting the server connection.
         try {
             UnderNet.logger.info("Listening for connections on: " + server.networkListener.listenSocket.getLocalPort());
@@ -130,7 +122,6 @@ public class NetworkConnection extends Connection {
             return;
         }
         try {
-            clientSocket.setSoTimeout(2000);
             inputStream = clientSocket.getInputStream();
             outputStream = clientSocket.getOutputStream();
         }
@@ -138,6 +129,13 @@ public class NetworkConnection extends Connection {
             e.printStackTrace();
             onConnectionError(new ConnectionIOException(this, ConnectionThreadType.ESTABLISH));
             return;
+        }
+
+        //Setting the so timeout.
+        try {
+            clientSocket.setSoTimeout(0);
+        } catch (SocketException e) {
+            e.printStackTrace();
         }
 
         //Handshake.
@@ -154,26 +152,15 @@ public class NetworkConnection extends Connection {
             return;
         }
 
+        //Setting the so timeout.
+        try {
+            clientSocket.setSoTimeout(server.router.networkTickTime/1000 - 1);
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+
         //Calling the connection established event.
         EventManager.callEvent(new ConnectionEstablishedEvent(this, other));
-
-        //Starting the connection loops.
-        receivingThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                startReceiveLoop();
-            }
-        });
-        sendingThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                startSendLoop();
-            }
-        });
-
-        //Starting the session.
-        receivingThread.run();
-        //sendingThread.run();
     }
 
     /**
@@ -227,55 +214,70 @@ public class NetworkConnection extends Connection {
                 }
                 break;
         }
+
+        //Closing the streams.
+        try {
+            inputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * Receiving logic.
+     *
+     * @throws ConnectionSessionException
      */
     @Override
-    protected void receive() throws ConnectionSessionException {
-        int messageId = -2;
-
+    public void receive() throws ConnectionSessionException {
         try {
-            //Reading the message Id from the stream.
-            logger.info("Waiting for input... side: " + side);
-            messageId = inputStream.read();
+            //TODO: Use cached message info.
+
+            //Checking if the stream has at least 2 bytes available (message Id and lenght ints).
+            if(inputStream.available() > 1) {
+                //Reading the message id from the stream.
+                inputStream.read(); //Checking if any data is available for reading.
+                int messageId = inputStream.read();
+
+                //Reads the message length from the stream.
+                int messageLength = inputStream.read();
+                if (messageLength <= 0) {
+                    this.drop();
+                    return;
+                }
+
+                byte[] messagePayload = new byte[messageLength];
+                inputStream.read(messagePayload, 0, messageLength);
+
+                //Checking if the received byte is a message.
+                if(messageId > 0) {
+                    //Message
+                    //Deserializing.
+                    MessageBase deserialisedMessage = NetworkMessageSerializer.read(messageId, messagePayload);
+                    //EventManager.callEvent(new ConnectionMessageReceivedEvent(this, deserialisedMessage));
+                } else if (messageId == -1) {
+                    //Skipping
+                } else {
+                    //Byte stream
+                    EventManager.callEvent(new ConnectionBytestreamReceivedEvent(this, messagePayload));
+                }
+            }
         } catch (SocketTimeoutException timeout) {
             return;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
-        try {
-            //Reads the message length from the stream.
-            int messageLength = inputStream.read();
-            if (messageLength <= 0) {
-                logger.info("EOS: " + messageLength + "::" + receivingThread.isInterrupted());
-                clientSocket.close();
-                receivingThread.interrupt();
-                return;
-            }
-            byte[] messagePayload = new byte[messageLength];
-            inputStream.read(messagePayload, 0, messageLength);
-
-            //Checking if the received byte is a message.
-            if(messageId > 0) {
-                //Message
-                //Deserializing.
-                NetworkMessage deserialisedMessage = NetworkSerializer.read(messageId, messagePayload);
-                EventManager.callEvent(new ConnectionMessageReceivedEvent(this, deserialisedMessage));
-            } else if (messageId == -1) {
-                //Skipping
-            } else {
-                //Byte stream
-                EventManager.callEvent(new ConnectionBytestreamReceivedEvent(this, messagePayload));
-            }
         } catch(EOFException eofException){
             eofException.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+            this.drop();
+            return;
         }
     }
+
 
     /**
      * Sending logic.
@@ -283,7 +285,7 @@ public class NetworkConnection extends Connection {
      * @throws ConnectionSessionException
      */
     @Override
-    protected void send() throws ConnectionSessionException {
+    public void send() throws ConnectionSessionException {
 
     }
 }

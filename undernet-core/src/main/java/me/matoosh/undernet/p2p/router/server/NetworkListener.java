@@ -51,8 +51,7 @@ public class NetworkListener extends NodeListener {
                 //Running the loop until we need to stop.
                 while (!listenThread.isInterrupted()) {
                     //Creating a new NetworkConnection instance and accepting connections.
-                    NetworkConnection connection = new NetworkConnection();
-                    connection.receive(server, new Node());
+                    new NetworkConnection().accept(server, new Node());
                 }
             }
         });

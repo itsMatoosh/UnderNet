@@ -2,7 +2,7 @@ package me.matoosh.undernet.event.connection.message;
 
 import me.matoosh.undernet.event.connection.ConnectionEvent;
 import me.matoosh.undernet.p2p.router.connection.Connection;
-import me.matoosh.undernet.p2p.router.messages.NetworkMessage;
+import me.matoosh.undernet.p2p.router.data.messages.NetworkMessage;
 
 /**
  * Represents events regarding network messages.

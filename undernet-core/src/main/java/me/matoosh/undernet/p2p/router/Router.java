@@ -4,7 +4,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
+import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
@@ -19,6 +24,7 @@ import me.matoosh.undernet.event.router.RouterStatusEvent;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.client.Client;
 import me.matoosh.undernet.p2p.router.connection.Connection;
+import me.matoosh.undernet.p2p.router.connection.ConnectionSessionException;
 import me.matoosh.undernet.p2p.router.server.Server;
 
 /**
@@ -38,9 +44,17 @@ public class Router extends EventHandler {
      */
     public Server server;
     /**
-     * Message queue of the router.
+     * The active networkLoop.
      */
-    public MessageQueue messageQueue;
+    public NetworkLoop networkLoop;
+    /**
+     * The network loop scheduler.
+     */
+    public ScheduledFuture networkLoopScheduler;
+    /**
+     * Time given to a single network tick in miliseconds.
+     */
+    public int networkTickTime;
     /**
      * The current status of the router.
      */
@@ -49,7 +63,7 @@ public class Router extends EventHandler {
     /**
      * List of the currently active connections.
      */
-    public ArrayList<Connection> connections = new ArrayList<Connection>();
+    public ArrayList<Connection> connections = new ArrayList<>();
 
     /**
      * The number of reconnect attempts, the router attempted.
@@ -113,6 +127,9 @@ public class Router extends EventHandler {
         //Starting the client.
         client.start();
 
+        //Starting the router loop.
+        startNetworkLoop();
+
         //Setting the status to started.
         EventManager.callEvent(new RouterStatusEvent(this,  InterfaceStatus.STARTED));
     }
@@ -130,6 +147,11 @@ public class Router extends EventHandler {
         //Setting the status to stopping.
         EventManager.callEvent(new RouterStatusEvent(this, InterfaceStatus.STOPPING));
 
+        //Stops the network loop.
+        networkLoopScheduler.cancel(true);
+        networkLoopScheduler = null;
+        networkLoop = null;
+
         //Stops the client.
         if(client != null) {
             client.stop();
@@ -140,6 +162,13 @@ public class Router extends EventHandler {
             server.stop();
             server = null;
         }
+
+        //Clearing the connections.
+        connections.clear();
+
+        //GC
+        System.runFinalization();
+        System.gc();
 
         //Setting the status to stopped.
         EventManager.callEvent(new RouterStatusEvent(this, InterfaceStatus.STOPPED));
@@ -175,6 +204,57 @@ public class Router extends EventHandler {
         EventManager.registerHandler(this, ConnectionErrorEvent.class);
     }
 
+    /**
+     * Starts the network loop.
+     * Network loop sends and receives messages from all the connected nodes.
+     */
+    private void startNetworkLoop() {
+        ScheduledExecutorService scheduler
+                = Executors.newSingleThreadScheduledExecutor();
+
+
+        networkLoop = new NetworkLoop();
+
+        int initialDelay = 1000000;
+        networkTickTime = (int)((1.0f/UnderNet.networkConfig.networkTickRate())*1000000.0f);
+        logger.info("Starting network loop with tick rate: " + UnderNet.networkConfig.networkTickRate());
+
+        networkLoopScheduler = scheduler.scheduleAtFixedRate(networkLoop, initialDelay, networkTickTime,
+                TimeUnit.MICROSECONDS);
+    }
+
+    /**
+     * The network loop logic.
+     */
+    private class NetworkLoop implements Runnable {
+        /**
+         * Called on every tick.
+         */
+        @Override
+        public void run() {
+            //Exchange messages.
+            for (int i = 0; i < connections.size(); i++) {
+                Connection conn = connections.get(i);
+                if(conn.active) {
+                    try {
+                        //Receiving data.
+                        conn.receive();
+                    } catch (ConnectionSessionException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        //Sending data.
+                        conn.send();
+                    } catch (ConnectionSessionException e) {
+                        e.printStackTrace();
+                    }
+                }
+                conn = null;
+            }
+        }
+    }
+
+    //EVENTS
     /**
      * Called when the handled event is called.
      *

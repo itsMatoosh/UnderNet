@@ -30,6 +30,7 @@ public class ConnectionEstablishedEvent extends ConnectionEvent {
      */
     @Override
     public void onCalled() {
+        connection.active = true;
         Router.logger.info("Connection has been established with: " + connection.other.address);
     }
 }

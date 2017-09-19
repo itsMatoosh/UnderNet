@@ -107,6 +107,7 @@ public class Client {
             if(c.client == this) {
                 c.drop();
             }
+            c = null;
         }
     }
 
