@@ -1,23 +1,16 @@
-package me.matoosh.undernet.p2p.router.server;
+package me.matoosh.undernet.p2p.router.client;
 
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.socket.SocketChannel;
+import me.matoosh.undernet.p2p.router.server.Server;
 
 /**
- * Used to initialize server-side channels.
+ * Used to initialize client-side channels.
  * Created by Mateusz Rębacz on 21.09.2017.
  */
 
-public class ServerChannelInitializer extends ChannelInitializer {
-    /**
-     * The server behind this initializer.
-     */
-    public Server server;
-
-    public ServerChannelInitializer(Server server) {
-        this.server = server;
-    }
+public class ClientChannelInitializer extends ChannelInitializer<SocketChannel>{
 
     /**
      * This method will be called once the {@link Channel} was registered. After the method returns this instance
@@ -29,9 +22,8 @@ public class ServerChannelInitializer extends ChannelInitializer {
      *                   the {@link Channel}.
      */
     @Override
-    protected void initChannel(Channel ch) throws Exception {
-        //Registering the server message handler.
-        ch.pipeline().addLast(new ServerChannelHandler(server));
+    protected void initChannel(SocketChannel ch) throws Exception {
+
     }
 
     /**
@@ -42,6 +34,6 @@ public class ServerChannelInitializer extends ChannelInitializer {
      */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        Server.logger.error("An error occured while initializing the connection from: " + ctx.channel().remoteAddress(), cause);
+        Client.logger.error("An error occured while initializing the connection to: " + ctx.channel().remoteAddress(), cause);
     }
 }

@@ -42,7 +42,7 @@ public class Server
      */
     public EventLoopGroup workerEventLoopGroup;
     /**
-     * The server future.
+     * The future of the server.
      */
     public ChannelFuture serverFuture;
 
@@ -77,25 +77,20 @@ public class Server
         //Changing the server status to starting.
         EventManager.callEvent(new ServerStatusEvent(Server.this, InterfaceStatus.STARTING));
 
-        try {
-            //Creating the worker and boss server event groups.
-            bossEventLoopGroup = new NioEventLoopGroup();
-            workerEventLoopGroup = new NioEventLoopGroup();
+        //Creating the worker and boss server event groups.
+        bossEventLoopGroup = new NioEventLoopGroup();
+        workerEventLoopGroup = new NioEventLoopGroup();
 
-            //Bootstraping the server.
-            ServerBootstrap serverBootstrap = new ServerBootstrap();
-            serverBootstrap.group(bossEventLoopGroup, workerEventLoopGroup) //Assigning event loops to the server.
-                    .channel(NioServerSocketChannel.class) //Using the non blocking io for transfer.
-                    .childHandler(new ServerChannelInitializer(this))
-                    .option(ChannelOption.SO_BACKLOG, 16)          //Setting the number of pending connections to keep in the queue.
-                    .childOption(ChannelOption.SO_KEEPALIVE, true); //Making sure the connection event loop sends keep alive messages.
+        //Bootstraping the server.
+        ServerBootstrap serverBootstrap = new ServerBootstrap();
+        serverBootstrap.group(bossEventLoopGroup, workerEventLoopGroup) //Assigning event loops to the server.
+                .channel(NioServerSocketChannel.class) //Using the non blocking io for transfer.
+                .childHandler(new ServerChannelInitializer(this))
+                .option(ChannelOption.SO_BACKLOG, 16)          //Setting the number of pending connections to keep in the queue.
+                .childOption(ChannelOption.SO_KEEPALIVE, true); //Making sure the connection event loop sends keep alive messages.
 
-            //Binding and starting to accept incoming connections.
-            serverFuture = serverBootstrap.bind(UnderNet.networkConfig.listeningPort()).sync();
-        } catch (InterruptedException e) {
-            logger.error("An error occured while starting the server!", e);
-            EventManager.callEvent(new ServerExceptionEvent(this, e));
-        }
+        //Binding and starting to accept incoming connections.
+        serverFuture = serverBootstrap.bind(UnderNet.networkConfig.listeningPort());
     }
 
     /**

@@ -1,4 +1,4 @@
-package me.matoosh.undernet.p2p.router.server;
+package me.matoosh.undernet.p2p.router.client;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,43 +16,41 @@ import me.matoosh.undernet.p2p.node.Node;
  * Created by Mateusz Rębacz on 21.09.2017.
  */
 
-public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
-    /**
-     * The server of this channel handler.
-     */
-    public Server server;
+public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
 
     //Attribute ids.
     /**
-     * Defines the client node attribute id.
+     * Defines the server node attribute id.
      */
-    protected static final AttributeKey<Node> ATTRIBUTE_KEY_CLIENT_NODE = AttributeKey
-            .valueOf("ClientNode");
+    protected static final AttributeKey<Node> ATTRIBUTE_KEY_SERVER_NODE = AttributeKey
+            .valueOf("ServerNode");
 
     /**
      * The logger of the class.
      */
-    public static Logger logger = LoggerFactory.getLogger(ServerChannelHandler.class);
-
-    public ServerChannelHandler(Server server) {
-        this.server = server;
-    }
+    public static Logger logger = LoggerFactory.getLogger(ClientChannelHandler.class);
 
     /**
-     * Called when the channel is ready for data transfer.
+     * Calls {@link ChannelHandlerContext#fireChannelActive()} to forward
+     * to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
+     * <p>
+     * Sub-classes may override this method to change behavior.
      *
      * @param ctx
      */
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         //Adding a node object to the connection.
-        Node clientNode = new Node();
-        clientNode.address = ctx.channel().remoteAddress(); //Setting the node's address.
-        ctx.channel().attr(ATTRIBUTE_KEY_CLIENT_NODE).set(clientNode);
+        Node serverNode = new Node();
+        serverNode.address = ctx.channel().remoteAddress(); //Setting the node's address.
+        ctx.channel().attr(ATTRIBUTE_KEY_SERVER_NODE).set(serverNode);
     }
 
     /**
-     * Called when the channel is no longer ready for data transfer.
+     * Calls {@link ChannelHandlerContext#fireChannelInactive()} to forward
+     * to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
+     * <p>
+     * Sub-classes may override this method to change behavior.
      *
      * @param ctx
      */
@@ -62,7 +60,10 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * Called when data has been received from the channel.
+     * Calls {@link ChannelHandlerContext#fireChannelRead(Object)} to forward
+     * to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
+     * <p>
+     * Sub-classes may override this method to change behavior.
      *
      * @param ctx
      * @param msg
@@ -90,7 +91,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         //Logging the exception.
-        logger.error("Error with connection from: " + ctx.channel().remoteAddress(), cause);
+        logger.error("Error with connection to: " + ctx.channel().remoteAddress(), cause);
         EventManager.callEvent(new ChannelErrorEvent(ctx.channel(), cause));
 
         //Closing the connection.
