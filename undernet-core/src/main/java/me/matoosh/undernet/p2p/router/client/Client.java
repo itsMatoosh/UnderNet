@@ -43,9 +43,9 @@ public class Client {
      */
     public EventLoopGroup workerEventLoopGroup;
     /**
-     * The future of the client.
+     * The futures of the client.
      */
-    public ChannelFuture clientFuture;
+    public ArrayList<ChannelFuture> clientFutures;
 
     /**
      * A list of the currently active channels.
@@ -74,19 +74,31 @@ public class Client {
      */
     public void start() {
         logger.info("Starting the client...");
+        EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STARTING));
 
         //Creating a new event loop group.
         workerEventLoopGroup = new NioEventLoopGroup();
 
         //Attempting to connect to each of the 5 most reliable nodes.
         ArrayList<Node> nodesToConnectTo = NodeCache.getMostReliable(5, null);
-        if(nodesToConnectTo == null) {
+        if(nodesToConnectTo == null || nodesToConnectTo.size() == 0) {
+            logger.warn("There are no cached nodes to connect to! The client will stop.");
             EventManager.callEvent(new ClientExceptionEvent(this, new ClientNoNodesCachedException(this)));
-        } else {
-            for(Node node : nodesToConnectTo) {
-                connect(node);
-            }
+            EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STOPPED));
+            return;
         }
+
+        //Creating a list of client futures.
+        clientFutures = new ArrayList<>();
+
+        //Connecting to the selected nodes.
+        for(Node node : nodesToConnectTo) {
+            connect(node);
+        }
+        EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STARTED));
+
+        //Waiting for all the connections to close.
+        waitForAllConnections();
     }
     /**
      * Connects the client to a node.
@@ -94,32 +106,67 @@ public class Client {
     public void connect(Node node) {
         logger.info("Connecting to node: " + node.address);
 
+        //Making sure the list of client futures exists.
+        if(clientFutures == null) {
+            clientFutures = new ArrayList<>();
+        }
+
+        //Starting the client.
         Bootstrap clientBootstrap = new Bootstrap();
         clientBootstrap.group(workerEventLoopGroup); //Assigning the channel to the client event loop group.
         clientBootstrap.channel(NioSocketChannel.class); //Using the non blocking io.
         clientBootstrap.option(ChannelOption.SO_KEEPALIVE, true); //Making sure the connection is sending the keep alive signal.
         clientBootstrap.handler(new ClientChannelInitializer(this));
 
-        //Starting the client.
-        clientFuture = clientBootstrap.connect(node.address); //Connecting to the node.
+        //Connecting
+        try {
+            clientFutures.add(clientBootstrap.connect(node.address).sync()); //Connecting to the node.
+        } catch (InterruptedException e) {
+            logger.error("There was a problem connecting to the node: " + node.address, e);
+            EventManager.callEvent(new ClientExceptionEvent(this, e));
+        }
     }
 
     /**
      * Stops the client.
      */
     public void stop() {
-        logger.info("Stopping the client...");
-
-        try {
-            //Stopping the client future.
-            clientFuture.channel().closeFuture().sync();
-
-            //Stopping the worker event group.
-            workerEventLoopGroup.shutdownGracefully();
-        } catch (InterruptedException e) {
-            logger.error("An error occurred while stopping the server!", e);
-            EventManager.callEvent(new ClientExceptionEvent(this, e));
+        //Checking if the client is running.
+        if(status == InterfaceStatus.STOPPED) {
+            logger.warn("Can't stop the client as it's not running.");
+            return;
         }
+
+        EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STOPPING));
+
+        //Stopping the client futures.
+        for (ChannelFuture future:
+             clientFutures) {
+            //Closing the current channel
+            future.channel().close();
+            //Closing the parent channel (the one attached to the bind)
+            if(future.channel().parent() != null) {
+                future.channel().parent().close();
+            }
+        }
+    }
+
+    /**
+     * Waits for all the connections to close.
+     */
+    private void waitForAllConnections() {
+        try {
+            for (ChannelFuture future:
+                    clientFutures) {
+                future.channel().closeFuture().sync();
+            }
+        } catch (InterruptedException e) {
+            logger.error("One of the client connection tasks has been interrupted!", e);
+        } finally {
+            workerEventLoopGroup.shutdownGracefully();
+            EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STOPPED));
+        }
+
     }
 
     /**

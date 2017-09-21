@@ -81,8 +81,6 @@ public class Server
      * @throws Exception
      */
     public void start() {
-        logger.info("Starting the server...");
-
         //Changing the server status to starting.
         EventManager.callEvent(new ServerStatusEvent(Server.this, InterfaceStatus.STARTING));
 
@@ -99,28 +97,37 @@ public class Server
                 .childOption(ChannelOption.SO_KEEPALIVE, true); //Making sure the connection event loop sends keep alive messages.
 
         //Binding and starting to accept incoming connections.
-        serverFuture = serverBootstrap.bind(UnderNet.networkConfig.listeningPort());
+        try {
+            serverFuture = serverBootstrap.bind(UnderNet.networkConfig.listeningPort()).sync();
+            EventManager.callEvent(new ServerStatusEvent(Server.this, InterfaceStatus.STARTED));
+
+            //Waiting for the server to close.
+            serverFuture.channel().closeFuture().sync();
+        } catch (InterruptedException e) {
+            logger.error("Error binding the server!", e);
+            //Changing the server status to stopping.
+            EventManager.callEvent(new ServerStatusEvent(Server.this, InterfaceStatus.STOPPING));
+        } finally {
+            //Stopping the event loop groups.
+            bossEventLoopGroup.shutdownGracefully();
+            workerEventLoopGroup.shutdownGracefully();
+            EventManager.callEvent(new ServerStatusEvent(Server.this, InterfaceStatus.STOPPED));
+        }
     }
 
     /**
      * Stops the server.
      */
     public void stop() {
-        logger.info("Stopping the server...");
-
         //Changing the server status to stopping.
         EventManager.callEvent(new ServerStatusEvent(Server.this, InterfaceStatus.STOPPING));
 
-        try {
-            //Stopping the server.
-            serverFuture.channel().closeFuture().sync();
-
-            //Stopping the event loop groups.
-            bossEventLoopGroup.shutdownGracefully();
-            workerEventLoopGroup.shutdownGracefully();
-        } catch (InterruptedException e) {
-            logger.error("An error occured while stopping the server!", e);
-            EventManager.callEvent(new ServerExceptionEvent(this, e));
+        //Stopping the server.
+        //Closing the current channel
+        serverFuture.channel().close();
+        //Closing the parent channel (the one attached to the bind)
+        if(serverFuture.channel().parent() != null) {
+            serverFuture.channel().parent().close();
         }
     }
 

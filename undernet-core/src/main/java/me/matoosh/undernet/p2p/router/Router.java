@@ -13,8 +13,10 @@ import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
 import me.matoosh.undernet.event.channel.ChannelErrorEvent;
 import me.matoosh.undernet.event.channel.bytestream.ChannelBytestreamReceivedEvent;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
+import me.matoosh.undernet.event.client.ClientStatusEvent;
 import me.matoosh.undernet.event.router.RouterErrorEvent;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
+import me.matoosh.undernet.event.server.ServerStatusEvent;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.client.Client;
 import me.matoosh.undernet.p2p.router.server.Server;
@@ -101,14 +103,19 @@ public class Router extends EventHandler {
         //Setting the status to starting.
         EventManager.callEvent(new RouterStatusEvent(this, InterfaceStatus.STARTING));
 
-        //Starting the server.
-        server.start();
+        //Starting the server. Using a separate thread for blocking api.
+        new Thread(new Runnable() {
+            public void run() {
+                server.start();
+            }
+        }).start();
 
-        //Starting the client.
-        client.start();
-
-        //Setting the status to started.
-        EventManager.callEvent(new RouterStatusEvent(this,  InterfaceStatus.STARTED));
+        //Starting the client. Using a separate thread for blocking api.
+        new Thread(new Runnable() {
+            public void run() {
+                client.start();
+            }
+        }).start();
     }
 
     /**
@@ -127,20 +134,11 @@ public class Router extends EventHandler {
         //Stops the client.
         if(client != null) {
             client.stop();
-            client = null;
         }
         //Stops the server.
         if(server != null) {
             server.stop();
-            server = null;
         }
-
-        //GC
-        System.runFinalization();
-        System.gc();
-
-        //Setting the status to stopped.
-        EventManager.callEvent(new RouterStatusEvent(this, InterfaceStatus.STOPPED));
     }
 
     /**
@@ -170,6 +168,8 @@ public class Router extends EventHandler {
         EventManager.registerHandler(this, ChannelCreatedEvent.class);
         EventManager.registerHandler(this, ChannelClosedEvent.class);
         EventManager.registerHandler(this, ChannelErrorEvent.class);
+        EventManager.registerHandler(this, ClientStatusEvent.class);
+        EventManager.registerHandler(this, ServerStatusEvent.class);
     }
 
     //EVENTS
@@ -213,22 +213,38 @@ public class Router extends EventHandler {
             //TODO: Handle the status change.
         } else if(e.getClass() == RouterErrorEvent.class) {
             onRouterError((RouterErrorEvent) e);
+        } else if(e.getClass() == ServerStatusEvent.class) {
+            ServerStatusEvent statusEvent = (ServerStatusEvent)e;
+            if(statusEvent.newStatus.equals(InterfaceStatus.STARTED)) {
+                //In this case client doesn't yet have to be started.
+                onRouterStarted();
+            } else if(statusEvent.newStatus.equals(InterfaceStatus.STOPPED)) {
+                if(client.status.equals(InterfaceStatus.STOPPED)) {
+                    //Both parts of the router stopped successfully.
+                    onRouterStopped();
+                }
+            }
+        } else if(e.getClass() == ClientStatusEvent.class) {
+            ClientStatusEvent statusEvent = (ClientStatusEvent) e;
+            if(statusEvent.newStatus.equals(InterfaceStatus.STARTED)) {
+                if(server.status.equals(InterfaceStatus.STARTED)) {
+                    //Both parts of the router started succesfully.
+                    onRouterStarted();
+                }
+            } else if(statusEvent.newStatus.equals(InterfaceStatus.STOPPED)) {
+                if(server.status.equals(InterfaceStatus.STOPPED)) {
+                    //Both parts of the router stopped successfully.
+                    onRouterStopped();
+                }
+            }
         }
     }
-    /**
-     * Called when the connection to the network ends.
-     */
-    public void onConnectionEnded() {
-        //Resetting the reconn num.
-        reconnectNum = 0;
-    }
-
     /**
      * Called when a router error occurs.
      * This means we can't continue and have to restart the connection.
      * @param e
      */
-    public void onRouterError(RouterErrorEvent e) {
+    private void onRouterError(RouterErrorEvent e) {
         //Printing the error.
         if(e.exception.getMessage() != null) {
             logger.error("There was a problem with the UnderNet router: " + e.exception.getMessage());
@@ -249,5 +265,31 @@ public class Router extends EventHandler {
 
             logger.info("Attempting to reconnect for: " + reconnectNum + " time...");
         }
+    }
+
+    /**
+     * Called when the router starts.
+     */
+    private void onRouterStarted() {
+        //Setting the status to started.
+        EventManager.callEvent(new RouterStatusEvent(this,  InterfaceStatus.STARTED));
+    }
+    /**
+     * Called when the router stops.
+     */
+    private void onRouterStopped() {
+        //Setting the status to stopped.
+        EventManager.callEvent(new RouterStatusEvent(this, InterfaceStatus.STOPPED));
+
+        //GC
+        System.runFinalization();
+        System.gc();
+    }
+    /**
+     * Called when the connection to the network ends.
+     */
+    private void onConnectionEnded() {
+        //Resetting the reconn num.
+        reconnectNum = 0;
     }
 }
