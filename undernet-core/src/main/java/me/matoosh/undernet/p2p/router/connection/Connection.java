@@ -4,7 +4,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import me.matoosh.undernet.event.EventManager;
-import me.matoosh.undernet.event.connection.ConnectionDroppedEvent;
+import me.matoosh.undernet.event.channel.ChannelClosedEvent;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.client.Client;
@@ -107,7 +107,7 @@ public abstract class Connection {
         connectionDataHandler = null;
 
 
-        EventManager.callEvent(new ConnectionDroppedEvent(this, other));
+        EventManager.callEvent(new ChannelClosedEvent(this, other));
     }
 
     /**

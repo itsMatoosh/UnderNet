@@ -73,13 +73,13 @@ public class Client {
        /* EventManager.registerHandler(new EventHandler() {
             @Override
             public void onEventCalled(Event e) {
-                ConnectionErrorEvent errorEvent = (ConnectionErrorEvent)e;
+                ChannelErrorEvent errorEvent = (ChannelErrorEvent)e;
                 if(errorEvent.exception.getClass() == ConnectionNotAvailableException.class && errorEvent.connection.side == ConnectionSide.CLIENT) {
                     //Establishing the network connection.
                     new NetworkConnection().establish(Client.this, errorEvent.connection.other);
                 }
             }
-        }, ConnectionErrorEvent.class);*/
+        }, ChannelErrorEvent.class);*/
         //Establishing a new connection. If this connection fails, another way of connecting will be used.
         //TODO: Make smarter connection choices to reduce connection time.
         //new DirectConnection().establish(this, node);

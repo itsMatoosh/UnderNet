@@ -12,9 +12,8 @@ import java.net.SocketTimeoutException;
 
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventManager;
-import me.matoosh.undernet.event.connection.ConnectionAcceptedEvent;
-import me.matoosh.undernet.event.connection.ConnectionEstablishedEvent;
-import me.matoosh.undernet.event.connection.bytestream.ConnectionBytestreamReceivedEvent;
+import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
+import me.matoosh.undernet.event.channel.bytestream.ChannelBytestreamReceivedEvent;
 import me.matoosh.undernet.p2p.router.data.messages.MessageBase;
 import me.matoosh.undernet.p2p.router.data.messages.NetworkMessageSerializer;
 
@@ -99,7 +98,7 @@ public class NetworkConnection extends Connection {
                 }
 
                 //Calling the connection established event.
-                EventManager.callEvent(new ConnectionEstablishedEvent(NetworkConnection.this, other));
+                EventManager.callEvent(new ChannelCreatedEvent(NetworkConnection.this, other));
             }
         });
         establishThread.start();
@@ -115,7 +114,7 @@ public class NetworkConnection extends Connection {
             UnderNet.logger.info("Listening for connections on: " + server.networkListener.listenSocket.getLocalPort());
             clientSocket = server.networkListener.listenSocket.accept();
             other.setAddress(clientSocket.getInetAddress());
-            EventManager.callEvent(new ConnectionAcceptedEvent(this));
+            EventManager.callEvent(new ChannelAcceptedEvent(this));
         } catch (IOException e) {
             e.printStackTrace();
             onConnectionError(new ConnectionIOException(this, ConnectionThreadType.ESTABLISH));
@@ -160,7 +159,7 @@ public class NetworkConnection extends Connection {
         }
 
         //Calling the connection established event.
-        EventManager.callEvent(new ConnectionEstablishedEvent(this, other));
+        EventManager.callEvent(new ChannelCreatedEvent(this, other));
     }
 
     /**
@@ -259,12 +258,12 @@ public class NetworkConnection extends Connection {
                     //Message
                     //Deserializing.
                     MessageBase deserialisedMessage = NetworkMessageSerializer.read(messageId, messagePayload);
-                    //EventManager.callEvent(new ConnectionMessageReceivedEvent(this, deserialisedMessage));
+                    //EventManager.callEvent(new ChannelMessageReceivedEvent(this, deserialisedMessage));
                 } else if (messageId == -1) {
                     //Skipping
                 } else {
                     //Byte stream
-                    EventManager.callEvent(new ConnectionBytestreamReceivedEvent(this, messagePayload));
+                    EventManager.callEvent(new ChannelBytestreamReceivedEvent(this, messagePayload));
                 }
             }
         } catch (SocketTimeoutException timeout) {

@@ -1,7 +1,7 @@
 package me.matoosh.undernet.p2p.router.connection;
 
 import me.matoosh.undernet.event.EventManager;
-import me.matoosh.undernet.event.connection.ConnectionErrorEvent;
+import me.matoosh.undernet.event.channel.ChannelErrorEvent;
 
 /**
  * Represents a direct connection.
@@ -20,7 +20,7 @@ public class DirectConnection extends Connection
         //TODO: Establish connection.
 
         //For now the connection is gonna throw an error unconditionally.
-        EventManager.callEvent(new ConnectionErrorEvent(this, new ConnectionNotAvailableException(this, ConnectionThreadType.SEND)));
+        EventManager.callEvent(new ChannelErrorEvent(this, new ConnectionNotAvailableException(this, ConnectionThreadType.SEND)));
     }
 
     /**
@@ -31,7 +31,7 @@ public class DirectConnection extends Connection
         //TODO
 
         //For now the connection is gonna throw an error unconditionally.
-        EventManager.callEvent(new ConnectionErrorEvent(this, new ConnectionNotAvailableException(this, ConnectionThreadType.SEND)));
+        EventManager.callEvent(new ChannelErrorEvent(this, new ConnectionNotAvailableException(this, ConnectionThreadType.SEND)));
     }
 
     /**

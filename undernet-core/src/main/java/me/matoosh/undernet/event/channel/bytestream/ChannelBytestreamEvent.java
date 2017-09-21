@@ -1,6 +1,6 @@
-package me.matoosh.undernet.event.connection.bytestream;
+package me.matoosh.undernet.event.channel.bytestream;
 
-import me.matoosh.undernet.event.connection.ConnectionEvent;
+import me.matoosh.undernet.event.channel.ChannelEvent;
 import me.matoosh.undernet.p2p.router.connection.Connection;
 
 /**
@@ -8,7 +8,7 @@ import me.matoosh.undernet.p2p.router.connection.Connection;
  * Created by Mateusz Rębacz on 31.08.2017.
  */
 
-public abstract class ConnectionBytestreamEvent extends ConnectionEvent {
+public abstract class ChannelBytestreamEvent extends ChannelEvent {
     /**
      * The received bytes.
      */
@@ -20,7 +20,7 @@ public abstract class ConnectionBytestreamEvent extends ConnectionEvent {
      *
      * @param c
      */
-    public ConnectionBytestreamEvent(Connection c, byte[] bytes) {
+    public ChannelBytestreamEvent(Connection c, byte[] bytes) {
         super(c);
         this.bytes = bytes;
     }

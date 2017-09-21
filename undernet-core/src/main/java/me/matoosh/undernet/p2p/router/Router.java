@@ -13,12 +13,11 @@ import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
-import me.matoosh.undernet.event.connection.ConnectionAcceptedEvent;
-import me.matoosh.undernet.event.connection.ConnectionDroppedEvent;
-import me.matoosh.undernet.event.connection.ConnectionErrorEvent;
-import me.matoosh.undernet.event.connection.ConnectionEstablishedEvent;
-import me.matoosh.undernet.event.connection.bytestream.ConnectionBytestreamReceivedEvent;
-import me.matoosh.undernet.event.connection.message.ConnectionMessageReceivedEvent;
+import me.matoosh.undernet.event.channel.ChannelClosedEvent;
+import me.matoosh.undernet.event.channel.ChannelErrorEvent;
+import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
+import me.matoosh.undernet.event.channel.bytestream.ChannelBytestreamReceivedEvent;
+import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
 import me.matoosh.undernet.event.router.RouterErrorEvent;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
 import me.matoosh.undernet.p2p.node.Node;
@@ -183,14 +182,14 @@ public class Router extends EventHandler {
         EventManager.registerEvent(RouterErrorEvent.class);
 
         //Connection events
-        EventManager.registerEvent(ConnectionDroppedEvent.class);
-        EventManager.registerEvent(ConnectionErrorEvent.class);
-        EventManager.registerEvent(ConnectionAcceptedEvent.class);
-        EventManager.registerEvent(ConnectionEstablishedEvent.class);
+        EventManager.registerEvent(ChannelClosedEvent.class);
+        EventManager.registerEvent(ChannelErrorEvent.class);
+        EventManager.registerEvent(ChannelAcceptedEvent.class);
+        EventManager.registerEvent(ChannelCreatedEvent.class);
 
         //Message events
-        EventManager.registerEvent(ConnectionMessageReceivedEvent.class);
-        EventManager.registerEvent(ConnectionBytestreamReceivedEvent.class);
+        EventManager.registerEvent(ChannelMessageReceivedEvent.class);
+        EventManager.registerEvent(ChannelBytestreamReceivedEvent.class);
     }
 
     /**
@@ -199,9 +198,9 @@ public class Router extends EventHandler {
     private void registerHandlers() {
         EventManager.registerHandler(this, RouterStatusEvent.class);
         EventManager.registerHandler(this, RouterErrorEvent.class);
-        EventManager.registerHandler(this, ConnectionEstablishedEvent.class);
-        EventManager.registerHandler(this, ConnectionDroppedEvent.class);
-        EventManager.registerHandler(this, ConnectionErrorEvent.class);
+        EventManager.registerHandler(this, ChannelCreatedEvent.class);
+        EventManager.registerHandler(this, ChannelClosedEvent.class);
+        EventManager.registerHandler(this, ChannelErrorEvent.class);
     }
 
     /**
@@ -263,20 +262,20 @@ public class Router extends EventHandler {
     @Override
     public void onEventCalled(Event e) {
         //Connection established.
-        if(e.getClass() == ConnectionEstablishedEvent.class) {
-            ConnectionEstablishedEvent establishedEvent = (ConnectionEstablishedEvent)e;
+        if(e.getClass() == ChannelCreatedEvent.class) {
+            ChannelCreatedEvent establishedEvent = (ChannelCreatedEvent)e;
             logger.debug("New connection established with: " + establishedEvent.other);
             connections.add(establishedEvent.connection);
         }
         //Connection dropped.
-        else if(e.getClass() == ConnectionDroppedEvent.class) {
-            ConnectionDroppedEvent droppedEvent = (ConnectionDroppedEvent)e;
+        else if(e.getClass() == ChannelClosedEvent.class) {
+            ChannelClosedEvent droppedEvent = (ChannelClosedEvent)e;
             logger.debug("Connection with: " + droppedEvent.other + " dropped");
             connections.remove(droppedEvent.connection);
         }
         //Connection error.
-        else if(e.getClass() == ConnectionErrorEvent.class) {
-            ConnectionErrorEvent errorEvent = (ConnectionErrorEvent)e;
+        else if(e.getClass() == ChannelErrorEvent.class) {
+            ChannelErrorEvent errorEvent = (ChannelErrorEvent)e;
             logger.warn("There was an error with the connection: " + errorEvent.connection.id);
             //TODO: Handle the error.
         } else if(e.getClass() == RouterStatusEvent.class) {

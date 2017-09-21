@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import me.matoosh.undernet.event.EventManager;
+import me.matoosh.undernet.event.channel.ChannelErrorEvent;
 
 /**
  * Handles data transfered over a channel.
@@ -45,8 +47,13 @@ public class ServerMessageHandler extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        //Discarding the received message.
-        ((ByteBuf) msg).release();
+        //Reading the incoming message as a string.
+        ByteBuf in = (ByteBuf) msg;
+        try {
+            System.out.println(in.toString(io.netty.util.CharsetUtil.US_ASCII));
+        } finally {
+            in.release(); //Releasing the buffer from memory.
+        }
     }
 
     /**
@@ -62,6 +69,7 @@ public class ServerMessageHandler extends ChannelInboundHandlerAdapter {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         //Logging the exception.
         logger.error("Error with connection: " + ctx.name(), cause);
+        EventManager.callEvent(new ChannelErrorEvent());
 
         //Closing the connection.
         ctx.close();
