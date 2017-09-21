@@ -9,8 +9,11 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.concurrent.GlobalEventExecutor;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.client.ClientConnectionEvent;
 import me.matoosh.undernet.event.client.ClientExceptionEvent;
@@ -43,6 +46,12 @@ public class Client {
      * The future of the client.
      */
     public ChannelFuture clientFuture;
+
+    /**
+     * A list of the currently active channels.
+     */
+    public final ChannelGroup channels =
+            new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
     /**
      * The logger.
@@ -89,7 +98,7 @@ public class Client {
         clientBootstrap.group(workerEventLoopGroup); //Assigning the channel to the client event loop group.
         clientBootstrap.channel(NioSocketChannel.class); //Using the non blocking io.
         clientBootstrap.option(ChannelOption.SO_KEEPALIVE, true); //Making sure the connection is sending the keep alive signal.
-        clientBootstrap.handler(new ClientChannelInitializer());
+        clientBootstrap.handler(new ClientChannelInitializer(this));
 
         //Starting the client.
         clientFuture = clientBootstrap.connect(node.address); //Connecting to the node.

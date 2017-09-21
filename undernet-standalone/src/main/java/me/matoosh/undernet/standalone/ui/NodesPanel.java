@@ -25,7 +25,6 @@ import me.matoosh.undernet.event.channel.ChannelClosedEvent;
 import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
 import me.matoosh.undernet.p2p.cache.NodeCache;
 import me.matoosh.undernet.p2p.node.Node;
-import me.matoosh.undernet.p2p.router.connection.Connection;
 import me.matoosh.undernet.standalone.UnderNetStandalone;
 import me.matoosh.undernet.standalone.ui.dialog.AddNodeCacheFrame;
 
@@ -133,8 +132,8 @@ public class NodesPanel extends JPanel {
             //Whether we are currently connected to the node.
             boolean connected = false;
 
-            for(Connection conn : UnderNet.router.connections) {
-                if(conn.other == node) {
+            for (Node n : UnderNet.router.connectedNodes) {
+                if(n.address.equals(node.address)) {
                     connected = true;
                 }
             }

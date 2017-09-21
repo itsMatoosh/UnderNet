@@ -18,9 +18,10 @@ public abstract class ChannelBytestreamEvent extends ChannelEvent {
      * Creates a new channel event, given the channel.
      *
      * @param c
+     * @param isServer
      */
-    public ChannelBytestreamEvent(Channel c, byte[] data) {
-        super(c);
+    public ChannelBytestreamEvent(Channel c, boolean isServer, byte[] data) {
+        super(c, isServer);
         this.data = data;
     }
 }

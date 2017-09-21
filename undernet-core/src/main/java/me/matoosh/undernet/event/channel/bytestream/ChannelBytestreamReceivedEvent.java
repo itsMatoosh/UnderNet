@@ -13,10 +13,11 @@ public class ChannelBytestreamReceivedEvent extends ChannelBytestreamEvent {
      * Creates a new channel event, given the channel.
      *
      * @param c
+     * @param isServer
      * @param data
      */
-    public ChannelBytestreamReceivedEvent(Channel c, byte[] data) {
-        super(c, data);
+    public ChannelBytestreamReceivedEvent(Channel c, boolean isServer, byte[] data) {
+        super(c, isServer, data);
     }
 
     /**

@@ -7,8 +7,11 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.util.concurrent.GlobalEventExecutor;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.server.ServerExceptionEvent;
@@ -45,6 +48,12 @@ public class Server
      * The future of the server.
      */
     public ChannelFuture serverFuture;
+
+    /**
+     * A list of the currently active channels.
+     */
+    public final ChannelGroup channels =
+            new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
 
     /**

@@ -19,9 +19,9 @@ public abstract class ChannelMessageEvent extends ChannelEvent {
      * Creates a new channel event, given the channel.
      *
      * @param c
+     * @param isServer
      */
-    public ChannelMessageEvent(Channel c, NetworkMessage msg) {
-        super(c);
-        this.message = msg;
+    public ChannelMessageEvent(Channel c, boolean isServer) {
+        super(c, isServer);
     }
 }

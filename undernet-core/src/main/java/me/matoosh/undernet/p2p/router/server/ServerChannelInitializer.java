@@ -30,7 +30,7 @@ public class ServerChannelInitializer extends ChannelInitializer {
      */
     @Override
     protected void initChannel(Channel ch) throws Exception {
-        //Registering the server message handler.
+        //Registering the server channel handler.
         ch.pipeline().addLast(new ServerChannelHandler(server));
     }
 

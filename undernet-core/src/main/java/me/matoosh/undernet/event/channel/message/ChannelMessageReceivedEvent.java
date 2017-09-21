@@ -9,15 +9,14 @@ import me.matoosh.undernet.p2p.router.data.messages.NetworkMessage;
  */
 
 public class ChannelMessageReceivedEvent extends ChannelMessageEvent {
-
     /**
      * Creates a new channel event, given the channel.
      *
      * @param c
-     * @param msg
+     * @param isServer
      */
-    public ChannelMessageReceivedEvent(Channel c, NetworkMessage msg) {
-        super(c, msg);
+    public ChannelMessageReceivedEvent(Channel c, boolean isServer) {
+        super(c, isServer);
     }
 
     /**

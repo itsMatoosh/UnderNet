@@ -4,6 +4,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import me.matoosh.undernet.p2p.router.server.Server;
+import me.matoosh.undernet.p2p.router.server.ServerChannelHandler;
 
 /**
  * Used to initialize client-side channels.
@@ -11,6 +12,15 @@ import me.matoosh.undernet.p2p.router.server.Server;
  */
 
 public class ClientChannelInitializer extends ChannelInitializer<SocketChannel>{
+
+    /**
+     * The client of this channel initializer.
+     */
+    public Client client;
+
+    public ClientChannelInitializer(Client client) {
+        this.client = client;
+    }
 
     /**
      * This method will be called once the {@link Channel} was registered. After the method returns this instance
@@ -23,7 +33,8 @@ public class ClientChannelInitializer extends ChannelInitializer<SocketChannel>{
      */
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
-
+        //Registering the client channel handler.
+        ch.pipeline().addLast(new ClientChannelHandler(client));
     }
 
     /**

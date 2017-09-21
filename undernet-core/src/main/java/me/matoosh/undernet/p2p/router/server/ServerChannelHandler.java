@@ -8,6 +8,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.AttributeKey;
 import me.matoosh.undernet.event.EventManager;
+import me.matoosh.undernet.event.channel.ChannelClosedEvent;
+import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
 import me.matoosh.undernet.event.channel.ChannelErrorEvent;
 import me.matoosh.undernet.p2p.node.Node;
 
@@ -26,7 +28,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
     /**
      * Defines the client node attribute id.
      */
-    protected static final AttributeKey<Node> ATTRIBUTE_KEY_CLIENT_NODE = AttributeKey
+    public static final AttributeKey<Node> ATTRIBUTE_KEY_CLIENT_NODE = AttributeKey
             .valueOf("ClientNode");
 
     /**
@@ -45,10 +47,19 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        //Adding the channel to the server list.
+        server.channels.add(ctx.channel());
+
         //Adding a node object to the connection.
         Node clientNode = new Node();
         clientNode.address = ctx.channel().remoteAddress(); //Setting the node's address.
         ctx.channel().attr(ATTRIBUTE_KEY_CLIENT_NODE).set(clientNode);
+
+        //Adding the client node to the connectedNodes list.
+        server.router.connectedNodes.add(clientNode);
+
+        //Calling the channel created event.
+        EventManager.callEvent(new ChannelCreatedEvent(ctx.channel(), true));
     }
 
     /**
@@ -58,7 +69,15 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        super.channelInactive(ctx);
+        //Removing the channel from the server list.
+        server.channels.remove(ctx.channel());
+
+        //Removing the client from the connectedNodes list.
+        Node clientNode = ctx.channel().attr(ATTRIBUTE_KEY_CLIENT_NODE).get();
+        server.router.connectedNodes.remove(clientNode);
+
+        //Calling the channel closed event.
+        EventManager.callEvent(new ChannelClosedEvent(ctx.channel(), true));
     }
 
     /**
@@ -91,7 +110,7 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         //Logging the exception.
         logger.error("Error with connection from: " + ctx.channel().remoteAddress(), cause);
-        EventManager.callEvent(new ChannelErrorEvent(ctx.channel(), cause));
+        EventManager.callEvent(new ChannelErrorEvent(ctx.channel(), true, cause));
 
         //Closing the connection.
         ctx.close();

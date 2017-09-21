@@ -84,16 +84,6 @@ public class NetworkConnection extends Connection {
                     onConnectionError(e);
                     return;
                 }
-
-                //Setting the so timeout.
-                try {
-                    connectionSocket.setSoTimeout(client.router.networkTickTime/1000 - 1);
-                } catch (SocketException e) {
-                    e.printStackTrace();
-                }
-
-                //Calling the connection established event.
-                //EventManager.callEvent(new ChannelCreatedEvent(NetworkConnection.this, other));
             }
         });
         establishThread.start();
@@ -144,13 +134,6 @@ public class NetworkConnection extends Connection {
             e.printStackTrace();
             onConnectionError(e);
             return;
-        }
-
-        //Setting the so timeout.
-        try {
-            clientSocket.setSoTimeout(server.router.networkTickTime/1000 - 1);
-        } catch (SocketException e) {
-            e.printStackTrace();
         }
 
         //Calling the connection established event.
