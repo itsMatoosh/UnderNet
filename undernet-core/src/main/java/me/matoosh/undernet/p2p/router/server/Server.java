@@ -8,6 +8,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.server.ServerExceptionEvent;
@@ -84,8 +85,8 @@ public class Server
             //Bootstraping the server.
             ServerBootstrap serverBootstrap = new ServerBootstrap();
             serverBootstrap.group(bossEventLoopGroup, workerEventLoopGroup) //Assigning event loops to the server.
-                    .channel(NodeNioServerSocketChannel.class) //Using the non blocking io for transfer.
-                    .childHandler(new ServerChannelInitializer())
+                    .channel(NioServerSocketChannel.class) //Using the non blocking io for transfer.
+                    .childHandler(new ServerChannelInitializer(this))
                     .option(ChannelOption.SO_BACKLOG, 16)          //Setting the number of pending connections to keep in the queue.
                     .childOption(ChannelOption.SO_KEEPALIVE, true); //Making sure the connection event loop sends keep alive messages.
 

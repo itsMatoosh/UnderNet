@@ -1,6 +1,7 @@
 package me.matoosh.undernet.event.channel;
 
 import io.netty.channel.Channel;
+import me.matoosh.undernet.p2p.router.server.ServerChannelHandler;
 
 /**
  * Called when a channel error occurs.
@@ -12,14 +13,15 @@ public class ChannelErrorEvent extends ChannelEvent {
     /**
      * The connection exception.
      */
-    public Exception exception;
+    public Throwable exception;
 
     /**
      * Creates a new channel event, given the channel.
      *
      * @param c
+     * @param exception
      */
-    public ChannelErrorEvent(Channel c, Exception exception) {
+    public ChannelErrorEvent(Channel c, Throwable exception) {
         super(c);
         this.exception = exception;
     }

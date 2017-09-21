@@ -184,7 +184,6 @@ public class Router extends EventHandler {
         //Connection events
         EventManager.registerEvent(ChannelClosedEvent.class);
         EventManager.registerEvent(ChannelErrorEvent.class);
-        EventManager.registerEvent(ChannelAcceptedEvent.class);
         EventManager.registerEvent(ChannelCreatedEvent.class);
 
         //Message events
@@ -265,18 +264,18 @@ public class Router extends EventHandler {
         if(e.getClass() == ChannelCreatedEvent.class) {
             ChannelCreatedEvent establishedEvent = (ChannelCreatedEvent)e;
             logger.debug("New connection established with: " + establishedEvent.other);
-            connections.add(establishedEvent.connection);
+            //connections.add(establishedEvent.connection);
         }
         //Connection dropped.
         else if(e.getClass() == ChannelClosedEvent.class) {
             ChannelClosedEvent droppedEvent = (ChannelClosedEvent)e;
-            logger.debug("Connection with: " + droppedEvent.other + " dropped");
-            connections.remove(droppedEvent.connection);
+            //logger.debug("Connection with: " + droppedEvent.other + " dropped");
+            //connections.remove(droppedEvent.connection);
         }
         //Connection error.
         else if(e.getClass() == ChannelErrorEvent.class) {
             ChannelErrorEvent errorEvent = (ChannelErrorEvent)e;
-            logger.warn("There was an error with the connection: " + errorEvent.connection.id);
+            //logger.warn("There was an error with the connection: " + errorEvent.connection.id);
             //TODO: Handle the error.
         } else if(e.getClass() == RouterStatusEvent.class) {
             RouterStatusEvent statusEvent = (RouterStatusEvent)e;

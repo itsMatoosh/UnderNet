@@ -4,8 +4,7 @@ import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.net.InetSocketAddress;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -78,20 +77,18 @@ public class AddNodeCacheFrame extends JDialog {
                 savedNode.username = nodeUsernameField.getText();
 
                 //Getting the address.
-                try {
-                    String[] addressSplit = nodeAddressField.getText().split(":");
-                    savedNode.address = InetAddress.getByName(addressSplit[0]);
-                    if(addressSplit.length > 1) {
-                        if(addressSplit[1] != null) {
-                            if(!addressSplit[1].equals("")) {
-                                //Custom port was provided.
-                                savedNode.port = Integer.parseInt(addressSplit[1]);
-                            }
+                String[] addressSplit = nodeAddressField.getText().split(":");
+                int port = 2017;
+                if(addressSplit.length > 1) {
+                    if(addressSplit[1] != null) {
+                        if(!addressSplit[1].equals("")) {
+                            //Custom port was provided.
+                            port = Integer.parseInt(addressSplit[1]);
+                            savedNode.port = port;
                         }
                     }
-                } catch (UnknownHostException e) {
-                    e.printStackTrace();
                 }
+                savedNode.address = new InetSocketAddress(addressSplit[0], port);
 
 
                 //Adding the node to the cache.

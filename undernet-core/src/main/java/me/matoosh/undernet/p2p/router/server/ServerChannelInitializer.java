@@ -11,6 +11,15 @@ import io.netty.channel.ChannelInitializer;
 
 public class ServerChannelInitializer extends ChannelInitializer {
     /**
+     * The server behind this initializer.
+     */
+    public Server server;
+
+    public ServerChannelInitializer(Server server) {
+        this.server = server;
+    }
+
+    /**
      * This method will be called once the {@link Channel} was registered. After the method returns this instance
      * will be removed from the {@link ChannelPipeline} of the {@link Channel}.
      *
@@ -22,7 +31,7 @@ public class ServerChannelInitializer extends ChannelInitializer {
     @Override
     protected void initChannel(Channel ch) throws Exception {
         //Registering the server message handler.
-        ch.pipeline().addLast(new ServerMessageHandler());
+        ch.pipeline().addLast(new ServerChannelHandler(server));
     }
 
     /**

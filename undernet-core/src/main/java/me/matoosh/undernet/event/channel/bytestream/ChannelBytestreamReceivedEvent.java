@@ -1,6 +1,6 @@
 package me.matoosh.undernet.event.channel.bytestream;
 
-import me.matoosh.undernet.p2p.router.connection.Connection;
+import io.netty.channel.Channel;
 
 /**
  * Called when a bytestream is received by the client.
@@ -10,12 +10,13 @@ import me.matoosh.undernet.p2p.router.connection.Connection;
 public class ChannelBytestreamReceivedEvent extends ChannelBytestreamEvent {
 
     /**
-     * Creates a new connection event, given connection.
+     * Creates a new channel event, given the channel.
      *
      * @param c
+     * @param data
      */
-    public ChannelBytestreamReceivedEvent(Connection c, byte[] bytes) {
-        super(c, bytes);
+    public ChannelBytestreamReceivedEvent(Channel c, byte[] data) {
+        super(c, data);
     }
 
     /**

@@ -2,7 +2,7 @@ package me.matoosh.undernet.event.channel;
 
 import io.netty.channel.Channel;
 import me.matoosh.undernet.p2p.router.Router;
-import me.matoosh.undernet.p2p.router.server.NodeNioServerSocketChannel;
+import me.matoosh.undernet.p2p.router.connection.ConnectionSide;
 
 /**
  * Called when a connection is dropped.
@@ -10,12 +10,13 @@ import me.matoosh.undernet.p2p.router.server.NodeNioServerSocketChannel;
  */
 
 public class ChannelClosedEvent extends ChannelEvent {
+
     /**
      * Creates a new channel event, given the channel.
      *
      * @param c
      */
-    public ChannelClosedEvent(Channel c) {
+    public ChannelClosedEvent(Channel c, ConnectionSide side) {
         super(c);
     }
 
@@ -24,11 +25,6 @@ public class ChannelClosedEvent extends ChannelEvent {
      */
     @Override
     public void onCalled() {
-        if(channel instanceof NodeNioServerSocketChannel) {
-            Router.logger.info("Server connection with: " + channel.remoteAddress() + " has been dropped");
-        } else if(true) {
-            Router.logger.info("Client connection with: " + channel.remoteAddress() + " has been dropped");
-        }
-
+        Router.logger.info("Connection with: " + channel.remoteAddress() + " has been dropped");
     }
 }

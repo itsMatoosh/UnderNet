@@ -5,15 +5,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 
-import me.matoosh.undernet.UnderNet;
-import me.matoosh.undernet.event.EventManager;
-import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
-import me.matoosh.undernet.event.channel.bytestream.ChannelBytestreamReceivedEvent;
 import me.matoosh.undernet.p2p.router.data.messages.MessageBase;
 import me.matoosh.undernet.p2p.router.data.messages.NetworkMessageSerializer;
 
@@ -53,7 +48,7 @@ public class NetworkConnection extends Connection {
                     logger.info("Connecting to: " + other.address);
                     connectionSocket = new Socket();
 
-                    connectionSocket.connect(new InetSocketAddress(other.address, other.port));
+                    connectionSocket.connect(other.address);
                 } catch (IOException e) {
                     e.printStackTrace();
                     onConnectionError(new ConnectionIOException(NetworkConnection.this, ConnectionThreadType.ESTABLISH));
@@ -98,7 +93,7 @@ public class NetworkConnection extends Connection {
                 }
 
                 //Calling the connection established event.
-                EventManager.callEvent(new ChannelCreatedEvent(NetworkConnection.this, other));
+                //EventManager.callEvent(new ChannelCreatedEvent(NetworkConnection.this, other));
             }
         });
         establishThread.start();
@@ -110,7 +105,7 @@ public class NetworkConnection extends Connection {
     @Override
     protected void onAcceptingConnection() {
         //Accepting the server connection.
-        try {
+       /* try {
             UnderNet.logger.info("Listening for connections on: " + server.networkListener.listenSocket.getLocalPort());
             clientSocket = server.networkListener.listenSocket.accept();
             other.setAddress(clientSocket.getInetAddress());
@@ -128,7 +123,7 @@ public class NetworkConnection extends Connection {
             e.printStackTrace();
             onConnectionError(new ConnectionIOException(this, ConnectionThreadType.ESTABLISH));
             return;
-        }
+        }*/
 
         //Setting the so timeout.
         try {
@@ -159,7 +154,7 @@ public class NetworkConnection extends Connection {
         }
 
         //Calling the connection established event.
-        EventManager.callEvent(new ChannelCreatedEvent(this, other));
+        //EventManager.callEvent(new ChannelCreatedEvent(this, other));
     }
 
     /**
@@ -263,7 +258,7 @@ public class NetworkConnection extends Connection {
                     //Skipping
                 } else {
                     //Byte stream
-                    EventManager.callEvent(new ChannelBytestreamReceivedEvent(this, messagePayload));
+                    //EventManager.callEvent(new ChannelBytestreamReceivedEvent(this, messagePayload));
                 }
             }
         } catch (SocketTimeoutException timeout) {

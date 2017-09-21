@@ -1,7 +1,7 @@
 package me.matoosh.undernet.event.channel.bytestream;
 
+import io.netty.channel.Channel;
 import me.matoosh.undernet.event.channel.ChannelEvent;
-import me.matoosh.undernet.p2p.router.connection.Connection;
 
 /**
  * An event concerning a bytestream transmission.
@@ -12,16 +12,15 @@ public abstract class ChannelBytestreamEvent extends ChannelEvent {
     /**
      * The received bytes.
      */
-    public byte[] bytes;
-
+    public byte[] data;
 
     /**
-     * Creates a new connection event, given connection.
+     * Creates a new channel event, given the channel.
      *
      * @param c
      */
-    public ChannelBytestreamEvent(Connection c, byte[] bytes) {
+    public ChannelBytestreamEvent(Channel c, byte[] data) {
         super(c);
-        this.bytes = bytes;
+        this.data = data;
     }
 }

@@ -3,8 +3,6 @@ package me.matoosh.undernet.p2p.router.connection;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import me.matoosh.undernet.event.EventManager;
-import me.matoosh.undernet.event.channel.ChannelClosedEvent;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.client.Client;
@@ -54,11 +52,6 @@ public abstract class Connection {
      */
     public OutputStream outputStream;
 
-    /**
-     * The connection data handler.
-     */
-    public ConnectionDataHandler connectionDataHandler;
-
 
     /**
      * Establishes the connection with the specified node on a new thread.
@@ -104,10 +97,9 @@ public abstract class Connection {
         //Setting all the variables to null.
         inputStream = null;
         outputStream = null;
-        connectionDataHandler = null;
 
 
-        EventManager.callEvent(new ChannelClosedEvent(this, other));
+        //EventManager.callEvent(new ChannelClosedEvent(this, other));
     }
 
     /**
