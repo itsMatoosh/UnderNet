@@ -46,14 +46,6 @@ public class Server
      */
     public ChannelFuture serverFuture;
 
-    /**
-     * The network listener of this server.
-     */
-    public NetworkListener networkListener;
-    /**
-     * The direct listener of this server.
-     */
-    public DirectListener directListener;
 
     /**
      * The logger.
@@ -99,7 +91,7 @@ public class Server
                     .childOption(ChannelOption.SO_KEEPALIVE, true); //Making sure the connection event loop sends keep alive messages.
 
             //Binding and starting to accept incoming connections.
-            serverFuture = serverBootstrap.bind(UnderNet.networkConfig.listeningPort()).sync(); // (7)
+            serverFuture = serverBootstrap.bind(UnderNet.networkConfig.listeningPort()).sync();
         } catch (InterruptedException e) {
             logger.error("An error occured while starting the server!", e);
             EventManager.callEvent(new ServerExceptionEvent(this, e));
