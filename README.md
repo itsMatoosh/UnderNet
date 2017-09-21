@@ -1,5 +1,7 @@
 # UnderNet
 [WIP] A P2P mesh social network.
+
+![Imgur](https://i.imgur.com/po8xteU.png)
 ## Features
  - Based on a Distributed Hash Table architecture.
  -- There is no central server, every device makes a piece of the network.
@@ -12,3 +14,5 @@
 
 ## Want to help?
 The project is in its very early stages of development and most of the feautures described above have not yet been implemented. If you're experienced with Java and would like to help the project, feel free to fork, develop and issue pull requests. The project can be opened and built with Android Studio.
+
+#### Expected to release before WWIII
