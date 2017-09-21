@@ -97,9 +97,6 @@ public abstract class Connection {
         //Setting all the variables to null.
         inputStream = null;
         outputStream = null;
-
-
-        //EventManager.callEvent(new ChannelClosedEvent(this, other));
     }
 
     /**

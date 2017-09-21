@@ -3,6 +3,8 @@ package me.matoosh.undernet.p2p.router.client;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
+import me.matoosh.undernet.event.EventManager;
+import me.matoosh.undernet.event.channel.ChannelErrorEvent;
 import me.matoosh.undernet.p2p.router.server.Server;
 import me.matoosh.undernet.p2p.router.server.ServerChannelHandler;
 
@@ -46,5 +48,9 @@ public class ClientChannelInitializer extends ChannelInitializer<SocketChannel>{
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         Client.logger.error("An error occured while initializing the connection to: " + ctx.channel().remoteAddress(), cause);
+        EventManager.callEvent(new ChannelErrorEvent(ctx.channel(), false, cause));
+
+        //Closing the connection.
+        ctx.close();
     }
 }
