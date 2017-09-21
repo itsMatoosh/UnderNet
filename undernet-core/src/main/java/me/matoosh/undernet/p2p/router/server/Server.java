@@ -3,11 +3,18 @@ package me.matoosh.undernet.p2p.router.server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventManager;
-import me.matoosh.undernet.event.server.ServerErrorEvent;
+import me.matoosh.undernet.event.server.ServerExceptionEvent;
 import me.matoosh.undernet.event.server.ServerStatusEvent;
+import me.matoosh.undernet.p2p.router.InterfaceStatus;
 import me.matoosh.undernet.p2p.router.Router;
-import me.matoosh.undernet.p2p.router.connection.Connection;
 
 /**
  * Server part of the router.
@@ -24,7 +31,21 @@ public class Server
     /**
      * Current status of the server.
      */
-    public ServerStatus status = ServerStatus.NOT_STARTED;
+    public InterfaceStatus status = InterfaceStatus.STOPPED;
+
+    /**
+     * Event loop group for accepting incoming connections.
+     */
+    public EventLoopGroup bossEventLoopGroup;
+    /**
+     * Event loop group for managing active co
+     */
+    public EventLoopGroup workerEventLoopGroup;
+    /**
+     * The server future.
+     */
+    public ChannelFuture serverFuture;
+
     /**
      * The network listener of this server.
      */
@@ -62,19 +83,27 @@ public class Server
         logger.info("Starting the server...");
 
         //Changing the server status to starting.
-        EventManager.callEvent(new ServerStatusEvent(Server.this, ServerStatus.STARTING));
+        EventManager.callEvent(new ServerStatusEvent(Server.this, InterfaceStatus.STARTING));
 
-        //Listening for network connections.
-        if(networkListener == null) {
-            this.networkListener = new NetworkListener(this);
-        }
-        networkListener.start();
+        try {
+            //Creating the worker and boss server event groups.
+            bossEventLoopGroup = new NioEventLoopGroup();
+            workerEventLoopGroup = new NioEventLoopGroup();
 
-        //Listening for direct connections.
-        if(this.directListener == null) {
-            this.directListener = new DirectListener();
+            //Bootstraping the server.
+            ServerBootstrap serverBootstrap = new ServerBootstrap();
+            serverBootstrap.group(bossEventLoopGroup, workerEventLoopGroup) //Assigning event loops to the server.
+                    .channel(NioServerSocketChannel.class) //Using the non blocking io for transfer.
+                    .childHandler(new ServerChannelInitializer())
+                    .option(ChannelOption.SO_BACKLOG, 128)          //Setting the number of pending connections to keep in the queue.
+                    .childOption(ChannelOption.SO_KEEPALIVE, true); //Making sure the connection event loop sends keep alive messages.
+
+            //Binding and starting to accept incoming connections.
+            serverFuture = serverBootstrap.bind(UnderNet.networkConfig.listeningPort()).sync(); // (7)
+        } catch (InterruptedException e) {
+            logger.error("An error occured while starting the server!", e);
+            EventManager.callEvent(new ServerExceptionEvent(this, e));
         }
-        directListener.start();
     }
 
     /**
@@ -83,22 +112,20 @@ public class Server
     public void stop() {
         logger.info("Stopping the server...");
 
-        //Stopping the listeners.
-        networkListener.stop();
-        directListener.stop();
+        //Changing the server status to stopping.
+        EventManager.callEvent(new ServerStatusEvent(Server.this, InterfaceStatus.STOPPING));
 
-        //Disconnecting the clients.
-        for (int i = 0; i < router.connections.size(); i++) {
-            Connection c = router.connections.get(i);
-            if(c.server == this) {
-                c.drop();
-            }
-            c = null;
+        try {
+            //Stopping the server.
+            serverFuture.channel().closeFuture().sync();
+
+            //Stopping the event loop groups.
+            bossEventLoopGroup.shutdownGracefully();
+            workerEventLoopGroup.shutdownGracefully();
+        } catch (InterruptedException e) {
+            logger.error("An error occured while stopping the server!", e);
+            EventManager.callEvent(new ServerExceptionEvent(this, e));
         }
-
-        //Disposing listeners.
-        networkListener = null;
-        directListener = null;
     }
 
     /**
@@ -107,6 +134,6 @@ public class Server
     private void registerEvents() {
         //Server events.
         EventManager.registerEvent(ServerStatusEvent.class);
-        EventManager.registerEvent(ServerErrorEvent.class);
+        EventManager.registerEvent(ServerExceptionEvent.class);
     }
 }

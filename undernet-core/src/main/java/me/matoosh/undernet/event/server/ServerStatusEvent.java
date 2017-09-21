@@ -1,7 +1,7 @@
 package me.matoosh.undernet.event.server;
 
+import me.matoosh.undernet.p2p.router.InterfaceStatus;
 import me.matoosh.undernet.p2p.router.server.Server;
-import me.matoosh.undernet.p2p.router.server.ServerStatus;
 
 /**
  * Called when the server status changes.
@@ -13,9 +13,9 @@ public class ServerStatusEvent extends ServerEvent {
     /**
      * New status of the server.
      */
-    public ServerStatus newStatus;
+    public InterfaceStatus newStatus;
 
-    public ServerStatusEvent(Server server, ServerStatus newStatus) {
+    public ServerStatusEvent(Server server, InterfaceStatus newStatus) {
         super(server);
         this.newStatus = newStatus;
     }

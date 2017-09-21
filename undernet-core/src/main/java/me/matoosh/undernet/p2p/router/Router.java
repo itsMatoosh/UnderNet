@@ -125,10 +125,10 @@ public class Router extends EventHandler {
         server.start();
 
         //Starting the client.
-        client.start();
+        //client.start();
 
         //Starting the router loop.
-        startNetworkLoop();
+        //startNetworkLoop();
 
         //Setting the status to started.
         EventManager.callEvent(new RouterStatusEvent(this,  InterfaceStatus.STARTED));

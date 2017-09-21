@@ -5,7 +5,7 @@ import java.net.ServerSocket;
 
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventManager;
-import me.matoosh.undernet.event.server.ServerErrorEvent;
+import me.matoosh.undernet.event.server.ServerExceptionEvent;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.connection.NetworkConnection;
 
@@ -45,7 +45,7 @@ public class NetworkListener extends NodeListener {
                 try {
                     listenSocket = new ServerSocket(UnderNet.networkConfig.listeningPort());
                 } catch (IOException e) {
-                    EventManager.callEvent(new ServerErrorEvent(NetworkListener.this.server, new ServerIOException(NetworkListener.this.server)));
+                    EventManager.callEvent(new ServerExceptionEvent(NetworkListener.this.server, e));
                 }
 
                 //Running the loop until we need to stop.
