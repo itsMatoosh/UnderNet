@@ -11,4 +11,4 @@
  -- Currently the network is being developed to be fully functional on standalone as well as Android devices, but with its modular design, it should be easy to port it to other platforms.
 
 ## Want to help?
-The project is in its very early stages of development and most of the feautures described above have not yet been implemented. If you're experienced with Java and would like to help the project, feel free to clone, develop and issue pull requests. The project can be opened and built with Android Studio.
+The project is in its very early stages of development and most of the feautures described above have not yet been implemented. If you're experienced with Java and would like to help the project, feel free to fork, develop and issue pull requests. The project can be opened and built with Android Studio.
