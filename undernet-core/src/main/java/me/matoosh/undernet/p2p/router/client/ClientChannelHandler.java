@@ -11,7 +11,9 @@ import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.ChannelClosedEvent;
 import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
 import me.matoosh.undernet.event.channel.ChannelErrorEvent;
+import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
 import me.matoosh.undernet.p2p.node.Node;
+import me.matoosh.undernet.p2p.router.data.messages.NetworkMessage;
 
 /**
  * Handles data transfered over a channel.
@@ -98,12 +100,12 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        //Reading the incoming message as a string.
-        ByteBuf in = (ByteBuf) msg;
+        //Reading the incoming message as a NetworkMessage.
+        NetworkMessage networkMessage = (NetworkMessage) msg;
         try {
-            System.out.println(in.toString(io.netty.util.CharsetUtil.US_ASCII));
+            EventManager.callEvent(new ChannelMessageReceivedEvent(ctx.channel(), false, networkMessage));
         } finally {
-            in.release(); //Releasing the buffer from memory.
+            networkMessage = null; //Releasing the msg from memory.
         }
     }
 

@@ -1,7 +1,9 @@
 package me.matoosh.undernet.event.channel.message;
 
 import io.netty.channel.Channel;
+import me.matoosh.undernet.p2p.router.client.Client;
 import me.matoosh.undernet.p2p.router.data.messages.NetworkMessage;
+import me.matoosh.undernet.p2p.router.server.Server;
 
 /**
  * Called when a message is received on connection.
@@ -9,14 +11,16 @@ import me.matoosh.undernet.p2p.router.data.messages.NetworkMessage;
  */
 
 public class ChannelMessageReceivedEvent extends ChannelMessageEvent {
+
     /**
      * Creates a new channel event, given the channel.
      *
      * @param c
      * @param isServer
+     * @param msg
      */
-    public ChannelMessageReceivedEvent(Channel c, boolean isServer) {
-        super(c, isServer);
+    public ChannelMessageReceivedEvent(Channel c, boolean isServer, NetworkMessage msg) {
+        super(c, isServer, msg);
     }
 
     /**
@@ -24,6 +28,10 @@ public class ChannelMessageReceivedEvent extends ChannelMessageEvent {
      */
     @Override
     public void onCalled() {
-        NetworkMessage.logger.info("A network message received on channel: " + channel.toString());
+        if(isServer) {
+            Server.logger.info("A network message with id: " + message.msgId + " received from: " + channel.remoteAddress());
+        } else {
+            Client.logger.info("A network message with id: " + message.msgId + " received from: " + channel.remoteAddress());
+        }
     }
 }
