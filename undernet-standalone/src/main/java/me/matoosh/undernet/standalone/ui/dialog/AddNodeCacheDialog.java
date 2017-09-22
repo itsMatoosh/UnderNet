@@ -15,7 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import me.matoosh.undernet.p2p.cache.NodeCache;
-import me.matoosh.undernet.p2p.node.KnownNode;
+import me.matoosh.undernet.p2p.node.Node;
 
 /**
  * A dialog for adding new node to the node cache.
@@ -23,10 +23,6 @@ import me.matoosh.undernet.p2p.node.KnownNode;
  */
 
 public class AddNodeCacheDialog extends JDialog {
-    /**
-     * The text field with the username of the node.
-     */
-    private JTextField nodeUsernameField;
     /**
      * The text field with the address of the node.
      */
@@ -38,7 +34,7 @@ public class AddNodeCacheDialog extends JDialog {
 
         //Setting the content.
         setLayout(new BoxLayout(this.getContentPane(), BoxLayout.Y_AXIS));
-        setSize(300, 200);
+        setSize(300, 120);
         centerDialogOnMouse();
         addContent();
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
@@ -55,9 +51,6 @@ public class AddNodeCacheDialog extends JDialog {
      * Adds content to the dialog.
      */
     private void addContent() {
-        add(new JLabel("Username"));
-        nodeUsernameField = new JTextField();
-        add(nodeUsernameField);
         add(new JLabel("IP Address"));
         nodeAddressField = new JTextField();
         add(nodeAddressField);
@@ -71,10 +64,8 @@ public class AddNodeCacheDialog extends JDialog {
         saveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                KnownNode savedNode = new KnownNode();
-
-                //Getting the username.
-                savedNode.username = nodeUsernameField.getText();
+                //Creating an empty node.
+                Node savedNode = new Node();
 
                 //Getting the address.
                 String[] addressSplit = nodeAddressField.getText().split(":");
