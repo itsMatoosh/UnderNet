@@ -1,48 +1,31 @@
 package me.matoosh.undernet.p2p.router.data.messages;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import me.matoosh.undernet.p2p.router.data.NetworkData;
-import me.matoosh.undernet.p2p.router.data.NetworkDataHeader;
-
 /**
  * A message that can be serialized and deserialized using the NetworkMessageSerializer.
  * Created by Mateusz Rębacz on 29.04.2017.
  */
 
-public class NetworkMessage extends NetworkData {
+public class NetworkMessage {
     /**
-     * The network serializer of this message.
+     * Unique id of the message.
      */
-    NetworkMessageSerializer networkMessageSerializer = new NetworkMessageSerializer();
+    public int msgId;
+    /**
+     * The expiration time of the message.
+     */
+    public long expiration;
+    /**
+     * Ensures data integrity on the receivers side.
+     */
+    public byte checksum;
+    /**
+     * The lenght of the sent data.
+     */
+    public short dataLength;
 
     /**
-     * The logger of this class.
+     * The data transported by the message.
+     * Can be up to 64 fragments (64KB)
      */
-    public static Logger logger = LoggerFactory.getLogger(NetworkMessage.class);
-
-    /**
-     * Creates a generic network message object.
-     *
-     * @param dataHeader
-     */
-    public NetworkMessage(NetworkDataHeader dataHeader) {
-        super(dataHeader);
-    }
-
-    /**
-     * Reads the message.
-     * @return
-     */
-    public MessageBase readMessage() {
-        return networkMessageSerializer.read(networkDataHeader.dataTypeId, data);
-    }
-
-    /**
-     * Writes the data from a message base to this NetworkMessage instance.
-     */
-    public void writeMessage(MessageBase msgBase) {
-        data = networkMessageSerializer.write(msgBase);
-    }
+    public byte[] data;
 }
