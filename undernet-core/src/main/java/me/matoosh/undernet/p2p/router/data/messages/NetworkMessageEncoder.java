@@ -21,6 +21,18 @@ public class NetworkMessageEncoder extends MessageToByteEncoder<NetworkMessage> 
      */
     @Override
     protected void encode(ChannelHandlerContext ctx, NetworkMessage msg, ByteBuf out) throws Exception {
+        //Allocating the buffer.
+        out.alloc().buffer(15 + msg.data.length);
 
+        //Setting the dataLenght variable.
+        msg.dataLength = (short)(Short.MIN_VALUE + msg.data.length);
+
+        //Writing the buffer.
+        out.writeInt(msg.msgId);
+        out.writeLong(msg.expiration);
+        out.writeByte(msg.checksum);
+        out.writeShort(msg.dataLength);
+        //DATA
+        out.writeBytes(msg.data);
     }
 }
