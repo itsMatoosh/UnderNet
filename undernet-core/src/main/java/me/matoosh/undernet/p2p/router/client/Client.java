@@ -13,6 +13,8 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.client.ClientConnectionEvent;
@@ -43,9 +45,9 @@ public class Client {
      */
     public EventLoopGroup workerEventLoopGroup;
     /**
-     * The futures of the client.
+     * The connection close futures of the client.
      */
-    public ArrayList<ChannelFuture> clientFutures;
+    public ArrayList<ChannelFuture> closeFutures;
 
     /**
      * A list of the currently active channels.
@@ -89,7 +91,7 @@ public class Client {
         }
 
         //Creating a list of client futures.
-        clientFutures = new ArrayList<>();
+        closeFutures = new ArrayList<>();
 
         //Connecting to the selected nodes.
         for(Node node : nodesToConnectTo) {
@@ -107,8 +109,8 @@ public class Client {
         logger.info("Connecting to node: " + node.address);
 
         //Making sure the list of client futures exists.
-        if(clientFutures == null) {
-            clientFutures = new ArrayList<>();
+        if(closeFutures == null) {
+            closeFutures = new ArrayList<>();
         }
 
         //Starting the client.
@@ -119,12 +121,8 @@ public class Client {
         clientBootstrap.handler(new ClientChannelInitializer(this));
 
         //Connecting
-        try {
-            clientFutures.add(clientBootstrap.connect(node.address).sync()); //Connecting to the node.
-        } catch (InterruptedException e) {
-            logger.error("There was a problem connecting to the node: " + node.address, e);
-            EventManager.callEvent(new ClientExceptionEvent(this, e));
-        }
+        ChannelFuture future = clientBootstrap.connect(node.address); //Connecting to the node.
+        closeFutures.add(future.channel().closeFuture());
     }
 
     /**
@@ -141,13 +139,8 @@ public class Client {
 
         //Stopping the client futures.
         for (ChannelFuture future:
-             clientFutures) {
-            //Closing the current channel
+                closeFutures) {
             future.channel().close();
-            //Closing the parent channel (the one attached to the bind)
-            if(future.channel().parent() != null) {
-                future.channel().parent().close();
-            }
         }
     }
 
@@ -155,18 +148,20 @@ public class Client {
      * Waits for all the connections to close.
      */
     private void waitForAllConnections() {
-        try {
-            for (ChannelFuture future:
-                    clientFutures) {
-                future.channel().closeFuture().sync();
-            }
-        } catch (InterruptedException e) {
-            logger.error("One of the client connection tasks has been interrupted!", e);
-        } finally {
-            workerEventLoopGroup.shutdownGracefully();
-            EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STOPPED));
+        for (ChannelFuture future:
+                closeFutures) {
+            future.addListener(new GenericFutureListener<Future<? super Void>>() {
+                @Override
+                public void operationComplete(Future<? super Void> future) throws Exception {
+                    //Removing the future from future list.
+                    closeFutures.remove(future);
+                    if(closeFutures.size() == 0) {
+                        workerEventLoopGroup.shutdownGracefully();
+                        EventManager.callEvent(new ClientStatusEvent(Client.this, InterfaceStatus.STOPPED));
+                    }
+                }
+            });
         }
-
     }
 
     /**
