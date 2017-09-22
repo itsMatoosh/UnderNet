@@ -5,6 +5,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.ChannelErrorEvent;
+import me.matoosh.undernet.p2p.router.data.messages.NetworkMessageDecoder;
+import me.matoosh.undernet.p2p.router.data.messages.NetworkMessageEncoder;
 
 /**
  * Used to initialize server-side channels.
@@ -33,6 +35,8 @@ public class ServerChannelInitializer extends ChannelInitializer {
     @Override
     protected void initChannel(Channel ch) throws Exception {
         //Registering the server channel handler.
+        ch.pipeline().addLast(new NetworkMessageEncoder());
+        ch.pipeline().addLast(new NetworkMessageDecoder());
         ch.pipeline().addLast(new ServerChannelHandler(server));
     }
 
