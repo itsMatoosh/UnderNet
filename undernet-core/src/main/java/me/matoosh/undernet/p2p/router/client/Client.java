@@ -5,16 +5,25 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
+import io.netty.util.concurrent.GlobalEventExecutor;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.client.ClientConnectionEvent;
-import me.matoosh.undernet.event.client.ClientErrorEvent;
+import me.matoosh.undernet.event.client.ClientExceptionEvent;
 import me.matoosh.undernet.event.client.ClientStatusEvent;
 import me.matoosh.undernet.p2p.cache.NodeCache;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
 import me.matoosh.undernet.p2p.router.Router;
-import me.matoosh.undernet.p2p.router.connection.Connection;
-import me.matoosh.undernet.p2p.router.connection.NetworkConnection;
 
 /**
  * Client part of the router.
@@ -31,6 +40,20 @@ public class Client {
      * The current status of the client.
      */
     public InterfaceStatus status;
+    /**
+     * The worker event loop group of the client.
+     */
+    public EventLoopGroup workerEventLoopGroup;
+    /**
+     * The connection close futures of the client.
+     */
+    public ArrayList<ChannelFuture> closeFutures;
+
+    /**
+     * A list of the currently active channels.
+     */
+    public final ChannelGroup channels =
+            new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
     /**
      * The logger.
@@ -53,16 +76,31 @@ public class Client {
      */
     public void start() {
         logger.info("Starting the client...");
+        EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STARTING));
+
+        //Creating a new event loop group.
+        workerEventLoopGroup = new NioEventLoopGroup();
 
         //Attempting to connect to each of the 5 most reliable nodes.
         ArrayList<Node> nodesToConnectTo = NodeCache.getMostReliable(5, null);
-        if(nodesToConnectTo == null) {
-            EventManager.callEvent(new ClientErrorEvent(this, new ClientNoNodesCachedException(this)));
-        } else {
-            for(Node node : nodesToConnectTo) {
-                connect(node);
-            }
+        if(nodesToConnectTo == null || nodesToConnectTo.size() == 0) {
+            logger.warn("There are no cached nodes to connect to! The client will stop.");
+            EventManager.callEvent(new ClientExceptionEvent(this, new ClientNoNodesCachedException(this)));
+            EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STOPPED));
+            return;
         }
+
+        //Creating a list of client futures.
+        closeFutures = new ArrayList<>();
+
+        //Connecting to the selected nodes.
+        for(Node node : nodesToConnectTo) {
+            connect(node);
+        }
+        EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STARTED));
+
+        //Waiting for all the connections to close.
+        waitForAllConnections();
     }
     /**
      * Connects the client to a node.
@@ -70,44 +108,59 @@ public class Client {
     public void connect(Node node) {
         logger.info("Connecting to node: " + node.address);
 
-       /* EventManager.registerHandler(new EventHandler() {
-            @Override
-            public void onEventCalled(Event e) {
-                ConnectionErrorEvent errorEvent = (ConnectionErrorEvent)e;
-                if(errorEvent.exception.getClass() == ConnectionNotAvailableException.class && errorEvent.connection.side == ConnectionSide.CLIENT) {
-                    //Establishing the network connection.
-                    new NetworkConnection().establish(Client.this, errorEvent.connection.other);
-                }
-            }
-        }, ConnectionErrorEvent.class);*/
-        //Establishing a new connection. If this connection fails, another way of connecting will be used.
-        //TODO: Make smarter connection choices to reduce connection time.
-        //new DirectConnection().establish(this, node);
+        //Making sure the list of client futures exists.
+        if(closeFutures == null) {
+            closeFutures = new ArrayList<>();
+        }
 
-        //Establishing the network connection.
-        new NetworkConnection().establish(Client.this, node);
+        //Starting the client.
+        Bootstrap clientBootstrap = new Bootstrap();
+        clientBootstrap.group(workerEventLoopGroup); //Assigning the channel to the client event loop group.
+        clientBootstrap.channel(NioSocketChannel.class); //Using the non blocking io.
+        clientBootstrap.option(ChannelOption.SO_KEEPALIVE, true); //Making sure the connection is sending the keep alive signal.
+        clientBootstrap.handler(new ClientChannelInitializer(this));
+
+        //Connecting
+        ChannelFuture future = clientBootstrap.connect(node.address); //Connecting to the node.
+        closeFutures.add(future.channel().closeFuture());
     }
 
     /**
      * Stops the client.
      */
     public void stop() {
-        logger.info("Stopping the client...");
+        //Checking if the client is running.
+        if(status == InterfaceStatus.STOPPED) {
+            logger.warn("Can't stop the client as it's not running.");
+            return;
+        }
 
-        //Disconnecting all.
-        disconnectAll();
+        EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STOPPING));
+
+        //Stopping the client futures.
+        for (ChannelFuture future:
+                closeFutures) {
+            future.channel().close();
+        }
     }
+
     /**
-     * Disconnects from all nodes.
+     * Waits for all the connections to close.
      */
-    public void disconnectAll() {
-        //Dropping all the serverConnections.
-        for (int i = 0; i < router.connections.size(); i++) {
-            Connection c = router.connections.get(i);
-            if(c.client == this) {
-                c.drop();
-            }
-            c = null;
+    private void waitForAllConnections() {
+        for (ChannelFuture future:
+                closeFutures) {
+            future.addListener(new GenericFutureListener<Future<? super Void>>() {
+                @Override
+                public void operationComplete(Future<? super Void> future) throws Exception {
+                    //Removing the future from future list.
+                    closeFutures.remove(future);
+                    if(closeFutures.size() == 0) {
+                        workerEventLoopGroup.shutdownGracefully();
+                        EventManager.callEvent(new ClientStatusEvent(Client.this, InterfaceStatus.STOPPED));
+                    }
+                }
+            });
         }
     }
 
@@ -117,6 +170,6 @@ public class Client {
     private void registerEvents() {
         EventManager.registerEvent(ClientConnectionEvent.class);
         EventManager.registerEvent(ClientStatusEvent.class);
-        EventManager.registerEvent(ClientErrorEvent.class);
+        EventManager.registerEvent(ClientExceptionEvent.class);
     }
 }

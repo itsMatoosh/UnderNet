@@ -1,5 +1,8 @@
 package me.matoosh.undernet.p2p.router.data.messages;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import me.matoosh.undernet.p2p.router.data.NetworkData;
 import me.matoosh.undernet.p2p.router.data.NetworkDataHeader;
 
@@ -13,6 +16,11 @@ public class NetworkMessage extends NetworkData {
      * The network serializer of this message.
      */
     NetworkMessageSerializer networkMessageSerializer = new NetworkMessageSerializer();
+
+    /**
+     * The logger of this class.
+     */
+    public static Logger logger = LoggerFactory.getLogger(NetworkMessage.class);
 
     /**
      * Creates a generic network message object.

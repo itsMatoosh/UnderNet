@@ -1,7 +1,7 @@
 package me.matoosh.undernet.p2p.node;
 
 import java.io.Serializable;
-import java.net.InetAddress;
+import java.net.SocketAddress;
 import java.util.ArrayList;
 
 import me.matoosh.undernet.p2p.router.Router;
@@ -16,7 +16,7 @@ public class Node implements Serializable {
     /**
      * Connection address of this node.
      */
-    public InetAddress address;
+    public SocketAddress address;
     /**
      * Connection port of the node.
      */
@@ -58,7 +58,7 @@ public class Node implements Serializable {
      * Sets the address of the node.
      * @param address
      */
-    public void setAddress(InetAddress address) {
+    public void setAddress(SocketAddress address) {
         //TODO: Caching integration.
         this.address = address;
     }

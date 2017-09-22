@@ -4,27 +4,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
-import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
-import me.matoosh.undernet.event.connection.ConnectionAcceptedEvent;
-import me.matoosh.undernet.event.connection.ConnectionDroppedEvent;
-import me.matoosh.undernet.event.connection.ConnectionErrorEvent;
-import me.matoosh.undernet.event.connection.ConnectionEstablishedEvent;
-import me.matoosh.undernet.event.connection.bytestream.ConnectionBytestreamReceivedEvent;
-import me.matoosh.undernet.event.connection.message.ConnectionMessageReceivedEvent;
+import me.matoosh.undernet.event.channel.ChannelClosedEvent;
+import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
+import me.matoosh.undernet.event.channel.ChannelErrorEvent;
+import me.matoosh.undernet.event.channel.bytestream.ChannelBytestreamReceivedEvent;
+import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
+import me.matoosh.undernet.event.client.ClientStatusEvent;
 import me.matoosh.undernet.event.router.RouterErrorEvent;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
+import me.matoosh.undernet.event.server.ServerStatusEvent;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.client.Client;
-import me.matoosh.undernet.p2p.router.connection.Connection;
-import me.matoosh.undernet.p2p.router.connection.ConnectionSessionException;
 import me.matoosh.undernet.p2p.router.server.Server;
 
 /**
@@ -44,31 +38,19 @@ public class Router extends EventHandler {
      */
     public Server server;
     /**
-     * The active networkLoop.
-     */
-    public NetworkLoop networkLoop;
-    /**
-     * The network loop scheduler.
-     */
-    public ScheduledFuture networkLoopScheduler;
-    /**
-     * Time given to a single network tick in miliseconds.
-     */
-    public int networkTickTime;
-    /**
      * The current status of the router.
      */
     public InterfaceStatus status = InterfaceStatus.STOPPED;
 
     /**
-     * List of the currently active connections.
-     */
-    public ArrayList<Connection> connections = new ArrayList<>();
-
-    /**
      * The number of reconnect attempts, the router attempted.
      */
     private int reconnectNum = 0;
+
+    /**
+     * Nodes the router is connected to at the moment.
+     */
+    public ArrayList<Node> connectedNodes = new ArrayList<>();
 
     /**
      * The logger.
@@ -121,17 +103,19 @@ public class Router extends EventHandler {
         //Setting the status to starting.
         EventManager.callEvent(new RouterStatusEvent(this, InterfaceStatus.STARTING));
 
-        //Starting the server.
-        server.start();
+        //Starting the server. Using a separate thread for blocking api.
+        new Thread(new Runnable() {
+            public void run() {
+                server.start();
+            }
+        }).start();
 
-        //Starting the client.
-        client.start();
-
-        //Starting the router loop.
-        startNetworkLoop();
-
-        //Setting the status to started.
-        EventManager.callEvent(new RouterStatusEvent(this,  InterfaceStatus.STARTED));
+        //Starting the client. Using a separate thread for blocking api.
+        new Thread(new Runnable() {
+            public void run() {
+                client.start();
+            }
+        }).start();
     }
 
     /**
@@ -147,31 +131,14 @@ public class Router extends EventHandler {
         //Setting the status to stopping.
         EventManager.callEvent(new RouterStatusEvent(this, InterfaceStatus.STOPPING));
 
-        //Stops the network loop.
-        networkLoopScheduler.cancel(true);
-        networkLoopScheduler = null;
-        networkLoop = null;
-
         //Stops the client.
         if(client != null) {
             client.stop();
-            client = null;
         }
         //Stops the server.
         if(server != null) {
             server.stop();
-            server = null;
         }
-
-        //Clearing the connections.
-        connections.clear();
-
-        //GC
-        System.runFinalization();
-        System.gc();
-
-        //Setting the status to stopped.
-        EventManager.callEvent(new RouterStatusEvent(this, InterfaceStatus.STOPPED));
     }
 
     /**
@@ -183,14 +150,13 @@ public class Router extends EventHandler {
         EventManager.registerEvent(RouterErrorEvent.class);
 
         //Connection events
-        EventManager.registerEvent(ConnectionDroppedEvent.class);
-        EventManager.registerEvent(ConnectionErrorEvent.class);
-        EventManager.registerEvent(ConnectionAcceptedEvent.class);
-        EventManager.registerEvent(ConnectionEstablishedEvent.class);
+        EventManager.registerEvent(ChannelClosedEvent.class);
+        EventManager.registerEvent(ChannelErrorEvent.class);
+        EventManager.registerEvent(ChannelCreatedEvent.class);
 
         //Message events
-        EventManager.registerEvent(ConnectionMessageReceivedEvent.class);
-        EventManager.registerEvent(ConnectionBytestreamReceivedEvent.class);
+        EventManager.registerEvent(ChannelMessageReceivedEvent.class);
+        EventManager.registerEvent(ChannelBytestreamReceivedEvent.class);
     }
 
     /**
@@ -199,59 +165,11 @@ public class Router extends EventHandler {
     private void registerHandlers() {
         EventManager.registerHandler(this, RouterStatusEvent.class);
         EventManager.registerHandler(this, RouterErrorEvent.class);
-        EventManager.registerHandler(this, ConnectionEstablishedEvent.class);
-        EventManager.registerHandler(this, ConnectionDroppedEvent.class);
-        EventManager.registerHandler(this, ConnectionErrorEvent.class);
-    }
-
-    /**
-     * Starts the network loop.
-     * Network loop sends and receives messages from all the connected nodes.
-     */
-    private void startNetworkLoop() {
-        ScheduledExecutorService scheduler
-                = Executors.newSingleThreadScheduledExecutor();
-
-
-        networkLoop = new NetworkLoop();
-
-        int initialDelay = 1000000;
-        networkTickTime = (int)((1.0f/UnderNet.networkConfig.networkTickRate())*1000000.0f);
-        logger.info("Starting network loop with tick rate: " + UnderNet.networkConfig.networkTickRate());
-
-        networkLoopScheduler = scheduler.scheduleAtFixedRate(networkLoop, initialDelay, networkTickTime,
-                TimeUnit.MICROSECONDS);
-    }
-
-    /**
-     * The network loop logic.
-     */
-    private class NetworkLoop implements Runnable {
-        /**
-         * Called on every tick.
-         */
-        @Override
-        public void run() {
-            //Exchange messages.
-            for (int i = 0; i < connections.size(); i++) {
-                Connection conn = connections.get(i);
-                if(conn.active) {
-                    try {
-                        //Receiving data.
-                        conn.receive();
-                    } catch (ConnectionSessionException e) {
-                        e.printStackTrace();
-                    }
-                    try {
-                        //Sending data.
-                        conn.send();
-                    } catch (ConnectionSessionException e) {
-                        e.printStackTrace();
-                    }
-                }
-                conn = null;
-            }
-        }
+        EventManager.registerHandler(this, ChannelCreatedEvent.class);
+        EventManager.registerHandler(this, ChannelClosedEvent.class);
+        EventManager.registerHandler(this, ChannelErrorEvent.class);
+        EventManager.registerHandler(this, ClientStatusEvent.class);
+        EventManager.registerHandler(this, ServerStatusEvent.class);
     }
 
     //EVENTS
@@ -263,21 +181,19 @@ public class Router extends EventHandler {
     @Override
     public void onEventCalled(Event e) {
         //Connection established.
-        if(e.getClass() == ConnectionEstablishedEvent.class) {
-            ConnectionEstablishedEvent establishedEvent = (ConnectionEstablishedEvent)e;
+        if(e.getClass() == ChannelCreatedEvent.class) {
+            ChannelCreatedEvent establishedEvent = (ChannelCreatedEvent)e;
             logger.debug("New connection established with: " + establishedEvent.other);
-            connections.add(establishedEvent.connection);
         }
         //Connection dropped.
-        else if(e.getClass() == ConnectionDroppedEvent.class) {
-            ConnectionDroppedEvent droppedEvent = (ConnectionDroppedEvent)e;
-            logger.debug("Connection with: " + droppedEvent.other + " dropped");
-            connections.remove(droppedEvent.connection);
+        else if(e.getClass() == ChannelClosedEvent.class) {
+            ChannelClosedEvent droppedEvent = (ChannelClosedEvent)e;
+            //logger.debug("Connection with: " + droppedEvent.other + " dropped");
         }
         //Connection error.
-        else if(e.getClass() == ConnectionErrorEvent.class) {
-            ConnectionErrorEvent errorEvent = (ConnectionErrorEvent)e;
-            logger.warn("There was an error with the connection: " + errorEvent.connection.id);
+        else if(e.getClass() == ChannelErrorEvent.class) {
+            ChannelErrorEvent errorEvent = (ChannelErrorEvent)e;
+            //logger.warn("There was an error with the connection: " + errorEvent.connection.id);
             //TODO: Handle the error.
         } else if(e.getClass() == RouterStatusEvent.class) {
             RouterStatusEvent statusEvent = (RouterStatusEvent)e;
@@ -297,22 +213,38 @@ public class Router extends EventHandler {
             //TODO: Handle the status change.
         } else if(e.getClass() == RouterErrorEvent.class) {
             onRouterError((RouterErrorEvent) e);
+        } else if(e.getClass() == ServerStatusEvent.class) {
+            ServerStatusEvent statusEvent = (ServerStatusEvent)e;
+            if(statusEvent.newStatus.equals(InterfaceStatus.STARTED)) {
+                //In this case client doesn't yet have to be started.
+                onRouterStarted();
+            } else if(statusEvent.newStatus.equals(InterfaceStatus.STOPPED)) {
+                if(client.status.equals(InterfaceStatus.STOPPED)) {
+                    //Both parts of the router stopped successfully.
+                    onRouterStopped();
+                }
+            }
+        } else if(e.getClass() == ClientStatusEvent.class) {
+            ClientStatusEvent statusEvent = (ClientStatusEvent) e;
+            if(statusEvent.newStatus.equals(InterfaceStatus.STARTED)) {
+                if(server.status.equals(InterfaceStatus.STARTED)) {
+                    //Both parts of the router started succesfully.
+                    onRouterStarted();
+                }
+            } else if(statusEvent.newStatus.equals(InterfaceStatus.STOPPED)) {
+                if(server.status.equals(InterfaceStatus.STOPPED)) {
+                    //Both parts of the router stopped successfully.
+                    onRouterStopped();
+                }
+            }
         }
     }
-    /**
-     * Called when the connection to the network ends.
-     */
-    public void onConnectionEnded() {
-        //Resetting the reconn num.
-        reconnectNum = 0;
-    }
-
     /**
      * Called when a router error occurs.
      * This means we can't continue and have to restart the connection.
      * @param e
      */
-    public void onRouterError(RouterErrorEvent e) {
+    private void onRouterError(RouterErrorEvent e) {
         //Printing the error.
         if(e.exception.getMessage() != null) {
             logger.error("There was a problem with the UnderNet router: " + e.exception.getMessage());
@@ -333,5 +265,31 @@ public class Router extends EventHandler {
 
             logger.info("Attempting to reconnect for: " + reconnectNum + " time...");
         }
+    }
+
+    /**
+     * Called when the router starts.
+     */
+    private void onRouterStarted() {
+        //Setting the status to started.
+        EventManager.callEvent(new RouterStatusEvent(this,  InterfaceStatus.STARTED));
+    }
+    /**
+     * Called when the router stops.
+     */
+    private void onRouterStopped() {
+        //Setting the status to stopped.
+        EventManager.callEvent(new RouterStatusEvent(this, InterfaceStatus.STOPPED));
+
+        //GC
+        System.runFinalization();
+        System.gc();
+    }
+    /**
+     * Called when the connection to the network ends.
+     */
+    private void onConnectionEnded() {
+        //Resetting the reconn num.
+        reconnectNum = 0;
     }
 }

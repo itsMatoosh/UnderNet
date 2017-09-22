@@ -1,7 +1,6 @@
 package me.matoosh.undernet.event.router;
 
 import me.matoosh.undernet.p2p.router.Router;
-import me.matoosh.undernet.p2p.router.RouterException;
 
 /**
  * Called when an error occurs with the router.
@@ -12,13 +11,13 @@ public class RouterErrorEvent extends RouterEvent {
     /**
      * The error.
      */
-    public RouterException exception;
+    public Throwable exception;
     /**
      * Whether the router handler should attempt to reconnect.
      */
     public boolean shouldReconnect;
 
-    public RouterErrorEvent(Router r, RouterException e, boolean shouldReconnect) {
+    public RouterErrorEvent(Router r, Throwable e, boolean shouldReconnect) {
         super(r);
         this.exception = e;
         this.shouldReconnect = shouldReconnect;

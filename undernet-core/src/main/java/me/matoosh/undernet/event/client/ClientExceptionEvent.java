@@ -1,20 +1,20 @@
 package me.matoosh.undernet.event.client;
 
 import me.matoosh.undernet.p2p.router.client.Client;
-import me.matoosh.undernet.p2p.router.client.ClientException;
 
 /**
  * Called when an error occurs on the client.
+ * Connections are closed automatically due to an error.
  * Created by Mateusz Rębacz on 28.06.2017.
  */
 
-public class ClientErrorEvent extends ClientEvent {
+public class ClientExceptionEvent extends ClientEvent {
     /**
      * The exception.
      */
-    public ClientException exception;
+    public Throwable exception;
 
-    public ClientErrorEvent(Client c, ClientException e) {
+    public ClientExceptionEvent(Client c, Throwable e) {
         super(c);
         this.exception = e;
     }

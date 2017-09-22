@@ -1,20 +1,19 @@
 package me.matoosh.undernet.event.server;
 
 import me.matoosh.undernet.p2p.router.server.Server;
-import me.matoosh.undernet.p2p.router.server.ServerException;
 
 /**
- * Called when an error occurs on the server.
+ * Called when an exception occurs on the server.
  * Created by Mateusz Rębacz on 29.06.2017.
  */
 
-public class ServerErrorEvent extends ServerEvent {
+public class ServerExceptionEvent extends ServerEvent {
     /**
      * The exception.
      */
-    public ServerException exception;
+    public Exception exception;
 
-    public ServerErrorEvent(Server server, ServerException e) {
+    public ServerExceptionEvent(Server server, Exception e) {
         super(server);
         this.exception = e;
     }

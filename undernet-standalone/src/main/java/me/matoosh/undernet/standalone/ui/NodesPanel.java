@@ -21,11 +21,10 @@ import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.cache.NodeCacheAddedEvent;
 import me.matoosh.undernet.event.cache.NodeCacheRemovedEvent;
-import me.matoosh.undernet.event.connection.ConnectionDroppedEvent;
-import me.matoosh.undernet.event.connection.ConnectionEstablishedEvent;
+import me.matoosh.undernet.event.channel.ChannelClosedEvent;
+import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
 import me.matoosh.undernet.p2p.cache.NodeCache;
 import me.matoosh.undernet.p2p.node.Node;
-import me.matoosh.undernet.p2p.router.connection.Connection;
 import me.matoosh.undernet.standalone.UnderNetStandalone;
 import me.matoosh.undernet.standalone.ui.dialog.AddNodeCacheFrame;
 
@@ -74,7 +73,7 @@ public class NodesPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 if(nodesList.getSelectedValue() == null) return;
-                String selected = ((String) nodesList.getSelectedValue()).split(":")[0];
+                String selected = ((String) nodesList.getSelectedValue());
                 if(selected.equals("No nodes cached...") || selected.equals("Loading nodes...")) return;
 
                 try {
@@ -113,14 +112,14 @@ public class NodesPanel extends JPanel {
                 //Called when a connection has been established.
                 refreshNodesList();
             }
-        }, ConnectionEstablishedEvent.class);
+        }, ChannelCreatedEvent.class);
         EventManager.registerHandler(new EventHandler() {
             @Override
             public void onEventCalled(Event e) {
                 //Called when a connection has been dropped.
                 refreshNodesList();
             }
-        }, ConnectionDroppedEvent.class);
+        }, ChannelClosedEvent.class);
     }
 
     /**
@@ -133,16 +132,13 @@ public class NodesPanel extends JPanel {
             //Whether we are currently connected to the node.
             boolean connected = false;
 
-            for(Connection conn : UnderNet.router.connections) {
-                if(conn.other == node) {
+            for (Node n : UnderNet.router.connectedNodes) {
+                if(n.address.equals(node.address)) {
                     connected = true;
                 }
             }
 
             String displayName = node.toString();
-            if(node.port != 2017) {
-                displayName = displayName + ":" + node.port;
-            }
             if(connected) {
                 displayName = displayName + " [connected]";
             }
