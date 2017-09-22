@@ -26,7 +26,7 @@ import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
 import me.matoosh.undernet.p2p.cache.NodeCache;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.standalone.UnderNetStandalone;
-import me.matoosh.undernet.standalone.ui.dialog.AddNodeCacheFrame;
+import me.matoosh.undernet.standalone.ui.dialog.AddNodeCacheDialog;
 
 /**
  * Panel displaying the list of known nodes.
@@ -157,7 +157,7 @@ public class NodesPanel extends JPanel {
      */
     public void openNodeAddDialog() {
         //The add button was pressed.
-        JDialog nodeAddDialog = new AddNodeCacheFrame(UnderNetStandalone.mainAppFrame);
+        JDialog nodeAddDialog = new AddNodeCacheDialog(UnderNetStandalone.mainAppFrame);
         nodeAddDialog.setVisible(true);
     }
 }

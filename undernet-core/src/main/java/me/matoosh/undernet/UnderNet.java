@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import me.matoosh.undernet.file.FileManager;
+import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.p2p.cache.NodeCache;
 import me.matoosh.undernet.p2p.config.NetworkConfig;
 import me.matoosh.undernet.p2p.node.Node;
@@ -36,6 +37,7 @@ public class UnderNet
      * Is bound with the config system.
      */
     public static NetworkConfig networkConfig;
+
     /**
      * The currently used router.
      */
@@ -70,12 +72,12 @@ public class UnderNet
     /**
      * Connects to one of the known nodes.
      */
-    public static void connect() {
+    public static void connect(NetworkIdentity identity) {
         //Connecting the client to the network.
-        logger.info("Connecting to UnderNet...");
+        logger.info("Connecting to UnderNet as " + identity.username + "...");
 
         //Starting the router.
-        Node.self.router.start();
+        Node.self.router.start(identity);
     }
 
     /**

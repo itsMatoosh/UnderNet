@@ -11,12 +11,12 @@ import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.ChannelClosedEvent;
 import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
 import me.matoosh.undernet.event.channel.ChannelErrorEvent;
-import me.matoosh.undernet.event.channel.bytestream.ChannelBytestreamReceivedEvent;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
 import me.matoosh.undernet.event.client.ClientStatusEvent;
 import me.matoosh.undernet.event.router.RouterErrorEvent;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
 import me.matoosh.undernet.event.server.ServerStatusEvent;
+import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.client.Client;
 import me.matoosh.undernet.p2p.router.server.Server;
@@ -88,12 +88,15 @@ public class Router extends EventHandler {
      * Starts the router.
      * Starts the server listening process and establishes client connections.
      */
-    public void start() {
+    public void start(NetworkIdentity networkIdentity) {
         //Checking whether the router is already running.
         if(status != InterfaceStatus.STOPPED) {
             logger.warn("Can't start, because the router is already running!");
             return;
         }
+
+        //Caching the network identity.
+        Node.self.networkIdentity = networkIdentity;
 
         //Checking whether the setup needs to be ran.
         if(server == null || client == null) {
@@ -156,7 +159,6 @@ public class Router extends EventHandler {
 
         //Message events
         EventManager.registerEvent(ChannelMessageReceivedEvent.class);
-        EventManager.registerEvent(ChannelBytestreamReceivedEvent.class);
     }
 
     /**

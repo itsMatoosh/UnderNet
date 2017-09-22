@@ -2,10 +2,9 @@ package me.matoosh.undernet.p2p.node;
 
 import java.io.Serializable;
 import java.net.SocketAddress;
-import java.util.ArrayList;
 
+import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.p2p.router.Router;
-import me.matoosh.undernet.p2p.router.data.messages.NetworkMessage;
 
 /**
  * A single node within the network.
@@ -29,9 +28,9 @@ public class Node implements Serializable {
     public float reliability;
 
     /**
-     * The list of network messages awaiting to be sent to the node.
+     * The network identity of the node.
      */
-    public ArrayList<NetworkMessage> messagesToSend = new ArrayList<NetworkMessage>();
+    public NetworkIdentity networkIdentity;
 
     /**
      * The router of this node.

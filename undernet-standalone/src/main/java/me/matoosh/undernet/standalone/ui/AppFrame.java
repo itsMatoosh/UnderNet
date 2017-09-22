@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -21,6 +22,8 @@ import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
+import me.matoosh.undernet.standalone.UnderNetStandalone;
+import me.matoosh.undernet.standalone.ui.dialog.ChangeIdentityDialog;
 
 /**
  * The main frame of the app.
@@ -53,6 +56,15 @@ public class AppFrame extends JFrame {
      * The add node menu item.
      */
     private JMenuItem addNodeMenuItem;
+
+    /**
+     * The identity menu of the frame.
+     */
+    private JMenu identityMenu;
+    /**
+     * The change identity menu item.
+     */
+    private JMenuItem identityChangeMenu;
 
 
     public AppFrame() {
@@ -99,6 +111,19 @@ public class AppFrame extends JFrame {
         });
         nodesMenu.add(addNodeMenuItem);
 
+        //Identity menu
+        identityMenu = new JMenu("Identity");
+        menuBar.add(identityMenu);
+        identityChangeMenu = new JMenuItem("Change identity");
+        identityChangeMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JDialog identityChangeDialog = new ChangeIdentityDialog(UnderNetStandalone.mainAppFrame);
+                identityChangeDialog.setVisible(true);
+            }
+        });
+        identityMenu.add(identityChangeMenu);
+
         setJMenuBar(menuBar);
     }
     /**
@@ -121,7 +146,7 @@ public class AppFrame extends JFrame {
         final ActionListener connectActionListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                UnderNet.connect();
+                UnderNet.connect(UnderNetStandalone.networkIdentity);
             }
         };
         final ActionListener disconnectActionListener = new ActionListener() {
