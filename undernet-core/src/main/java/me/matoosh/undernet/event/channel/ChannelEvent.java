@@ -23,15 +23,10 @@ public abstract class ChannelEvent extends Event {
     public boolean isServer;
 
     /**
-     * The client node object of the channel.
-     * Available only on the server.
-     */
-    public Node clientNode;
-    /**
      * The server node object of the channel.
      * Available only on the client.
      */
-    public Node serverNode;
+    public Node remoteNode;
 
     /**
      * Creates a new channel event, given the channel.
@@ -42,9 +37,9 @@ public abstract class ChannelEvent extends Event {
         this.isServer = isServer;
 
         if(isServer) {
-            clientNode = c.attr(ServerChannelHandler.ATTRIBUTE_KEY_CLIENT_NODE).get();
+            remoteNode = c.attr(ServerChannelHandler.ATTRIBUTE_KEY_CLIENT_NODE).get();
         } else {
-            serverNode = c.attr(ClientChannelHandler.ATTRIBUTE_KEY_SERVER_NODE).get();
+            remoteNode = c.attr(ClientChannelHandler.ATTRIBUTE_KEY_SERVER_NODE).get();
         }
     }
 }

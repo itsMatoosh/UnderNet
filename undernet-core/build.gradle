@@ -7,6 +7,7 @@ dependencies {
     compile 'org.slf4j:slf4j-ext:1.7.25'
     compile 'org.cfg4j:cfg4j-core:4.4.1'
     compile 'io.netty:netty-all:4.1.15.Final'
+    compile 'com.esotericsoftware.yamlbeans:yamlbeans:1.12'
 }
 
 sourceCompatibility = "1.7"

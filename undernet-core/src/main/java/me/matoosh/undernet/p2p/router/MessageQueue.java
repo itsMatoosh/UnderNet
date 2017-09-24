@@ -6,4 +6,5 @@ package me.matoosh.undernet.p2p.router;
  */
 
 public class MessageQueue {
+
 }

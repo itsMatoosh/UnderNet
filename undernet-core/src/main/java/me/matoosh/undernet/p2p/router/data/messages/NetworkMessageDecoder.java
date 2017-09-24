@@ -1,5 +1,9 @@
 package me.matoosh.undernet.p2p.router.data.messages;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.nio.ByteBuffer;
 import java.util.List;
 
 import io.netty.buffer.ByteBuf;
@@ -20,6 +24,15 @@ public class NetworkMessageDecoder extends ByteToMessageDecoder {
      * The current data write index.
      */
     private int dataWriteIndex = 0;
+    /**
+     * Number of bytes to discard.
+     */
+    private int bytesToDiscard = 0;
+
+    /**
+     * The logger of the class.
+     */
+    public static Logger logger = LoggerFactory.getLogger(NetworkMessageDecoder.class);
 
     /**
      * Decode the from one {@link ByteBuf} to an other. This method will be called till either the input
@@ -41,23 +54,40 @@ public class NetworkMessageDecoder extends ByteToMessageDecoder {
             byte checksum = in.readByte();
             short dataLenght = in.readShort();
 
-            //Creating the cached message.
-            cachedMessage = new NetworkMessage();
-            cachedMessage.msgId = msgId;
-            cachedMessage.expiration = expiration;
-            cachedMessage.checksum = checksum;
-            cachedMessage.dataLength = dataLenght;
-            cachedMessage.data = new byte[dataLenght + Short.MAX_VALUE];
-
+            //Checking the message expiration.
+            if(System.currentTimeMillis() < expiration) {
+                //Creating the cached message.
+                cachedMessage = new NetworkMessage();
+                cachedMessage.msgId = msgId;
+                cachedMessage.expiration = expiration;
+                cachedMessage.checksum = checksum;
+                cachedMessage.dataLength = dataLenght;
+                cachedMessage.data = ByteBuffer.wrap(new byte[dataLenght - Short.MIN_VALUE]);
+            } else {
+                //Discarding the bytes.
+                logger.warn("Received an expired message with id: " + msgId + ", discarding...");
+                bytesToDiscard = dataLenght;
+            }
         }
-
         //Reading the data of the cached message.
-        while(dataWriteIndex < cachedMessage.data.length && in.readableBytes() > 0) {
-            cachedMessage.data[dataWriteIndex] = in.readByte();
-            dataWriteIndex++;
+        while((dataWriteIndex < cachedMessage.data.capacity() || bytesToDiscard > 0) && in.readableBytes() > 0) {
+            if(bytesToDiscard > 0) {
+                bytesToDiscard -= in.readableBytes();
+                in.release();
+                if(bytesToDiscard <= 0) {
+                    //All necessary bytes discarded.
+                    bytesToDiscard = 0;
+                    cachedMessage = null;
+                    dataWriteIndex = 0;
+                    return;
+                }
+            } else {
+                cachedMessage.data.put(dataWriteIndex, in.readByte());
+                dataWriteIndex++;
+            }
         }
         //Checking if all the data has been received.
-        if(dataWriteIndex >= cachedMessage.data.length) {
+        if(dataWriteIndex >= cachedMessage.data.capacity()) {
             //Message data received. Outputting the constructed message.
             out.add(cachedMessage);
 

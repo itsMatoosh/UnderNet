@@ -4,6 +4,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 
+import static me.matoosh.undernet.UnderNet.logger;
+
 /**
  * Encodes NetworkMessage objects to bytes.
  * Created by Mateusz Rębacz on 22.09.2017.
@@ -22,10 +24,11 @@ public class NetworkMessageEncoder extends MessageToByteEncoder<NetworkMessage> 
     @Override
     protected void encode(ChannelHandlerContext ctx, NetworkMessage msg, ByteBuf out) throws Exception {
         //Allocating the buffer.
-        out.alloc().buffer(15 + msg.data.length);
+        logger.info("Constructing a message with Id: " + msg + " allocating " + (15 + msg.data.array().length) + " bytes");
+        out.alloc().buffer(15 + msg.data.capacity());
 
-        //Setting the dataLenght variable.
-        msg.dataLength = (short)(Short.MIN_VALUE + msg.data.length);
+        //Setting the msg expiration.
+        msg.expiration = System.currentTimeMillis() + 1000;
 
         //Writing the buffer.
         out.writeInt(msg.msgId);

@@ -59,6 +59,7 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
         //Adding a node object to the connection.
         Node serverNode = new Node();
         serverNode.address = ctx.channel().remoteAddress(); //Setting the node's address.
+        serverNode.channel = ctx.channel();
         ctx.channel().attr(ATTRIBUTE_KEY_SERVER_NODE).set(serverNode);
 
         //Adding the server node to the connected nodes list.
@@ -83,6 +84,7 @@ public class ClientChannelHandler extends ChannelInboundHandlerAdapter {
 
         //Removing the server node from the connectedNodes list.
         Node serverNode = ctx.channel().attr(ATTRIBUTE_KEY_SERVER_NODE).get();
+        serverNode.channel = null;
         client.router.connectedNodes.remove(serverNode);
 
         //Calling the channel closed event.

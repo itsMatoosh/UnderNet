@@ -109,8 +109,12 @@ public class Server
             EventManager.callEvent(new ServerStatusEvent(Server.this, InterfaceStatus.STOPPING));
         } finally {
             //Stopping the event loop groups.
-            bossEventLoopGroup.shutdownGracefully();
-            workerEventLoopGroup.shutdownGracefully();
+            try {
+                bossEventLoopGroup.shutdownGracefully().sync();
+                workerEventLoopGroup.shutdownGracefully().sync();
+            } catch (InterruptedException e) {
+                logger.error("Server shutdown has been interrupted!", e);
+            }
             EventManager.callEvent(new ServerStatusEvent(Server.this, InterfaceStatus.STOPPED));
         }
     }

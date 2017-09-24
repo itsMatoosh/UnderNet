@@ -4,7 +4,8 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -25,6 +26,9 @@ import me.matoosh.undernet.event.channel.ChannelClosedEvent;
 import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
 import me.matoosh.undernet.p2p.cache.NodeCache;
 import me.matoosh.undernet.p2p.node.Node;
+import me.matoosh.undernet.p2p.router.InterfaceStatus;
+import me.matoosh.undernet.p2p.router.data.messages.MsgType;
+import me.matoosh.undernet.p2p.router.data.messages.NetworkMessage;
 import me.matoosh.undernet.standalone.UnderNetStandalone;
 import me.matoosh.undernet.standalone.ui.dialog.AddNodeCacheDialog;
 
@@ -47,10 +51,23 @@ public class NodesPanel extends JPanel {
         add(new JLabel("Nodes"));
 
         //Adding the list.
-        nodesList = new JList(new String[] {
-                "Loading nodes..."
-        });
+        nodesList = new JList(new Node[] {});
         nodesList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        nodesList.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent evt) {
+                JList list = (JList)evt.getSource();
+                if (evt.getClickCount() == 2) {
+                    //Double-click detected
+                    if(UnderNet.router.status.equals(InterfaceStatus.STARTED)) {
+                        int index = list.locationToIndex(evt.getPoint());
+                        Node node = (Node)nodesList.getModel().getElementAt(index);
+                        node.send(new NetworkMessage(MsgType.NODE_PING, new byte[] {
+                                0x00
+                        }));
+                    }
+                }
+            }
+        });
         add(new JScrollPane(nodesList));
 
         //Adding the buttons on the bottom.
@@ -126,30 +143,13 @@ public class NodesPanel extends JPanel {
      * Refreshes the nodes list based on the current node cache.
      */
     private void refreshNodesList() {
-        ArrayList<String> nodes = new ArrayList<String>();
-
-        for(Node node : NodeCache.cachedNodes) {
-            //Whether we are currently connected to the node.
-            boolean connected = false;
-
-            for (Node n : UnderNet.router.connectedNodes) {
-                if(n.address.equals(node.address)) {
-                    connected = true;
-                }
-            }
-
-            String displayName = node.toString();
-            if(connected) {
-                displayName = displayName + " [connected]";
-            }
-            nodes.add(displayName);
+        if(UnderNet.router.status.equals(InterfaceStatus.STARTED)) {
+            //Using connected nodes if the router has started.
+            nodesList.setListData(UnderNet.router.connectedNodes.toArray());
+        } else {
+            //Using cached nodes if the router isnt online.
+            nodesList.setListData(NodeCache.cachedNodes.toArray());
         }
-
-        if(nodes.size() == 0) {
-            nodes.add("No nodes cached...");
-        }
-
-        nodesList.setListData(nodes.toArray());
     }
 
     /**

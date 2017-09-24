@@ -156,7 +156,6 @@ public class Client {
                     //Removing the future from future list.
                     closeFutures.remove(future);
                     if(closeFutures.size() == 0) {
-                        workerEventLoopGroup.shutdownGracefully();
                         EventManager.callEvent(new ClientStatusEvent(Client.this, InterfaceStatus.STOPPED));
                     }
                 }

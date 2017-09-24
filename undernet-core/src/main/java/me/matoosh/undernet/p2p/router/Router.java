@@ -41,6 +41,10 @@ public class Router extends EventHandler {
      * The current status of the router.
      */
     public InterfaceStatus status = InterfaceStatus.STOPPED;
+    /**
+     * The network database.
+     */
+    public NetworkDatabase netDb;
 
     /**
      * The number of reconnect attempts, the router attempted.
@@ -83,6 +87,10 @@ public class Router extends EventHandler {
         //Creating client.
         client = new Client(this);
         client.setup();
+
+        //Setting up the network database.
+        netDb = new NetworkDatabase();
+        netDb.setup();
     }
     /**
      * Starts the router.

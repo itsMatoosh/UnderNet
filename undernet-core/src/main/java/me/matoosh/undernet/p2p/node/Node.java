@@ -1,10 +1,17 @@
 package me.matoosh.undernet.p2p.node;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Serializable;
 import java.net.SocketAddress;
 
+import io.netty.channel.Channel;
+import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.p2p.router.Router;
+import me.matoosh.undernet.p2p.router.data.messages.NetworkMessage;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * A single node within the network.
@@ -20,7 +27,6 @@ public class Node implements Serializable {
      * Connection port of the node.
      */
     public int port = 2017;
-
     /**
      * Reliability of the node.
      * TODO: Actually make this useful.
@@ -28,13 +34,19 @@ public class Node implements Serializable {
     public float reliability;
 
     /**
-     * The network identity of the node.
+     * The channel used for connection to the node.
+     * Only available to neighboring nodes.
      */
-    public NetworkIdentity networkIdentity;
+    public Channel channel;
 
     /**
+     * The network identity of the node.
+     * Known only for self.
+     */
+    public NetworkIdentity networkIdentity;
+    /**
      * The router of this node.
-     * Known only for self node.
+     * Known only for self.
      **/
     public Router router;
 
@@ -43,6 +55,10 @@ public class Node implements Serializable {
      * The self node.
      */
     public static Node self;
+    /**
+     * The logger of the class.
+     */
+    public static Logger logger = LoggerFactory.getLogger(Node.class);
 
     /**
      * Returns the address of the node.
@@ -50,7 +66,22 @@ public class Node implements Serializable {
      */
     @Override
     public String toString() {
-        return address.toString();
+        String displayName = address.toString();
+        if(this != Node.self) {
+            //Checking if the node is connected.
+            boolean connected = false;
+            for (Node n : UnderNet.router.connectedNodes) {
+                if(n.address.equals(this.address)) {
+                    connected = true;
+                }
+            }
+
+            if(connected) {
+                displayName = displayName + " [connected]";
+            }
+        }
+
+        return displayName;
     }
 
     /**
@@ -61,8 +92,17 @@ public class Node implements Serializable {
         //TODO: Caching integration.
         this.address = address;
     }
-    public void setPort(int port) {
-        //TODO: Cache update
-        this.port = port;
+
+    /**
+     * Sends a NetworkMessage to the node.
+     * @param msg
+     */
+    public void send(NetworkMessage msg) {
+        logger.info("Sending a message to: " + address + " with id: " + msg.msgId);
+        if(channel == null) {
+            logger.error("Long distance message have not been implemented yet :(", new NotImplementedException());
+        } else {
+            channel.writeAndFlush(msg);
+        }
     }
 }
