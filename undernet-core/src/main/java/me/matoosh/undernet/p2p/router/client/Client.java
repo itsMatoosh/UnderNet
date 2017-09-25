@@ -20,7 +20,7 @@ import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.client.ClientConnectionEvent;
 import me.matoosh.undernet.event.client.ClientExceptionEvent;
 import me.matoosh.undernet.event.client.ClientStatusEvent;
-import me.matoosh.undernet.p2p.cache.NodeCache;
+import me.matoosh.undernet.p2p.cache.EntryNodeCache;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
 import me.matoosh.undernet.p2p.router.Router;
@@ -75,14 +75,13 @@ public class Client {
      * Starts the client and connects to cached nodes based on the settings.
      */
     public void start() {
-        logger.info("Starting the client...");
         EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STARTING));
 
         //Creating a new event loop group.
         workerEventLoopGroup = new NioEventLoopGroup();
 
         //Attempting to connect to each of the 5 most reliable nodes.
-        ArrayList<Node> nodesToConnectTo = NodeCache.getMostReliable(5, null);
+        ArrayList<Node> nodesToConnectTo = EntryNodeCache.getMostReliable(5, null);
         if(nodesToConnectTo == null || nodesToConnectTo.size() == 0) {
             logger.warn("There are no cached nodes to connect to! The client will stop.");
             EventManager.callEvent(new ClientExceptionEvent(this, new ClientNoNodesCachedException(this)));
@@ -93,19 +92,25 @@ public class Client {
         //Creating a list of client futures.
         closeFutures = new ArrayList<>();
 
+        EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STARTED));
+
         //Connecting to the selected nodes.
         for(Node node : nodesToConnectTo) {
             connect(node);
         }
-        EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STARTED));
-
-        //Waiting for all the connections to close.
-        waitForAllConnections();
     }
     /**
      * Connects the client to a node.
      */
     public void connect(Node node) {
+        if(status == InterfaceStatus.STOPPING) {
+            logger.error("Can't connect to nodes, while the client is stopping!");
+            return;
+        }
+        if(status != InterfaceStatus.STARTED) {
+            EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STARTED));
+        }
+
         logger.info("Connecting to node: " + node.address);
 
         //Making sure the list of client futures exists.
@@ -122,7 +127,19 @@ public class Client {
 
         //Connecting
         ChannelFuture future = clientBootstrap.connect(node.address); //Connecting to the node.
-        closeFutures.add(future.channel().closeFuture());
+        ChannelFuture closeFuture = future.channel().closeFuture();
+        closeFuture.addListener(new GenericFutureListener<Future<? super Void>>() {
+            @Override
+            public void operationComplete(Future<? super Void> future) throws Exception {
+                //Removing the future from future list.
+                closeFutures.remove(future);
+                if(closeFutures.size() == 0) {
+                    //Stopping the worker group.
+                    EventManager.callEvent(new ClientStatusEvent(Client.this, InterfaceStatus.STOPPED));
+                }
+            }
+        });
+        closeFutures.add(closeFuture);
     }
 
     /**
@@ -141,25 +158,6 @@ public class Client {
         for (ChannelFuture future:
                 closeFutures) {
             future.channel().close();
-        }
-    }
-
-    /**
-     * Waits for all the connections to close.
-     */
-    private void waitForAllConnections() {
-        for (ChannelFuture future:
-                closeFutures) {
-            future.addListener(new GenericFutureListener<Future<? super Void>>() {
-                @Override
-                public void operationComplete(Future<? super Void> future) throws Exception {
-                    //Removing the future from future list.
-                    closeFutures.remove(future);
-                    if(closeFutures.size() == 0) {
-                        EventManager.callEvent(new ClientStatusEvent(Client.this, InterfaceStatus.STOPPED));
-                    }
-                }
-            });
         }
     }
 
