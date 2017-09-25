@@ -19,7 +19,7 @@ import java.net.UnknownHostException;
 import me.matoosh.undernet.MainActivity;
 import me.matoosh.undernet.R;
 import me.matoosh.undernet.UnderNet;
-import me.matoosh.undernet.p2p.cache.NodeCache;
+import me.matoosh.undernet.p2p.cache.EntryNodeCache;
 import me.matoosh.undernet.p2p.node.Node;
 import layout.section.main.Tab;
 
@@ -73,7 +73,7 @@ public class StatusTab extends Tab {
 
                 if(address != null) {
                     node.setAddress(address);
-                    NodeCache.addNode(node);
+                    EntryNodeCache.addNode(node);
                 }
             }
         });
@@ -85,7 +85,7 @@ public class StatusTab extends Tab {
             public void onClick(View v) {
                 UnderNet.logger.info("Clicked on the clear node cache button.");
                 //Clearing the node cache.
-                NodeCache.clear();
+                EntryNodeCache.clear();
             }
         });
 

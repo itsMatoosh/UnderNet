@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import me.matoosh.undernet.file.FileManager;
 import me.matoosh.undernet.identity.NetworkIdentity;
-import me.matoosh.undernet.p2p.cache.NodeCache;
+import me.matoosh.undernet.p2p.cache.EntryNodeCache;
 import me.matoosh.undernet.p2p.config.NetworkConfig;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.Router;
@@ -58,8 +58,8 @@ public class UnderNet
         networkConfig = configProvider.bind("network", NetworkConfig.class);
 
         //Loading up the node cache.
-        NodeCache.registerEvents();
-        NodeCache.load();
+        EntryNodeCache.registerEvents();
+        EntryNodeCache.load();
 
         //Setting up the self node.
         Node.self = new Node();

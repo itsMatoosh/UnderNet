@@ -27,11 +27,6 @@ public class Node implements Serializable {
      * Connection port of the node.
      */
     public int port = 2017;
-    /**
-     * Reliability of the node.
-     * TODO: Actually make this useful.
-     */
-    public float reliability;
 
     /**
      * The channel used for connection to the node.
@@ -68,22 +63,33 @@ public class Node implements Serializable {
     public String toString() {
         String displayName = address.toString();
         if(this != Node.self) {
+            if(isConnected()) {
+                displayName = displayName + " [connected]";
+            } else {
+                displayName = displayName + " [disconnected]";
+            }
+            return displayName;
+        }
+
+        return displayName + " [self]";
+    }
+
+    /**
+     * Whether we are directly connected to this node.
+     * @return
+     */
+    public boolean isConnected() {
+        boolean connected = false;
+        if(this != Node.self) {
             //Checking if the node is connected.
-            boolean connected = false;
             for (Node n : UnderNet.router.connectedNodes) {
                 if(n.address.equals(this.address)) {
                     connected = true;
                 }
             }
-
-            if(connected) {
-                displayName = displayName + " [connected]";
-            }
         }
-
-        return displayName;
+        return connected;
     }
-
     /**
      * Sets the address of the node.
      * @param address

@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 
+import io.netty.channel.Channel;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
@@ -19,6 +20,7 @@ import me.matoosh.undernet.event.server.ServerStatusEvent;
 import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.client.Client;
+import me.matoosh.undernet.p2p.router.client.ClientChannelHandler;
 import me.matoosh.undernet.p2p.router.server.Server;
 
 /**
@@ -153,6 +155,28 @@ public class Router extends EventHandler {
     }
 
     /**
+     * Connects directly to a node.
+     * @param node
+     */
+    public void connectNode(Node node) {
+        client.connect(node);
+    }
+
+    /**
+     * Disconnects from a node.
+     * @param node
+     */
+    public void disconnectNode(Node node) {
+        for (Channel channel:
+             client.channels) {
+            Node channelNode = channel.attr(ClientChannelHandler.ATTRIBUTE_KEY_SERVER_NODE).get();
+            if(channelNode != null && channelNode == node) {
+                channel.close();
+            }
+        }
+    }
+
+    /**
      * Registers the router events.
      */
     private void registerEvents() {
@@ -212,8 +236,6 @@ public class Router extends EventHandler {
                     onConnectionEnded();
                     break;
                 case STARTING:
-                    break;
-                case CONNECTING:
                     break;
                 case STARTED:
                     break;

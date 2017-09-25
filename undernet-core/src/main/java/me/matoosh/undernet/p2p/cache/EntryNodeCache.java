@@ -27,7 +27,7 @@ import me.matoosh.undernet.p2p.node.Node;
  * Created by Mateusz Rębacz on 26.01.2017.
  */
 
-public class NodeCache {
+public class EntryNodeCache {
     /**
      * All the loaded cached entry nodes.
      */
@@ -36,7 +36,7 @@ public class NodeCache {
     /**
      * The logger of the class.
      */
-    public static Logger logger = LoggerFactory.getLogger(NodeCache.class);
+    public static Logger logger = LoggerFactory.getLogger(EntryNodeCache.class);
 
     /**
      * Returns a specific number of the most reliable nodes.
@@ -67,11 +67,11 @@ public class NodeCache {
 
             //Getting the least reliable node in the remaining set.
             Node lowestRel = resultList.get(0);
-            for(Node node : resultList) {
+            /*for(Node node : resultList) {
                 if(node.reliability < lowestRel.reliability) {
                     lowestRel = node;
                 }
-            }
+            }*/
 
             resultList.remove(lowestRel);
         }
@@ -114,8 +114,8 @@ public class NodeCache {
      */
     public static void load() {
         //Checking whether the file exists.
-        File nodesCacheFile = new File(UnderNet.fileManager.getAppFolder() + "/known.nodes");
-        logger.info("Loading the node cache from: " + nodesCacheFile.getAbsolutePath());
+        File nodesCacheFile = new File(UnderNet.fileManager.getCacheFolder() + "/entry.nodes");
+        logger.info("Loading entry node cache from: " + nodesCacheFile.getAbsolutePath());
         try {
             logger.info("Loading the node cache from: " + nodesCacheFile.toString());
             FileInputStream fileIn = new FileInputStream(nodesCacheFile);
@@ -127,28 +127,28 @@ public class NodeCache {
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (FileNotFoundException e) {
-            logger.warn("Node cache file not found, creating a new one...");
+            logger.warn("Entry node cache file not found, creating a new one...");
             try {
-                cachedNodes = new ArrayList<Node>();
+                cachedNodes = new ArrayList<>();
                 nodesCacheFile.createNewFile();
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
         } catch (EOFException e) {
-            cachedNodes = new ArrayList<Node>();
+            cachedNodes = new ArrayList<>();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     /**
-     * Saves the node cache to disk.
+     * Saves the entry node cache to disk.
      */
     public static void save() {
         try {
-            File saveFile = new File(UnderNet.fileManager.getAppFolder() + "/known.nodes");
+            File saveFile = new File(UnderNet.fileManager.getCacheFolder() + "/entry.nodes");
             FileOutputStream fileOut = new FileOutputStream(saveFile);
-            logger.info("Saving the node cache to: " + saveFile.getAbsolutePath());
+            logger.info("Saving the entry node cache to: " + saveFile.getAbsolutePath());
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
             out.writeObject(cachedNodes);
             out.close();
@@ -162,7 +162,7 @@ public class NodeCache {
     }
 
     /**
-     * Clears the node cache.
+     * Clears the entry node cache.
      */
     public static void clear() {
         cachedNodes.clear();

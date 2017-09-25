@@ -1,6 +1,6 @@
 package me.matoosh.undernet.event.cache;
 
-import me.matoosh.undernet.p2p.cache.NodeCache;
+import me.matoosh.undernet.p2p.cache.EntryNodeCache;
 
 /**
  * Called when the node cache is cleared.
@@ -13,6 +13,6 @@ public class NodeCacheClearEvent extends NodeCacheEvent {
      */
     @Override
     public void onCalled() {
-        NodeCache.logger.info("Node cache has been cleared");
+        EntryNodeCache.logger.info("Node cache has been cleared");
     }
 }

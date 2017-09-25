@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -24,7 +25,7 @@ import me.matoosh.undernet.event.cache.NodeCacheAddedEvent;
 import me.matoosh.undernet.event.cache.NodeCacheRemovedEvent;
 import me.matoosh.undernet.event.channel.ChannelClosedEvent;
 import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
-import me.matoosh.undernet.p2p.cache.NodeCache;
+import me.matoosh.undernet.p2p.cache.EntryNodeCache;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
 import me.matoosh.undernet.p2p.router.data.messages.MsgType;
@@ -61,9 +62,17 @@ public class NodesPanel extends JPanel {
                     if(UnderNet.router.status.equals(InterfaceStatus.STARTED)) {
                         int index = list.locationToIndex(evt.getPoint());
                         Node node = (Node)nodesList.getModel().getElementAt(index);
-                        node.send(new NetworkMessage(MsgType.NODE_PING, new byte[] {
-                                0x00
-                        }));
+
+                        //Checking if the node is connected.
+                        if(node.isConnected()) {
+                            //Sending a ping message.
+                            node.send(new NetworkMessage(MsgType.NODE_PING, new byte[] {
+                                    0x00
+                            }));
+                        } else {
+                            //Connecting to the node.
+                            UnderNet.router.connectNode(node);
+                        }
                     }
                 }
             }
@@ -90,17 +99,13 @@ public class NodesPanel extends JPanel {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 if(nodesList.getSelectedValue() == null) return;
-                String selected = ((String) nodesList.getSelectedValue());
-                if(selected.equals("No nodes cached...") || selected.equals("Loading nodes...")) return;
+                Node selected = ((Node) nodesList.getSelectedValue());
 
-                try {
-                    for (Node n : NodeCache.cachedNodes) {
-                        if (n.toString().equals(selected)) {
-                            NodeCache.removeNode(n);
-                        }
-                    }
-                } catch (Exception e) {
-
+                //Disconnect or remove from cache.
+                if(selected.isConnected()) {
+                    UnderNet.router.disconnectNode(selected);
+                } else {
+                    EntryNodeCache.removeNode(selected);
                 }
             }
         });
@@ -144,11 +149,25 @@ public class NodesPanel extends JPanel {
      */
     private void refreshNodesList() {
         if(UnderNet.router.status.equals(InterfaceStatus.STARTED)) {
-            //Using connected nodes if the router has started.
-            nodesList.setListData(UnderNet.router.connectedNodes.toArray());
+            //Using connected and cached nodes if the router has started.
+            ArrayList<Node> nodesToList = new ArrayList<>();
+            nodesToList.addAll(UnderNet.router.connectedNodes);
+            for (Node cachedNode:
+            EntryNodeCache.cachedNodes) {
+                boolean canAdd = true;
+                for (Node connectedNode : UnderNet.router.connectedNodes) {
+                    if(cachedNode.address.equals(connectedNode.address)) {
+                        canAdd = false;
+                    }
+                }
+                if(canAdd) {
+                    nodesToList.add(cachedNode);
+                }
+            }
+            nodesList.setListData(nodesToList.toArray());
         } else {
-            //Using cached nodes if the router isnt online.
-            nodesList.setListData(NodeCache.cachedNodes.toArray());
+            //Using cached nodes if the router isn't online.
+            nodesList.setListData(EntryNodeCache.cachedNodes.toArray());
         }
     }
 

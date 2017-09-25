@@ -6,5 +6,5 @@ package me.matoosh.undernet.p2p.router;
  */
 
 public enum InterfaceStatus {
-    STOPPED, STARTING, CONNECTING, STARTED, STOPPING
+    STOPPED, STARTING, STARTED, STOPPING
 }

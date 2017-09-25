@@ -14,8 +14,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import me.matoosh.undernet.p2p.cache.NodeCache;
+import me.matoosh.undernet.UnderNet;
+import me.matoosh.undernet.p2p.cache.EntryNodeCache;
 import me.matoosh.undernet.p2p.node.Node;
+import me.matoosh.undernet.p2p.router.InterfaceStatus;
 
 /**
  * A dialog for adding new node to the node cache.
@@ -83,12 +85,15 @@ public class AddNodeCacheDialog extends JDialog {
 
 
                 //Adding the node to the cache.
-                NodeCache.addNode(savedNode);
+                EntryNodeCache.addNode(savedNode);
 
                 //Closing the dialog.
                 AddNodeCacheDialog.this.dispose();
             }
         });
+        if(UnderNet.router.status.equals(InterfaceStatus.STARTED) || UnderNet.router.status.equals(InterfaceStatus.STARTING)) {
+            saveButton.setEnabled(false);
+        }
         buttonDrawer.add(saveButton);
 
         JButton cancelButton = new JButton("Cancel");

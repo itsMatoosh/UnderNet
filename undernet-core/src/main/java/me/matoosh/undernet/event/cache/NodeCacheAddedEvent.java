@@ -1,6 +1,6 @@
 package me.matoosh.undernet.event.cache;
 
-import me.matoosh.undernet.p2p.cache.NodeCache;
+import me.matoosh.undernet.p2p.cache.EntryNodeCache;
 import me.matoosh.undernet.p2p.node.Node;
 
 /**
@@ -23,6 +23,6 @@ public class NodeCacheAddedEvent extends NodeCacheEvent {
      */
     @Override
     public void onCalled() {
-        NodeCache.logger.info("Added node " + node.address + " to cache");
+        EntryNodeCache.logger.info("Added node " + node.address + " to cache");
     }
 }
