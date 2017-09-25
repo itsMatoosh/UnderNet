@@ -18,9 +18,11 @@ import me.matoosh.undernet.event.router.RouterErrorEvent;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
 import me.matoosh.undernet.event.server.ServerStatusEvent;
 import me.matoosh.undernet.identity.NetworkIdentity;
+import me.matoosh.undernet.p2p.node.NeighborNodesManager;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.client.Client;
 import me.matoosh.undernet.p2p.router.client.ClientChannelHandler;
+import me.matoosh.undernet.p2p.router.data.resource.ResourceManager;
 import me.matoosh.undernet.p2p.router.server.Server;
 
 /**
@@ -47,6 +49,14 @@ public class Router extends EventHandler {
      * The network database.
      */
     public NetworkDatabase netDb;
+    /**
+     * The neighbor nodes manager.
+     */
+    public NeighborNodesManager neighborNodesManager;
+    /**
+     * The resource manager.
+     */
+    public ResourceManager resourceManager;
 
     /**
      * The number of reconnect attempts, the router attempted.
@@ -93,6 +103,14 @@ public class Router extends EventHandler {
         //Setting up the network database.
         netDb = new NetworkDatabase();
         netDb.setup();
+
+        //Instantiating the neighbor nodes manager.
+        neighborNodesManager = new NeighborNodesManager();
+        neighborNodesManager.setup();
+
+        //Instantiating the resource manager.
+        resourceManager = new ResourceManager();
+        resourceManager.setup();
     }
     /**
      * Starts the router.

@@ -10,6 +10,7 @@ import me.matoosh.undernet.p2p.cache.EntryNodeCache;
 import me.matoosh.undernet.p2p.config.NetworkConfig;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.Router;
+import me.matoosh.undernet.p2p.router.data.NetworkID;
 
 /**
  * Core of the UnderNet package.
@@ -94,6 +95,8 @@ public class UnderNet
     /// </summary>
     private static void writeInitMessage()
     {
+        logger.info(NetworkID.random().data.toString(128));
+
         silentLogger.info("");
         silentLogger.info("   xx                 xx  ");
         silentLogger.info("   x:x               x:x  ");

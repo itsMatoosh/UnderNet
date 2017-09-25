@@ -15,4 +15,11 @@ public class ResourceManager {
     public Resource publish(Object object, ResourceType type) {
         return null;
     }
+
+    /**
+     * Sets up the resource manager.
+     */
+    public void setup() {
+
+    }
 }

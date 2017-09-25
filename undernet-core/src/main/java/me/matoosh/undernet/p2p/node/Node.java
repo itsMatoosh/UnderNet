@@ -10,6 +10,7 @@ import io.netty.channel.Channel;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.p2p.router.Router;
+import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.messages.NetworkMessage;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -19,6 +20,10 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  */
 
 public class Node implements Serializable {
+    /**
+     * The id of the node.
+     */
+    public transient NetworkID id;
     /**
      * Connection address of this node.
      */
@@ -32,18 +37,18 @@ public class Node implements Serializable {
      * The channel used for connection to the node.
      * Only available to neighboring nodes.
      */
-    public Channel channel;
+    public transient Channel channel;
 
     /**
      * The network identity of the node.
      * Known only for self.
      */
-    public NetworkIdentity networkIdentity;
+    public transient NetworkIdentity networkIdentity;
     /**
      * The router of this node.
      * Known only for self.
      **/
-    public Router router;
+    public transient Router router;
 
 
     /**
@@ -62,11 +67,13 @@ public class Node implements Serializable {
     @Override
     public String toString() {
         String displayName = address.toString();
+        /*if(id != null) {
+            displayName = id.data.toString(512);
+        }*/
+
         if(this != Node.self) {
             if(isConnected()) {
                 displayName = displayName + " [connected]";
-            } else {
-                displayName = displayName + " [disconnected]";
             }
             return displayName;
         }
@@ -89,14 +96,6 @@ public class Node implements Serializable {
             }
         }
         return connected;
-    }
-    /**
-     * Sets the address of the node.
-     * @param address
-     */
-    public void setAddress(SocketAddress address) {
-        //TODO: Caching integration.
-        this.address = address;
     }
 
     /**

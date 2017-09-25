@@ -6,5 +6,6 @@ package me.matoosh.undernet.p2p.router.data.messages;
  */
 
 public enum MsgType {
-    NODE_PING //Message to check status of a neighboring node.
+    NODE_PING, //Message to ping a neighboring node.
+    NODE_INFO //Contains the node information about the sender.
 }
