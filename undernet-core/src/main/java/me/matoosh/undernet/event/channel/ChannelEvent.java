@@ -3,8 +3,8 @@ package me.matoosh.undernet.event.channel;
 import io.netty.channel.Channel;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.p2p.node.Node;
-import me.matoosh.undernet.p2p.router.client.ClientChannelHandler;
-import me.matoosh.undernet.p2p.router.server.ServerChannelHandler;
+import me.matoosh.undernet.p2p.router.client.ClientNetworkMessageHandler;
+import me.matoosh.undernet.p2p.router.server.ServerNetworkMessageHandler;
 
 /**
  * An event concerning a connection.
@@ -37,9 +37,9 @@ public abstract class ChannelEvent extends Event {
         this.isServer = isServer;
 
         if(isServer) {
-            remoteNode = c.attr(ServerChannelHandler.ATTRIBUTE_KEY_CLIENT_NODE).get();
+            remoteNode = c.attr(ServerNetworkMessageHandler.ATTRIBUTE_KEY_CLIENT_NODE).get();
         } else {
-            remoteNode = c.attr(ClientChannelHandler.ATTRIBUTE_KEY_SERVER_NODE).get();
+            remoteNode = c.attr(ClientNetworkMessageHandler.ATTRIBUTE_KEY_SERVER_NODE).get();
         }
     }
 }

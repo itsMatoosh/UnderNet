@@ -21,7 +21,7 @@ import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.p2p.node.NeighborNodesManager;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.client.Client;
-import me.matoosh.undernet.p2p.router.client.ClientChannelHandler;
+import me.matoosh.undernet.p2p.router.client.ClientNetworkMessageHandler;
 import me.matoosh.undernet.p2p.router.data.resource.ResourceManager;
 import me.matoosh.undernet.p2p.router.server.Server;
 
@@ -187,7 +187,7 @@ public class Router extends EventHandler {
     public void disconnectNode(Node node) {
         for (Channel channel:
              client.channels) {
-            Node channelNode = channel.attr(ClientChannelHandler.ATTRIBUTE_KEY_SERVER_NODE).get();
+            Node channelNode = channel.attr(ClientNetworkMessageHandler.ATTRIBUTE_KEY_SERVER_NODE).get();
             if(channelNode != null && channelNode == node) {
                 channel.close();
             }

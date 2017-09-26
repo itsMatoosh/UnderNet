@@ -16,11 +16,9 @@ public class ResourceManager {
     /**
      * Publishes a resource on the network.
      * This sends the resource to its closest node.
-     * @param object
-     * @param type
+     * @param resource
      */
-    public Resource publish(Object object, ResourceType type) {
-        return null;
+    public void publish(Resource resource) {
     }
 
     /**

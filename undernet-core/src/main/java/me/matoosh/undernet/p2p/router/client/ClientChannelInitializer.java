@@ -5,10 +5,8 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.ChannelErrorEvent;
-import me.matoosh.undernet.p2p.router.data.messages.NetworkMessageDecoder;
-import me.matoosh.undernet.p2p.router.data.messages.NetworkMessageEncoder;
-import me.matoosh.undernet.p2p.router.server.Server;
-import me.matoosh.undernet.p2p.router.server.ServerChannelHandler;
+import me.matoosh.undernet.p2p.router.data.message.NetworkMessageDecoder;
+import me.matoosh.undernet.p2p.router.data.message.NetworkMessageEncoder;
 
 /**
  * Used to initialize client-side channels.
@@ -40,7 +38,7 @@ public class ClientChannelInitializer extends ChannelInitializer<SocketChannel>{
         //Registering the client channel handler.
         ch.pipeline().addLast(new NetworkMessageEncoder());
         ch.pipeline().addLast(new NetworkMessageDecoder());
-        ch.pipeline().addLast(new ClientChannelHandler(client));
+        ch.pipeline().addLast(new ClientNetworkMessageHandler(client));
     }
 
     /**

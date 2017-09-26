@@ -9,8 +9,8 @@ import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
-import me.matoosh.undernet.p2p.router.data.messages.MsgType;
-import me.matoosh.undernet.p2p.router.data.messages.NetworkMessage;
+import me.matoosh.undernet.p2p.router.data.message.MsgType;
+import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 
 /**
  * Stores and manages the network wide data.

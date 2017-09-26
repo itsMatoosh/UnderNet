@@ -13,7 +13,7 @@ import me.matoosh.undernet.p2p.router.data.NetworkID;
 import static me.matoosh.undernet.p2p.router.NetworkDatabase.logger;
 
 /**
- * Contains node info.
+ * Message containing node info.
  * Created by Mateusz Rębacz on 26.09.2017.
  */
 

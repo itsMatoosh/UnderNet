@@ -10,8 +10,7 @@ import io.netty.channel.Channel;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.p2p.router.Router;
-import me.matoosh.undernet.p2p.router.data.NetworkID;
-import me.matoosh.undernet.p2p.router.data.messages.NetworkMessage;
+import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**

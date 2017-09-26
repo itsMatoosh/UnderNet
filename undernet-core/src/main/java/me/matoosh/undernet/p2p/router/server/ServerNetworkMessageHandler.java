@@ -3,7 +3,6 @@ package me.matoosh.undernet.p2p.router.server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.AttributeKey;
@@ -13,14 +12,14 @@ import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
 import me.matoosh.undernet.event.channel.ChannelErrorEvent;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
 import me.matoosh.undernet.p2p.node.Node;
-import me.matoosh.undernet.p2p.router.data.messages.NetworkMessage;
+import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 
 /**
  * Handles data transfered over a channel.
  * Created by Mateusz Rębacz on 21.09.2017.
  */
 
-public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
+public class ServerNetworkMessageHandler extends ChannelInboundHandlerAdapter {
     /**
      * The server of this channel handler.
      */
@@ -36,9 +35,9 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
     /**
      * The logger of the class.
      */
-    public static Logger logger = LoggerFactory.getLogger(ServerChannelHandler.class);
+    public static Logger logger = LoggerFactory.getLogger(ServerNetworkMessageHandler.class);
 
-    public ServerChannelHandler(Server server) {
+    public ServerNetworkMessageHandler(Server server) {
         this.server = server;
     }
 
@@ -93,11 +92,13 @@ public class ServerChannelHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         //Reading the incoming message as a NetworkMessage.
-        NetworkMessage networkMessage = (NetworkMessage) msg;
-        try {
-            EventManager.callEvent(new ChannelMessageReceivedEvent(ctx.channel(), true, networkMessage));
-        } finally {
-            networkMessage = null; //Releasing the msg from memory.
+        if(msg instanceof NetworkMessage) {
+            NetworkMessage networkMessage = (NetworkMessage) msg;
+            try {
+                EventManager.callEvent(new ChannelMessageReceivedEvent(ctx.channel(), true, networkMessage));
+            } finally {
+                networkMessage = null; //Releasing the msg from memory.
+            }
         }
     }
 

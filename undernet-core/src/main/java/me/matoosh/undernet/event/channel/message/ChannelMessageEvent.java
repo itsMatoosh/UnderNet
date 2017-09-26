@@ -2,7 +2,7 @@ package me.matoosh.undernet.event.channel.message;
 
 import io.netty.channel.Channel;
 import me.matoosh.undernet.event.channel.ChannelEvent;
-import me.matoosh.undernet.p2p.router.data.messages.NetworkMessage;
+import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 
 /**
  * Represents events regarding network messages.
