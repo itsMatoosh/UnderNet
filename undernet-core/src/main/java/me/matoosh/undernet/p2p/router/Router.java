@@ -124,7 +124,7 @@ public class Router extends EventHandler {
         }
 
         //Caching the network identity.
-        Node.self.networkIdentity = networkIdentity;
+        Node.self.identity = networkIdentity;
 
         //Checking whether the setup needs to be ran.
         if(server == null || client == null) {

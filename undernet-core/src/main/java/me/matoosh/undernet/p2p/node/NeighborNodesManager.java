@@ -1,10 +1,16 @@
 package me.matoosh.undernet.p2p.node;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
+import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
 import me.matoosh.undernet.p2p.router.data.messages.MsgType;
+import me.matoosh.undernet.p2p.router.data.messages.NetworkMessage;
+import me.matoosh.undernet.p2p.router.data.messages.NodeInfoMessage;
 
 /**
  * Manages neighboring nodes connected to the router.
@@ -12,6 +18,11 @@ import me.matoosh.undernet.p2p.router.data.messages.MsgType;
  */
 
 public class NeighborNodesManager extends EventHandler {
+    /**
+     * Logger of the class.
+     */
+    public static Logger logger = LoggerFactory.getLogger(NeighborNodesManager.class);
+
     /**
      * Sets up the manager.
      */
@@ -25,6 +36,7 @@ public class NeighborNodesManager extends EventHandler {
     private void registerHandlers() {
         //Message received event.
         EventManager.registerHandler(this, ChannelMessageReceivedEvent.class);
+        EventManager.registerHandler(this, ChannelCreatedEvent.class);
     }
 
     /**
@@ -34,10 +46,30 @@ public class NeighborNodesManager extends EventHandler {
      */
     @Override
     public void onEventCalled(Event e) {
-        ChannelMessageReceivedEvent messageReceivedEvent = (ChannelMessageReceivedEvent)e;
-        if(messageReceivedEvent.message.msgId == MsgType.NODE_INFO.ordinal()) {
-            //TODO: Check the generated id with the database and update.
-           //messageReceivedEvent.remoteNode.id = new NetworkID(new BigInteger((messageReceivedEvent.message.data.)))
+        if(e instanceof ChannelCreatedEvent) {
+            //Sending node info to the connected node.
+            ChannelCreatedEvent channelCreatedEvent = (ChannelCreatedEvent)e;
+            sendNodeInfo(Node.self, channelCreatedEvent.remoteNode);
+
+        } else if(e instanceof  ChannelMessageReceivedEvent) {
+            ChannelMessageReceivedEvent messageReceivedEvent = (ChannelMessageReceivedEvent)e;
+            if(messageReceivedEvent.message.msgId == MsgType.NODE_INFO.ordinal()) {
+                NodeInfoMessage message = new NodeInfoMessage();
+                message.fromByte(messageReceivedEvent.message.data.array());
+                //TODO: Check the generated id with the database and update.
+                logger.info("Received node info for " + messageReceivedEvent.remoteNode + ": " + message.networkID);
+                messageReceivedEvent.remoteNode.identity.networkID = message.networkID;
+            }
         }
+    }
+
+    /**
+     * Sends a message info about infoFrom to infoTo.
+     * @param infoFrom
+     * @param infoTo
+     */
+    public void sendNodeInfo(Node infoFrom, Node infoTo) {
+        logger.info("Sending " + infoFrom.toString() + " node info to: " + infoTo.toString());
+        infoTo.send(new NetworkMessage(MsgType.NODE_INFO, new NodeInfoMessage(infoFrom)));
     }
 }

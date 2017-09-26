@@ -10,7 +10,6 @@ import io.netty.channel.Channel;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.p2p.router.Router;
-import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.messages.NetworkMessage;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -21,9 +20,9 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class Node implements Serializable {
     /**
-     * The id of the node.
+     * The network identity of the node.
      */
-    public transient NetworkID id;
+    public transient NetworkIdentity identity = new NetworkIdentity();
     /**
      * Connection address of this node.
      */
@@ -39,11 +38,6 @@ public class Node implements Serializable {
      */
     public transient Channel channel;
 
-    /**
-     * The network identity of the node.
-     * Known only for self.
-     */
-    public transient NetworkIdentity networkIdentity;
     /**
      * The router of this node.
      * Known only for self.
@@ -67,9 +61,6 @@ public class Node implements Serializable {
     @Override
     public String toString() {
         String displayName = address.toString();
-        /*if(id != null) {
-            displayName = id.data.toString(512);
-        }*/
 
         if(this != Node.self) {
             if(isConnected()) {

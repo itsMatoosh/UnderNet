@@ -32,10 +32,29 @@ public class NetworkMessage {
     public ByteBuffer data;
 
     public NetworkMessage() {}
+
+    /**
+     * Creates a network message given its type and raw data.
+     * @param msgType
+     * @param data
+     */
     public NetworkMessage(MsgType msgType, byte[] data) {
         this.msgId = msgType.ordinal();
         this.data = ByteBuffer.wrap(data);
         this.dataLength = (short)(Short.MIN_VALUE + data.length);
+        this.checksum = calcChecksum();
+        this.expiration = 0;
+    }
+
+    /**
+     * Creates a network message given its type and content.
+     * @param msgType
+     * @param msg
+     */
+    public NetworkMessage(MsgType msgType, MsgBase msg) {
+        this.msgId = msgType.ordinal();
+        this.data = ByteBuffer.wrap(msg.toByte());
+        this.dataLength = (short)(Short.MIN_VALUE + this.data.array().length);
         this.checksum = calcChecksum();
         this.expiration = 0;
     }
