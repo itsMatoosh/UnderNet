@@ -240,12 +240,10 @@ public class Router extends EventHandler {
         //Connection dropped.
         else if(e.getClass() == ChannelClosedEvent.class) {
             ChannelClosedEvent droppedEvent = (ChannelClosedEvent)e;
-            //logger.debug("Connection with: " + droppedEvent.other + " dropped");
         }
         //Connection error.
         else if(e.getClass() == ChannelErrorEvent.class) {
             ChannelErrorEvent errorEvent = (ChannelErrorEvent)e;
-            //logger.warn("There was an error with the connection: " + errorEvent.connection.id);
             //TODO: Handle the error.
         } else if(e.getClass() == RouterStatusEvent.class) {
             RouterStatusEvent statusEvent = (RouterStatusEvent)e;
@@ -267,7 +265,10 @@ public class Router extends EventHandler {
             ServerStatusEvent statusEvent = (ServerStatusEvent)e;
             if(statusEvent.newStatus.equals(InterfaceStatus.STARTED)) {
                 //In this case client doesn't yet have to be started.
-                onRouterStarted();
+                if(client.status.equals(InterfaceStatus.STARTED)) {
+                    //Both parts of the router started successfully.
+                    onRouterStarted();
+                }
             } else if(statusEvent.newStatus.equals(InterfaceStatus.STOPPED)) {
                 if(client.status.equals(InterfaceStatus.STOPPED)) {
                     //Both parts of the router stopped successfully.
@@ -322,18 +323,22 @@ public class Router extends EventHandler {
      */
     private void onRouterStarted() {
         //Setting the status to started.
-        EventManager.callEvent(new RouterStatusEvent(this,  InterfaceStatus.STARTED));
+        if(status != InterfaceStatus.STARTED) {
+            EventManager.callEvent(new RouterStatusEvent(this,  InterfaceStatus.STARTED));
+        }
     }
     /**
      * Called when the router stops.
      */
     private void onRouterStopped() {
         //Setting the status to stopped.
-        EventManager.callEvent(new RouterStatusEvent(this, InterfaceStatus.STOPPED));
+        if(status != InterfaceStatus.STOPPED) {
+            EventManager.callEvent(new RouterStatusEvent(this, InterfaceStatus.STOPPED));
 
-        //GC
-        System.runFinalization();
-        System.gc();
+            //GC
+            System.runFinalization();
+            System.gc();
+        }
     }
     /**
      * Called when the connection to the network ends.
