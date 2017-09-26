@@ -1,4 +1,4 @@
-package me.matoosh.undernet.p2p.router.data.messages;
+package me.matoosh.undernet.p2p.router.data.message;
 
 /**
  * Types of messages the network sends.

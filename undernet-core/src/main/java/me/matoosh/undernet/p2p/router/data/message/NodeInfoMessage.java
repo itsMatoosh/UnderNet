@@ -1,4 +1,4 @@
-package me.matoosh.undernet.p2p.router.data.messages;
+package me.matoosh.undernet.p2p.router.data.message;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
