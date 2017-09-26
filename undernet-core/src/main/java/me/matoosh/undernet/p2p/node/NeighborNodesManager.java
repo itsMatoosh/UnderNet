@@ -55,8 +55,7 @@ public class NeighborNodesManager extends EventHandler {
         } else if(e instanceof  ChannelMessageReceivedEvent) {
             ChannelMessageReceivedEvent messageReceivedEvent = (ChannelMessageReceivedEvent)e;
             if(messageReceivedEvent.message.msgId == MsgType.NODE_INFO.ordinal()) {
-                NodeInfoMessage message = new NodeInfoMessage();
-                message.fromByte(messageReceivedEvent.message.data.array());
+                NodeInfoMessage message = (NodeInfoMessage)NetworkMessage.deserializeMessage(messageReceivedEvent.message.data.array());
                 //TODO: Check the generated id with the database and update.
                 logger.info("Received node info for " + messageReceivedEvent.remoteNode + ": " + message.networkID);
                 NetworkIdentity networkIdentity = new NetworkIdentity();
