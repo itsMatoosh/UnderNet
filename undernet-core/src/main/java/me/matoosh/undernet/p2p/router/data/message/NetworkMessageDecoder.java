@@ -56,7 +56,7 @@ public class NetworkMessageDecoder extends ByteToMessageDecoder {
             short dataLenght = in.readShort();
 
             //Checking the message expiration.
-            if(System.currentTimeMillis() < expiration) {
+            //if(System.currentTimeMillis() < expiration) {
                 //Creating the cached message.
                 cachedMessage = null;
                 if(msgId >= 1000) {
@@ -70,11 +70,11 @@ public class NetworkMessageDecoder extends ByteToMessageDecoder {
                 cachedMessage.checksum = checksum;
                 cachedMessage.dataLength = dataLenght;
                 cachedMessage.data = ByteBuffer.wrap(new byte[dataLenght - Short.MIN_VALUE]);
-            } else {
+            /*} else {
                 //Discarding the bytes.
                 logger.warn("Received an expired message with id: " + msgId + ", discarding...");
                 bytesToDiscard = dataLenght;
-            }
+            }*/
         }
         //Reading the data of the cached message.
         while((dataWriteIndex < cachedMessage.data.capacity() || bytesToDiscard > 0) && in.readableBytes() > 0) {
