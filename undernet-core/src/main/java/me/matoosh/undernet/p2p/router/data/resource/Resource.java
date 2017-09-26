@@ -1,13 +1,15 @@
 package me.matoosh.undernet.p2p.router.data.resource;
 
+import me.matoosh.undernet.p2p.router.data.NetworkID;
+
 /**
- * Represents a published resource.
+ * Represents a stored resource.
  * Created by Mateusz Rębacz on 25.09.2017.
  */
 
-public class Resource {
+public abstract class Resource {
     /**
-     * The type of this resource.
+     * The network id of this resource.
      */
-    public ResourceType type;
+    public NetworkID networkID;
 }

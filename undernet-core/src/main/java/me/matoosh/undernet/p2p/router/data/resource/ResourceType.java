@@ -6,5 +6,6 @@ package me.matoosh.undernet.p2p.router.data.resource;
  */
 
 public enum ResourceType {
-    FILE
+    FILE, //A file
+    FLAG //A temporary flag containing information (is not stored on disk). Can be used as a middle man indicator.
 }
