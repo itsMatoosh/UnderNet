@@ -1,10 +1,5 @@
 package me.matoosh.undernet.p2p.router.data.message;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.math.BigInteger;
-
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
 
@@ -26,25 +21,4 @@ public class NodeInfoMessage implements MsgBase {
         this.networkID = node.getIdentity().getNetworkId();
     }
     public NodeInfoMessage(){}
-
-    /**
-     * Serialization
-     * @param oos
-     * @throws IOException
-     */
-    private void writeObject(ObjectOutputStream oos)
-            throws IOException {
-        oos.writeObject(networkID.data);
-    }
-
-    /**
-     * Deserialization
-     * @param ois
-     * @throws ClassNotFoundException
-     * @throws IOException
-     */
-    private void readObject(ObjectInputStream ois)
-            throws ClassNotFoundException, IOException {
-        this.networkID.data = (BigInteger) ois.readObject();
-    }
 }
