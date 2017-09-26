@@ -9,6 +9,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
@@ -124,20 +125,20 @@ public class EntryNodeCache {
             in.close();
             fileIn.close();
             EventManager.callEvent(new NodeCacheLoadEvent());
+        } catch (InvalidClassException e) {
+            logger.error("Entry node cache, contains old or incompatible data, resetting...");
+            clear();
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            logger.error("Couldn't deserialize the entry node cache file!", e);
+            clear();
         } catch (FileNotFoundException e) {
-            logger.warn("Entry node cache file not found, creating a new one...");
-            try {
-                cachedNodes = new ArrayList<>();
-                nodesCacheFile.createNewFile();
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
+            logger.error("Entry node cache file not found!");
+            clear();
         } catch (EOFException e) {
-            cachedNodes = new ArrayList<>();
+            logger.error("Entry node cache corrupted, resetting...", e);
+            clear();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Exception occured while loading the entry node cache file!",e);
         }
     }
 
@@ -145,8 +146,8 @@ public class EntryNodeCache {
      * Saves the entry node cache to disk.
      */
     public static void save() {
+        File saveFile = new File(UnderNet.fileManager.getCacheFolder() + "/entry.nodes");
         try {
-            File saveFile = new File(UnderNet.fileManager.getCacheFolder() + "/entry.nodes");
             FileOutputStream fileOut = new FileOutputStream(saveFile);
             logger.info("Saving the entry node cache to: " + saveFile.getAbsolutePath());
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
@@ -155,9 +156,15 @@ public class EntryNodeCache {
             fileOut.close();
             EventManager.callEvent(new NodeCacheSaveEvent());
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            logger.error("The entry cache file has been deleted! Creating a new one...", e);
+            try {
+                saveFile.createNewFile();
+            } catch (IOException e1) {
+                logger.error("Error creating the entry node cache file!", e1);
+            }
+            save();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("An error occured while writing the entry node cache!",e);
         }
     }
 
@@ -165,7 +172,18 @@ public class EntryNodeCache {
      * Clears the entry node cache.
      */
     public static void clear() {
-        cachedNodes.clear();
+        logger.info("Resetting the entry node cache...");
+        File cacheFile = new File(UnderNet.fileManager.getCacheFolder() + "/entry.nodes");
+        cacheFile.delete();
+        try {
+            cacheFile.createNewFile();
+        } catch (IOException e) {
+            logger.error("Error creating the entry node cache file!", e);
+        }
+        if(cachedNodes != null) {
+            cachedNodes.clear();
+        }
+        cachedNodes = new ArrayList<>();
         save();
         EventManager.callEvent(new NodeCacheClearEvent());
     }

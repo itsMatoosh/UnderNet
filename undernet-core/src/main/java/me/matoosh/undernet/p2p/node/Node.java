@@ -10,6 +10,7 @@ import io.netty.channel.Channel;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.p2p.router.Router;
+import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.messages.NetworkMessage;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -22,7 +23,7 @@ public class Node implements Serializable {
     /**
      * The network identity of the node.
      */
-    public transient NetworkIdentity identity = new NetworkIdentity();
+    private NetworkIdentity identity;
     /**
      * Connection address of this node.
      */
@@ -60,16 +61,17 @@ public class Node implements Serializable {
      */
     @Override
     public String toString() {
-        String displayName = address.toString();
+        String displayName = "";
 
         if(this != Node.self) {
+            displayName = address.toString();
             if(isConnected()) {
                 displayName = displayName + " [connected]";
             }
             return displayName;
         }
 
-        return displayName + " [self]";
+        return displayName + "[self]";
     }
 
     /**
@@ -100,5 +102,26 @@ public class Node implements Serializable {
         } else {
             channel.writeAndFlush(msg);
         }
+    }
+
+    /**
+     * Sets the node's identity.
+     * @param identity
+     */
+    public void setIdentity(NetworkIdentity identity) {
+        if(identity.isCorrect()) {
+            this.identity = identity;
+            logger.info(toString() + " node identity set to: " + this.identity);
+        } else {
+            logger.error("Couldn't set " + toString() + " node identity, the identity object is not correct!");
+        }
+    }
+
+    /**
+     * Gets the node's identity.
+     * @return
+     */
+    public NetworkIdentity getIdentity() {
+        return identity;
     }
 }

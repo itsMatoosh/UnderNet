@@ -21,12 +21,12 @@ import java.io.ObjectOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.file.StandaloneFileManager;
 import me.matoosh.undernet.identity.NetworkIdentity;
+import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.standalone.config.StandaloneConfigManager;
 import me.matoosh.undernet.standalone.ui.AppFrame;
 
@@ -66,7 +66,6 @@ public class UnderNetStandalone {
                 NetworkIdentity identity = readNetworkIdentityCache();
                 if(identity == null) {
                     identity = new NetworkIdentity();
-                    identity.username = "Anon-" + new Random().nextInt(9) + "" + new Random().nextInt(9) + "" + new Random().nextInt(9);
                 }
                 UnderNetStandalone.setNetworkIdentity(identity);
             }
@@ -166,8 +165,11 @@ public class UnderNetStandalone {
      * @param identity
      */
     public static void setNetworkIdentity(NetworkIdentity identity) {
+        if(identity.getNetworkId() == null) {
+            identity.setNetworkId(NetworkID.random());
+        }
         UnderNetStandalone.networkIdentity = identity;
-        mainAppFrame.setTitle("UnderNet - " + UnderNetStandalone.networkIdentity.username);
+        mainAppFrame.setTitle("UnderNet - " + UnderNetStandalone.networkIdentity.getUsername());
         writeNetworkIdentityCache();
     }
 }

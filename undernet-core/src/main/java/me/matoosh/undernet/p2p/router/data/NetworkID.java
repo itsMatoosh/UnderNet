@@ -1,5 +1,9 @@
 package me.matoosh.undernet.p2p.router.data;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Random;
 
@@ -10,7 +14,7 @@ import me.matoosh.undernet.UnderNet;
  * Created by Mateusz Rębacz on 25.09.2017.
  */
 
-public class NetworkID {
+public class NetworkID implements Serializable {
     /**
      * The data of the network id.
      */
@@ -47,5 +51,32 @@ public class NetworkID {
         NetworkID random = new NetworkID();
         random.data = new BigInteger(512, new Random());
         return random;
+    }
+
+    /**
+     * Serialization
+     * @param oos
+     * @throws IOException
+     */
+    private void writeObject(ObjectOutputStream oos)
+            throws IOException {
+        oos.writeObject(data);
+    }
+
+    /**
+     * Deserialization
+     * @param ois
+     * @throws ClassNotFoundException
+     * @throws IOException
+     */
+    private void readObject(ObjectInputStream ois)
+            throws ClassNotFoundException, IOException {
+        data = (BigInteger)ois.readObject();
+    }
+
+    @Override
+    public String toString() {
+        return "NetworkID{" + data +
+                '}';
     }
 }

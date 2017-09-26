@@ -74,7 +74,7 @@ public class UnderNet
      */
     public static void connect(NetworkIdentity identity) {
         //Connecting the client to the network.
-        logger.info("Connecting to UnderNet as " + identity.username + "...");
+        logger.info("Connecting to UnderNet as " + identity.getUsername() + "...");
 
         //Starting the router.
         Node.self.router.start(identity);

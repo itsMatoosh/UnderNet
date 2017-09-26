@@ -58,7 +58,7 @@ public class NeighborNodesManager extends EventHandler {
                 message.fromByte(messageReceivedEvent.message.data.array());
                 //TODO: Check the generated id with the database and update.
                 logger.info("Received node info for " + messageReceivedEvent.remoteNode + ": " + message.networkID);
-                messageReceivedEvent.remoteNode.identity.networkID = message.networkID;
+                messageReceivedEvent.remoteNode.getIdentity().setNetworkId(message.networkID);
             }
         }
     }

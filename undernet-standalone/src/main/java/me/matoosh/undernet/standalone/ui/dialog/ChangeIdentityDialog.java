@@ -52,7 +52,7 @@ public class ChangeIdentityDialog extends JDialog {
     private void addContent() {
         add(new JLabel("Username"));
         usernameField = new JTextField();
-        usernameField.setText(UnderNetStandalone.networkIdentity.username);
+        usernameField.setText(UnderNetStandalone.networkIdentity.getUsername());
         add(usernameField);
 
         add(new JPanel());
@@ -66,7 +66,7 @@ public class ChangeIdentityDialog extends JDialog {
             public void actionPerformed(ActionEvent actionEvent) {
                 //Setting the new username.
                 NetworkIdentity identity = new NetworkIdentity();
-                identity.username = usernameField.getText();
+                identity.setUsername(usernameField.getText());
                 UnderNetStandalone.setNetworkIdentity(identity);
 
                 //Closing the dialog.
