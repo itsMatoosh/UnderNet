@@ -8,6 +8,7 @@ import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
+import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.p2p.router.data.messages.MsgType;
 import me.matoosh.undernet.p2p.router.data.messages.NetworkMessage;
 import me.matoosh.undernet.p2p.router.data.messages.NodeInfoMessage;
@@ -58,7 +59,10 @@ public class NeighborNodesManager extends EventHandler {
                 message.fromByte(messageReceivedEvent.message.data.array());
                 //TODO: Check the generated id with the database and update.
                 logger.info("Received node info for " + messageReceivedEvent.remoteNode + ": " + message.networkID);
-                messageReceivedEvent.remoteNode.getIdentity().setNetworkId(message.networkID);
+                logger.info(message.networkID.data.toByteArray().length + "s");
+                NetworkIdentity networkIdentity = new NetworkIdentity();
+                networkIdentity.setNetworkId(message.networkID);
+                messageReceivedEvent.remoteNode.setIdentity(networkIdentity);
             }
         }
     }
