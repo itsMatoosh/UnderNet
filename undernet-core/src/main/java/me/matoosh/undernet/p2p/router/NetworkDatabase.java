@@ -3,8 +3,6 @@ package me.matoosh.undernet.p2p.router;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
@@ -18,11 +16,6 @@ import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
  */
 
 public class NetworkDatabase extends EventHandler {
-    /**
-     * List of the users currently connected to the network.
-     */
-    public ArrayList<String> connectedUsers;
-
     /**
      * The logger of the class.
      */
