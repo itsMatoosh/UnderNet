@@ -3,12 +3,16 @@ package me.matoosh.undernet.p2p.node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigInteger;
+
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
 import me.matoosh.undernet.identity.NetworkIdentity;
+import me.matoosh.undernet.p2p.router.Router;
+import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.message.MsgType;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 import me.matoosh.undernet.p2p.router.data.message.NodeInfoMessage;
@@ -25,9 +29,15 @@ public class NeighborNodesManager extends EventHandler {
     public static Logger logger = LoggerFactory.getLogger(NeighborNodesManager.class);
 
     /**
+     * The router of this manager.
+     */
+    public Router router;
+
+    /**
      * Sets up the manager.
      */
-    public void setup() {
+    public void setup(Router router) {
+        this.router = router;
         registerHandlers();
     }
 
@@ -73,5 +83,26 @@ public class NeighborNodesManager extends EventHandler {
     public void sendNodeInfo(Node infoFrom, Node infoTo) {
         logger.info("Sending " + infoFrom.toString() + " node info to: " + infoTo.toString());
         infoTo.send(new NetworkMessage(MsgType.NODE_INFO, new NodeInfoMessage(infoFrom)));
+    }
+
+    /**
+     * Returns the neighboring node closest to the given id.
+     * @param id
+     * @return
+     */
+    public Node getClosestTo(NetworkID id) {
+        Node closest = null;
+        BigInteger closestDist = null;
+        for (int i = 0; i < router.connectedNodes.size(); i++) {
+            Node n = router.connectedNodes.get(i);
+            BigInteger distance = n.getIdentity().getNetworkId().distanceTo(id);
+
+            if(closestDist == null || closest == null || distance.compareTo(closestDist) < 0) {
+                closest = n;
+                closestDist = distance;
+            }
+        }
+
+        return closest;
     }
 }

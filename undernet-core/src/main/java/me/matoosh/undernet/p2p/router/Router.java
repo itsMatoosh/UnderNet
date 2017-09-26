@@ -106,11 +106,11 @@ public class Router extends EventHandler {
 
         //Instantiating the neighbor nodes manager.
         neighborNodesManager = new NeighborNodesManager();
-        neighborNodesManager.setup();
+        neighborNodesManager.setup(this);
 
         //Instantiating the resource manager.
         resourceManager = new ResourceManager();
-        resourceManager.setup();
+        resourceManager.setup(this);
     }
     /**
      * Starts the router.
