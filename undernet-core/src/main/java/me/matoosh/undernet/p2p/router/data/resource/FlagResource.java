@@ -1,9 +1,5 @@
 package me.matoosh.undernet.p2p.router.data.resource;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
 /**
  * Represents a flag resource.
  * Flag resources have a set expiration and can contain routing information.
@@ -20,25 +16,12 @@ public class FlagResource extends Resource {
     }
 
     /**
-     * Serialization
+     * Returns the type of the resource. E.g file resource.
      *
-     * @param oos
-     * @throws IOException
+     * @return
      */
     @Override
-    public void writeObject(ObjectOutputStream oos) throws IOException {
-
-    }
-
-    /**
-     * Deserialization
-     *
-     * @param ois
-     * @throws ClassNotFoundException
-     * @throws IOException
-     */
-    @Override
-    public void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
-
+    public byte getResourceType() {
+        return 1;
     }
 }

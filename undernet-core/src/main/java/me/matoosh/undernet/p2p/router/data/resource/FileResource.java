@@ -1,9 +1,9 @@
 package me.matoosh.undernet.p2p.router.data.resource;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+
+import me.matoosh.undernet.p2p.router.data.NetworkID;
+import me.matoosh.undernet.p2p.router.data.filetransfer.FileInfo;
 
 /**
  * Represents a stored file resource.
@@ -12,16 +12,17 @@ import java.io.ObjectOutputStream;
 
 public class FileResource extends Resource {
     /**
-     * The file.
+     * Information about the file.
      */
-    public File file;
+    public FileInfo fileInfo;
 
     /**
      * Creates a new file resource given file.
      * @param file
      */
     public FileResource(File file) {
-
+        this.fileInfo = new FileInfo(file);
+        calcNetworkId();
     }
 
     /**
@@ -29,29 +30,16 @@ public class FileResource extends Resource {
      */
     @Override
     public void calcNetworkId() {
-
+        networkID = new NetworkID(NetworkID.getHashCodeFromString(fileInfo.fileName));
     }
 
     /**
-     * Serialization
+     * Returns the type of the resource. E.g file resource.
      *
-     * @param oos
-     * @throws IOException
+     * @return
      */
     @Override
-    public void writeObject(ObjectOutputStream oos) throws IOException {
-
-    }
-
-    /**
-     * Deserialization
-     *
-     * @param ois
-     * @throws ClassNotFoundException
-     * @throws IOException
-     */
-    @Override
-    public void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
-
+    public byte getResourceType() {
+        return 0;
     }
 }

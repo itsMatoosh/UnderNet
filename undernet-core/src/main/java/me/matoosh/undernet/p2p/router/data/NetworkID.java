@@ -5,9 +5,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 
 import me.matoosh.undernet.UnderNet;
+import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 
 /**
  * Represents a network id.
@@ -78,5 +81,29 @@ public class NetworkID implements Serializable {
     public String toString() {
         return "NetworkID{" + data +
                 '}';
+    }
+
+    /**
+     * Gets a SHA-512 hash code from a string.
+     * @param str
+     * @return
+     * @throws NoSuchAlgorithmException
+     */
+    public static String getHashCodeFromString(String str) {
+        MessageDigest md = null;
+        try {
+            md = MessageDigest.getInstance("SHA-512");
+        } catch (NoSuchAlgorithmException e) {
+            NetworkMessage.logger.error("Couldn't encrypt string with SHA-512 as the algorithm is missing!", e);
+        }
+        md.update(str.getBytes());
+        byte byteData[] = md.digest();
+
+        //convert the byte to hex format method 1
+        StringBuffer hashCodeBuffer = new StringBuffer();
+        for (int i = 0; i < byteData.length; i++) {
+            hashCodeBuffer.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
+        }
+        return hashCodeBuffer.toString();
     }
 }
