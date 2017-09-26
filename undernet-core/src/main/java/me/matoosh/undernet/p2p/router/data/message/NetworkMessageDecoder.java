@@ -9,6 +9,7 @@ import java.util.List;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import me.matoosh.undernet.p2p.router.data.filetransfer.FileChunkPacket;
 
 /**
  * Used to decode network messages from received bytes.
@@ -57,7 +58,13 @@ public class NetworkMessageDecoder extends ByteToMessageDecoder {
             //Checking the message expiration.
             if(System.currentTimeMillis() < expiration) {
                 //Creating the cached message.
-                cachedMessage = new NetworkMessage();
+                cachedMessage = null;
+                if(msgId >= 1000) {
+                    cachedMessage = new FileChunkPacket();
+                } else {
+                    cachedMessage = new NetworkMessage();
+                }
+
                 cachedMessage.msgId = msgId;
                 cachedMessage.expiration = expiration;
                 cachedMessage.checksum = checksum;
