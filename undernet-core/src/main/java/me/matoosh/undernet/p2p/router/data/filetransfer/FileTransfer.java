@@ -1,7 +1,7 @@
 package me.matoosh.undernet.p2p.router.data.filetransfer;
 
-import java.io.File;
-import java.io.FileInputStream;
+import me.matoosh.undernet.p2p.node.Node;
+import me.matoosh.undernet.p2p.router.data.resource.FileResource;
 
 /**
  * Represents a single active file transfer.
@@ -15,12 +15,18 @@ public class FileTransfer {
     public short id;
 
     /**
-     * The save stream.
+     * The info on the transferred file.
      */
-    public FileInputStream saveStream;
+    public FileInfo fileInfo;
 
-    public FileTransfer(File saveTo, short id) {
+    /**
+     * The node meant to receive the file.
+     */
+    public Node recipient;
+
+    public FileTransfer(FileResource resource, short id, Node recipient) {
         this.id = id;
-        //TODO: Open save stream.
+        this.fileInfo = resource.fileInfo;
+        this.recipient = recipient;
     }
 }

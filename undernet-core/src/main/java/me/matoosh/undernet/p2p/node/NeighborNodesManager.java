@@ -6,11 +6,11 @@ import org.slf4j.LoggerFactory;
 import java.math.BigInteger;
 
 import me.matoosh.undernet.event.Event;
-import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
 import me.matoosh.undernet.identity.NetworkIdentity;
+import me.matoosh.undernet.p2p.Manager;
 import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.message.MsgType;
@@ -22,33 +22,39 @@ import me.matoosh.undernet.p2p.router.data.message.NodeInfoMessage;
  * Created by Mateusz Rębacz on 25.09.2017.
  */
 
-public class NeighborNodesManager extends EventHandler {
+public class NeighborNodesManager extends Manager {
     /**
      * Logger of the class.
      */
     public static Logger logger = LoggerFactory.getLogger(NeighborNodesManager.class);
 
     /**
-     * The router of this manager.
+     * Router specification is mandatory.
+     *
+     * @param router
      */
-    public Router router;
-
-    /**
-     * Sets up the manager.
-     */
-    public void setup(Router router) {
-        this.router = router;
-        registerHandlers();
+    public NeighborNodesManager(Router router) {
+        super(router);
     }
 
     /**
-     * Registers the event handlers.
+     * Registers the events of the manager.
      */
-    private void registerHandlers() {
+    @Override
+    protected void registerEvents() {
+
+    }
+
+    /**
+     * Registers the handlers of the manager.
+     */
+    @Override
+    protected void registerHandlers() {
         //Message received event.
         EventManager.registerHandler(this, ChannelMessageReceivedEvent.class);
         EventManager.registerHandler(this, ChannelCreatedEvent.class);
     }
+
 
     /**
      * Called when the handled event is called.
