@@ -4,6 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventManager;
@@ -25,6 +29,11 @@ public class ResourceManager extends Manager {
      * List of the stored resources.
      */
     public ArrayList<Resource> resourcesStored;
+
+    /**
+     * Executor used for managing individual resource logic.
+     */
+    public ExecutorService executor = Executors.newSingleThreadExecutor();
 
     /**
      * The logger of the class.
@@ -66,7 +75,10 @@ public class ResourceManager extends Manager {
             //TODO: Call a resource stored event.
         } else {
             //Calling the onPush method.
-            pushMessage.resource.onPush(closest);
+            executor.submit(pushMessage.resource.onPush(pushMessage, closest));
+
+            //TODO: Implement a callback for the task.
+            //TODO: Send the message when task completes.
             //Sending the push msg.
             closest.send(new NetworkMessage(MsgType.RES_PUSH, pushMessage));
         }
@@ -86,9 +98,10 @@ public class ResourceManager extends Manager {
                 //Resource push msg.
                 ResourcePushMessage pushMessage = (ResourcePushMessage)NetworkMessage.deserializeMessage(messageReceivedEvent.message.data.array());
 
-                //TODO: Request the file transfer of the resource.
+                //Run push msg received logic.
+                executor.submit(pushMessage.resource.onPushReceive(pushMessage, messageReceivedEvent.remoteNode));
 
-                //TODO: Once the file transfer completes, push the resource onward.
+                //TODO: Implement a callback for the task.
             }
         }
     }

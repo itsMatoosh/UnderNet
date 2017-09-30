@@ -1,9 +1,11 @@
 package me.matoosh.undernet.p2p.router.data.resource;
 
 import java.io.Serializable;
+import java.util.concurrent.Callable;
 
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
+import me.matoosh.undernet.p2p.router.data.message.ResourcePushMessage;
 
 /**
  * Represents a stored resource.
@@ -29,5 +31,10 @@ public abstract class Resource implements Serializable {
     /**
      * Called before the resource is pushed.
      */
-    public abstract void onPush(Node pushTo);
+    public abstract Callable onPush(ResourcePushMessage msg, Node pushTo);
+    /**
+     * Called after the resource push has been received.
+     * @param receivedFrom
+     */
+    public abstract Callable onPushReceive(ResourcePushMessage msg, Node receivedFrom);
 }

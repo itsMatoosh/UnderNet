@@ -42,7 +42,7 @@ public class AppFrame extends JFrame {
     /**
      * The list of communities.
      */
-    public CommunitiesPanel communitiesList;
+    public SectionsPanel sectionsPanel;
 
     /**
      * The menu bar of the frame.
@@ -135,9 +135,9 @@ public class AppFrame extends JFrame {
         contentPanel.setBorder(BorderFactory.createLineBorder(Color.red));
         nodesPanel = new NodesPanel();
         nodesPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-        communitiesList = new CommunitiesPanel();
-        communitiesList.setBorder(BorderFactory.createLineBorder(Color.black));
-        add(communitiesList, new GridBagConstraints(0, 0, 1, 1, 0.125, 1, GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+        sectionsPanel = new SectionsPanel();
+        sectionsPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+        add(sectionsPanel, new GridBagConstraints(0, 0, 1, 1, 0.125, 1, GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
         add(contentPanel, new GridBagConstraints(1, 0, 1, 1, 0.75, 1, GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
         add(nodesPanel, new GridBagConstraints(2, 0, 1, 1, 0.125, 1, GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
 
