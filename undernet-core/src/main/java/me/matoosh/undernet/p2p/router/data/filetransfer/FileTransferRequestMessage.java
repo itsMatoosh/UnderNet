@@ -1,5 +1,6 @@
 package me.matoosh.undernet.p2p.router.data.filetransfer;
 
+import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.message.MsgBase;
 
 /**
@@ -11,9 +12,9 @@ public class FileTransferRequestMessage implements MsgBase {
     /**
      * The id of the requested transfer.
      */
-    public short transferId;
+    public NetworkID transferId;
 
-    public FileTransferRequestMessage(short transferId) {
+    public FileTransferRequestMessage(NetworkID transferId) {
         this.transferId = transferId;
     }
 }

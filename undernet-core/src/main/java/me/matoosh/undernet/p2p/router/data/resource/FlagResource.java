@@ -1,7 +1,5 @@
 package me.matoosh.undernet.p2p.router.data.resource;
 
-import java.util.concurrent.Callable;
-
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.message.ResourcePushMessage;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -38,7 +36,7 @@ public class FlagResource extends Resource {
      * @param pushTo
      */
     @Override
-    public Callable onPush(ResourcePushMessage msg, Node pushTo) {
+    public void onPush(ResourcePushMessage msg, Node pushTo) {
         throw new NotImplementedException();
     }
 
@@ -49,7 +47,7 @@ public class FlagResource extends Resource {
      * @param receivedFrom
      */
     @Override
-    public Callable onPushReceive(ResourcePushMessage msg, Node receivedFrom) {
+    public void onPushReceive(ResourcePushMessage msg, Node receivedFrom) {
         throw new NotImplementedException();
     }
 }

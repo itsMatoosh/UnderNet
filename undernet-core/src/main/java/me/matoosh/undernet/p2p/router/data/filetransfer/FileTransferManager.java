@@ -8,9 +8,11 @@ import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
 import me.matoosh.undernet.p2p.Manager;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.Router;
+import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.message.MsgType;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 import me.matoosh.undernet.p2p.router.data.resource.FileResource;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Manages the file transfers.
@@ -22,10 +24,6 @@ public class FileTransferManager extends Manager {
      * The currently active file transfers.
      */
     public ArrayList<FileTransfer> transfers = new ArrayList<>();
-    /**
-     * Last id given to a tranfer.
-     */
-    private short lastId;
 
     /**
      * Router specification is mandatory.
@@ -42,12 +40,17 @@ public class FileTransferManager extends Manager {
      */
     public void prepareFileTranfer(FileResource resource, Node recipient) {
         //Creating a new file transfer instance.
-        FileTransfer transfer = new FileTransfer(resource, lastId, recipient);
+        FileTransfer transfer = new FileTransfer(resource, recipient);
         transfers.add(transfer);
-        lastId++;
-        if((lastId + 1000) == Short.MAX_VALUE) {
-            lastId = 0;
-        }
+    }
+
+    /**
+     * Requests a file transfer with id from a neighboring node.
+     * @param receivedFrom
+     * @param networkID
+     */
+    public void requestFileTransfer(Node receivedFrom, NetworkID networkID) {
+        throw new NotImplementedException();
     }
 
     /**

@@ -4,14 +4,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
+import me.matoosh.undernet.event.resource.ResourcePushReceivedEvent;
+import me.matoosh.undernet.event.resource.ResourcePushSentEvent;
 import me.matoosh.undernet.p2p.Manager;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.Router;
@@ -31,7 +31,7 @@ public class ResourceManager extends Manager {
     public ArrayList<Resource> resourcesStored;
 
     /**
-     * Executor used for managing individual resource logic.
+     * Executor used for managing resource logic.
      */
     public ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -56,10 +56,15 @@ public class ResourceManager extends Manager {
      */
     public void publish(Resource resource) {
         //Creating a new ResourcePushMessage.
-        ResourcePushMessage pushMessage = new ResourcePushMessage(resource);
+        final ResourcePushMessage pushMessage = new ResourcePushMessage(resource);
 
         //Sending the message to the neighbor closest to it.
-        pushForward(pushMessage);
+        executor.submit(new Runnable() {
+            @Override
+            public void run() {
+                pushForward(pushMessage);
+            }
+        });
     }
 
     /**
@@ -75,12 +80,13 @@ public class ResourceManager extends Manager {
             //TODO: Call a resource stored event.
         } else {
             //Calling the onPush method.
-            executor.submit(pushMessage.resource.onPush(pushMessage, closest));
+            pushMessage.resource.onPush(pushMessage, closest);
 
-            //TODO: Implement a callback for the task.
-            //TODO: Send the message when task completes.
             //Sending the push msg.
             closest.send(new NetworkMessage(MsgType.RES_PUSH, pushMessage));
+
+            //Calling event.
+            EventManager.callEvent(new ResourcePushSentEvent(pushMessage.resource, pushMessage, closest));
         }
     }
 
@@ -99,9 +105,10 @@ public class ResourceManager extends Manager {
                 ResourcePushMessage pushMessage = (ResourcePushMessage)NetworkMessage.deserializeMessage(messageReceivedEvent.message.data.array());
 
                 //Run push msg received logic.
-                executor.submit(pushMessage.resource.onPushReceive(pushMessage, messageReceivedEvent.remoteNode));
+                pushMessage.resource.onPushReceive(pushMessage, messageReceivedEvent.remoteNode);
 
-                //TODO: Implement a callback for the task.
+                //Call event.
+                EventManager.callEvent(new ResourcePushReceivedEvent(pushMessage.resource, pushMessage, messageReceivedEvent.remoteNode));
             }
         }
     }
@@ -110,7 +117,10 @@ public class ResourceManager extends Manager {
      * Registers the events of the manager.
      */
     @Override
-    protected void registerEvents() {}
+    protected void registerEvents() {
+        EventManager.registerEvent(ResourcePushReceivedEvent.class);
+        EventManager.registerEvent(ResourcePushSentEvent.class);
+    }
 
     /**
      * Registers the handlers of the manager.

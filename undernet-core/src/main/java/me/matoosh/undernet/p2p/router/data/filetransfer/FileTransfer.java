@@ -1,6 +1,7 @@
 package me.matoosh.undernet.p2p.router.data.filetransfer;
 
 import me.matoosh.undernet.p2p.node.Node;
+import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.resource.FileResource;
 
 /**
@@ -12,7 +13,7 @@ public class FileTransfer {
     /**
      * Id of the transfer.
      */
-    public short id;
+    public NetworkID id;
 
     /**
      * The info on the transferred file.
@@ -24,8 +25,8 @@ public class FileTransfer {
      */
     public Node recipient;
 
-    public FileTransfer(FileResource resource, short id, Node recipient) {
-        this.id = id;
+    public FileTransfer(FileResource resource, Node recipient) {
+        this.id = resource.networkID;
         this.fileInfo = resource.fileInfo;
         this.recipient = recipient;
     }

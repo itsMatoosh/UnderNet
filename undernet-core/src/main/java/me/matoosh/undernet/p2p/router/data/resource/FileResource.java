@@ -6,13 +6,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.concurrent.Callable;
 
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.filetransfer.FileInfo;
 import me.matoosh.undernet.p2p.router.data.message.ResourcePushMessage;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Represents a stored file resource.
@@ -94,15 +94,9 @@ public class FileResource extends Resource {
      * @param pushTo
      */
     @Override
-    public Callable onPush(ResourcePushMessage msg, final Node pushTo) {
-        return new Callable() {
-            @Override
-            public Object call() throws Exception {
-                //Preparing a file transfer to the pushTo node.
-                UnderNet.router.fileTransferManager.prepareFileTranfer(FileResource.this, pushTo);
-                return null;
-            }
-        };
+    public void onPush(ResourcePushMessage msg, final Node pushTo) {
+        //Preparing a file transfer to the pushTo node.
+        UnderNet.router.fileTransferManager.prepareFileTranfer(FileResource.this, pushTo);
     }
 
     /**
@@ -112,8 +106,8 @@ public class FileResource extends Resource {
      * @param receivedFrom
      */
     @Override
-    public Callable onPushReceive(ResourcePushMessage msg, Node receivedFrom) {
-        //TODO: Request the file trasnfer.
-        return null;
+    public void onPushReceive(ResourcePushMessage msg, Node receivedFrom) {
+        //Requesting the file trasnfer.
+        UnderNet.router.fileTransferManager.requestFileTransfer(receivedFrom, msg.resource.networkID);
     }
 }
