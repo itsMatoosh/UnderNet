@@ -1,6 +1,11 @@
 package me.matoosh.undernet.p2p.router.data.filetransfer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventManager;
@@ -8,11 +13,9 @@ import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
 import me.matoosh.undernet.p2p.Manager;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.Router;
-import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.message.MsgType;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 import me.matoosh.undernet.p2p.router.data.resource.FileResource;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Manages the file transfers.
@@ -24,6 +27,16 @@ public class FileTransferManager extends Manager {
      * The currently active file transfers.
      */
     public ArrayList<FileTransfer> transfers = new ArrayList<>();
+
+    /**
+     * Executor used for async file transfers.
+     */
+    public ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    /**
+     * The logger of the manager.
+     */
+    public static Logger logger = LoggerFactory.getLogger(FileTransferManager.class);
 
     /**
      * Router specification is mandatory.
@@ -40,17 +53,23 @@ public class FileTransferManager extends Manager {
      */
     public void prepareFileTranfer(FileResource resource, Node recipient) {
         //Creating a new file transfer instance.
-        FileTransfer transfer = new FileTransfer(resource, recipient);
+        FileTransfer transfer = new FileTransfer(resource, recipient, FileTransferType.OUTBOUND);
         transfers.add(transfer);
     }
 
     /**
      * Requests a file transfer with id from a neighboring node.
      * @param receivedFrom
-     * @param networkID
+     * @param resource
      */
-    public void requestFileTransfer(Node receivedFrom, NetworkID networkID) {
-        throw new NotImplementedException();
+    public void requestFileTransfer(Node receivedFrom, FileResource resource) {
+        logger.info("Requesting the transfer " + resource.networkID + " from " + receivedFrom);
+
+        //Caching a new transfer instance.
+        transfers.add(new FileTransfer(resource, receivedFrom, FileTransferType.INBOUND));
+
+        //Sending a new FileRequest message.
+        receivedFrom.send(new NetworkMessage(MsgType.FILE_REQ, new FileTransferRequestMessage(resource.networkID)));
     }
 
     /**
@@ -83,12 +102,17 @@ public class FileTransferManager extends Manager {
             FileTransferRequestMessage requestMsg = (FileTransferRequestMessage)NetworkMessage.deserializeMessage(messageReceivedEvent.message.data.array());
 
             //A file was requested from this node. Checking if the requested transfer has been prepared.
-            for (FileTransfer transfer :
+            for (final FileTransfer transfer :
                     transfers) {
                 if(transfer.id == requestMsg.transferId) {
                     //Checking if the recipient is the same.
                     if(transfer.recipient == messageReceivedEvent.remoteNode){
-                        //TODO: Start the transfer.
+                        executor.submit(new Runnable() {
+                            @Override
+                            public void run() {
+                                transfer.startSending();
+                            }
+                        });
                     }
                 }
             }

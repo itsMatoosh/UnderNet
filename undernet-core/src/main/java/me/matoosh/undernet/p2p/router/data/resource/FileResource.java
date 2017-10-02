@@ -12,7 +12,6 @@ import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.filetransfer.FileInfo;
 import me.matoosh.undernet.p2p.router.data.message.ResourcePushMessage;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Represents a stored file resource.
@@ -108,6 +107,6 @@ public class FileResource extends Resource {
     @Override
     public void onPushReceive(ResourcePushMessage msg, Node receivedFrom) {
         //Requesting the file trasnfer.
-        UnderNet.router.fileTransferManager.requestFileTransfer(receivedFrom, msg.resource.networkID);
+        UnderNet.router.fileTransferManager.requestFileTransfer(receivedFrom, (FileResource)msg.resource);
     }
 }

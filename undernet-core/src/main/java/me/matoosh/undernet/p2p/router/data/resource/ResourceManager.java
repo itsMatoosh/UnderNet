@@ -10,6 +10,7 @@ import java.util.concurrent.Executors;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
+import me.matoosh.undernet.event.resource.ResourceFinalStopEvent;
 import me.matoosh.undernet.event.resource.ResourcePushReceivedEvent;
 import me.matoosh.undernet.event.resource.ResourcePushSentEvent;
 import me.matoosh.undernet.p2p.Manager;
@@ -69,7 +70,7 @@ public class ResourceManager extends Manager {
 
     /**
      * Forwards a pushMessage to the next appropriate node.
-     * Calls resource stored event if this node is the reosurce's destination.
+     * Calls resource stored event if this node is the resource's destination.
      * @param pushMessage
      */
     public void pushForward(ResourcePushMessage pushMessage) {
@@ -77,7 +78,7 @@ public class ResourceManager extends Manager {
         Node closest = router.neighborNodesManager.getClosestTo(pushMessage.resource.networkID);
         if(closest == Node.self) {
             //This is the final node of the resource.
-            //TODO: Call a resource stored event.
+            EventManager.callEvent(new ResourceFinalStopEvent(pushMessage.resource, pushMessage, null));
         } else {
             //Calling the onPush method.
             pushMessage.resource.onPush(pushMessage, closest);
@@ -99,16 +100,29 @@ public class ResourceManager extends Manager {
     public void onEventCalled(Event e) {
         if(e instanceof ChannelMessageReceivedEvent) {
             //Network message received.
-            ChannelMessageReceivedEvent messageReceivedEvent = (ChannelMessageReceivedEvent)e;
+            final ChannelMessageReceivedEvent messageReceivedEvent = (ChannelMessageReceivedEvent)e;
             if(messageReceivedEvent.message.msgId == MsgType.RES_PUSH.ordinal()) {
-                //Resource push msg.
-                ResourcePushMessage pushMessage = (ResourcePushMessage)NetworkMessage.deserializeMessage(messageReceivedEvent.message.data.array());
+                executor.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        //Resource push msg.
+                        final ResourcePushMessage pushMessage = (ResourcePushMessage)NetworkMessage.deserializeMessage(messageReceivedEvent.message.data.array());
 
-                //Run push msg received logic.
-                pushMessage.resource.onPushReceive(pushMessage, messageReceivedEvent.remoteNode);
+                        //Run push msg received logic.
+                        pushMessage.resource.onPushReceive(pushMessage, messageReceivedEvent.remoteNode);
 
-                //Call event.
-                EventManager.callEvent(new ResourcePushReceivedEvent(pushMessage.resource, pushMessage, messageReceivedEvent.remoteNode));
+                        //Call event.
+                        EventManager.callEvent(new ResourcePushReceivedEvent(pushMessage.resource, pushMessage, messageReceivedEvent.remoteNode));
+
+                        //Pushing the message on.
+                        executor.submit(new Runnable() {
+                            @Override
+                            public void run() {
+                                pushForward(pushMessage);
+                            }
+                        });
+                    }
+                });
             }
         }
     }
@@ -120,6 +134,7 @@ public class ResourceManager extends Manager {
     protected void registerEvents() {
         EventManager.registerEvent(ResourcePushReceivedEvent.class);
         EventManager.registerEvent(ResourcePushSentEvent.class);
+        EventManager.registerEvent(ResourceFinalStopEvent.class);
     }
 
     /**
