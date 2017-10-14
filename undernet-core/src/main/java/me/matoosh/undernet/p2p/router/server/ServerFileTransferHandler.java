@@ -2,7 +2,9 @@ package me.matoosh.undernet.p2p.router.server;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.p2p.router.data.filetransfer.FileChunkPacket;
+import me.matoosh.undernet.p2p.router.data.filetransfer.FileTransfer;
 
 /**
  * Handles server side file transfer.
@@ -34,6 +36,11 @@ public class ServerFileTransferHandler extends ChannelInboundHandlerAdapter {
             FileChunkPacket chunk = (FileChunkPacket)msg;
             try {
                 //TODO: Add data to file transfer.
+                //Checking if a transfer with the same id exists.
+                for (FileTransfer transfer :
+                        UnderNet.router.fileTransferManager.transfers) {
+                    //TODO: Find the appropriate transfer.
+                }
             } finally {
                 chunk = null; //Releasing the chunk from memory.
             }
