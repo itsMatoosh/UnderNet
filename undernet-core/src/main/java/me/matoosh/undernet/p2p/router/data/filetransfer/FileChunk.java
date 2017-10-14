@@ -12,7 +12,7 @@ public class FileChunk implements MsgBase {
     /**
      * The id of the transfer the chunk belongs to.
      */
-    public NetworkID chunkId;
+    public NetworkID transferId;
     /**
      * The data of this chunk.
      */

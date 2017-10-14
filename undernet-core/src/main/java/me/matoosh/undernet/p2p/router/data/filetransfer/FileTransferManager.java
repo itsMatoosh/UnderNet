@@ -97,7 +97,7 @@ public class FileTransferManager extends Manager {
     @Override
     public void onEventCalled(Event e) {
         ChannelMessageReceivedEvent messageReceivedEvent = (ChannelMessageReceivedEvent)e;
-        if(messageReceivedEvent.message.msgId == MsgType.FILE_REQ.ordinal()) {
+        if(messageReceivedEvent.message.msgId == MsgType.FILE_REQ.ordinal()) { //File request received.
             //Deserializing msg.
             FileTransferRequestMessage requestMsg = (FileTransferRequestMessage)NetworkMessage.deserializeMessage(messageReceivedEvent.message.data.array());
 
@@ -114,6 +114,19 @@ public class FileTransferManager extends Manager {
                             }
                         });
                     }
+                }
+            }
+        } else if(messageReceivedEvent.message.msgId == MsgType.FILE_CHUNK.ordinal()) { //File chunk received.
+            //Deserializing msg.
+            FileChunk fileChunk = (FileChunk) NetworkMessage.deserializeMessage(messageReceivedEvent.message.data.array());
+
+            //A file was requested from this node. Checking if the requested transfer has been prepared.
+            for (final FileTransfer transfer :
+                    transfers) {
+                if(transfer.id == fileChunk.transferId) { //Locating the right file transfer.
+                    //Running chunk received callback.
+                    transfer.onChunkReceived(fileChunk);
+                    return;
                 }
             }
         }

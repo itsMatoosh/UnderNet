@@ -10,5 +10,6 @@ public enum MsgType {
     NODE_PING, //Message to ping a neighboring node.
     NODE_INFO, //Contains the node information about the sender.
     RES_PUSH, //Contains information on the resource that needs to be pushed to the receiver.
-    FILE_REQ //Requests a file from a neighboring node.
+    FILE_REQ, //Requests a file from a neighboring node.
+    FILE_CHUNK //A chunk of a file.
 }
