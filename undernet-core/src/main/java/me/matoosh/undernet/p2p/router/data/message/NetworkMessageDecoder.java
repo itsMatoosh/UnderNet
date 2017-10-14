@@ -9,7 +9,7 @@ import java.util.List;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
-import me.matoosh.undernet.p2p.router.data.filetransfer.FileChunkPacket;
+import me.matoosh.undernet.p2p.router.data.filetransfer.FileChunkMessage;
 
 /**
  * Used to decode network messages from received bytes.
@@ -60,7 +60,7 @@ public class NetworkMessageDecoder extends ByteToMessageDecoder {
                 //Creating the cached message.
                 cachedMessage = null;
                 if(msgId >= 1000) {
-                    cachedMessage = new FileChunkPacket();
+                    cachedMessage = new FileChunkMessage();
                 } else {
                     cachedMessage = new NetworkMessage();
                 }

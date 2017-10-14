@@ -3,7 +3,7 @@ package me.matoosh.undernet.p2p.router.data.message;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
-import me.matoosh.undernet.p2p.router.data.filetransfer.FileChunkPacket;
+import me.matoosh.undernet.p2p.router.data.filetransfer.FileChunkMessage;
 
 import static me.matoosh.undernet.UnderNet.logger;
 
@@ -25,7 +25,7 @@ public class NetworkMessageEncoder extends MessageToByteEncoder<NetworkMessage> 
     @Override
     protected void encode(ChannelHandlerContext ctx, NetworkMessage msg, ByteBuf out) throws Exception {
         //Setting the appropriate msg id.
-        if(msg instanceof FileChunkPacket) {
+        if(msg instanceof FileChunkMessage) {
             msg.msgId += 1000;
         }
 
