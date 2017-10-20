@@ -5,14 +5,17 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.concurrent.Callable;
 
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.ftp.FileTransferErrorEvent;
+import me.matoosh.undernet.event.ftp.FileTransferFinishedEvent;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
+import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 import me.matoosh.undernet.p2p.router.data.resource.FileResource;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Represents a single active file transfer.
@@ -43,6 +46,15 @@ public class FileTransfer {
      * Output for sending file chunks.
      */
     public FileOutputStream outputStream;
+    /**
+     * The file location.
+     */
+    public File file;
+
+    /**
+     * The standard buffer size for file chunks.
+     */
+    public static int BUFFER_SIZE = 1024;
 
     /**
      * The node meant to receive the file.
@@ -62,30 +74,30 @@ public class FileTransfer {
      */
     private void prepareStreams() {
         //Caching the path of the file.
-        File f = new File(UnderNet.fileManager.getContentFolder() + "/" + fileInfo.fileName);
+        file = new File(UnderNet.fileManager.getContentFolder() + "/" + fileInfo.fileName);
 
-        if(fileTransferType == FileTransferType.INBOUND) {
+        if(fileTransferType == FileTransferType.OUTBOUND) {
             //Creating or replacing the file.
-            if (f.exists()) {
-                f.delete();
+            if (file.exists()) {
+                file.delete();
             }
             try { //Creating new file.
-                f.createNewFile();
-                inputStream = new FileInputStream(f);
+                file.createNewFile();
+                inputStream = new FileInputStream(file);
             } catch (IOException e) {
                 //Calling a transfer error.
-                FileTransferManager.logger.error("Couldn't create file: " + f, e);
+                FileTransferManager.logger.error("Couldn't create file: " + file, e);
                 EventManager.callEvent(new FileTransferErrorEvent(this, e));
                 return;
             }
 
         } else {
             try {
-                outputStream = new FileOutputStream(f);
+                outputStream = new FileOutputStream(file);
             } catch (FileNotFoundException e) { //File doesn't exist.
                 //Calling a transfer error.
-                FileTransferManager.logger.error("Couldn't find file: " + f, new FileNotFoundException(f.toString()));
-                EventManager.callEvent(new FileTransferErrorEvent(this, new FileNotFoundException(f.toString())));
+                FileTransferManager.logger.error("Couldn't find file: " + file, new FileNotFoundException(file.toString()));
+                EventManager.callEvent(new FileTransferErrorEvent(this, new FileNotFoundException(file.toString())));
                 return;
             }
         }
@@ -96,9 +108,40 @@ public class FileTransfer {
      */
     public void startSending() {
         if(fileTransferType.equals(FileTransferType.OUTBOUND)) {
-            //TODO: File sending logic.
+            //File sending logic.
+            UnderNet.router.fileTransferManager.executor.submit(new Callable() {
+                @Override
+                public Object call() throws Exception {
+                    int read = 0;
+                    try {
+                        while(read < fileInfo.fileLength) {
+                            byte[] buffer = new byte[BUFFER_SIZE];
+                            read += inputStream.read(buffer);
+                            sendChunk(buffer);
+                        }
+                    } catch (IOException e) {
+                        FileTransferManager.logger.error("Error reading chunk from file: " + file, e);
+                        EventManager.callEvent(new FileTransferErrorEvent(FileTransfer.this, e));
+                    }
+                    finally {
+                        //File sent or error.
+                        EventManager.callEvent(new FileTransferFinishedEvent(FileTransfer.this));
+                    }
+                    return null;
+                }
+            });
         }
-        throw new NotImplementedException();
+
+    }
+
+    /**
+     * Sends a chunk of data to the recipient.
+     * @param buffer
+     */
+    private void sendChunk(byte[] buffer) {
+        NetworkMessage msg = new NetworkMessage();
+        msg.data = ByteBuffer.wrap(NetworkMessage.serializeMessage(new FileChunk(buffer)));
+        recipient.send(msg);
     }
 
     /**
@@ -106,6 +149,17 @@ public class FileTransfer {
      * @param chunk
      */
     public void onChunkReceived(FileChunk chunk) {
-
+        if(fileTransferType.equals(FileTransferType.INBOUND)) {
+            //Adding the data to the data byte[] of the transfer.
+            try {
+                outputStream.write(chunk.data);
+                if(file.length() <= fileInfo.fileLength) {
+                    //File fully received.
+                    EventManager.callEvent(new FileTransferFinishedEvent(this));
+                }
+            } catch (IOException e) {
+                FileTransferManager.logger.error("Error appending the received file chunk to file!", e);
+            }
+        }
     }
 }

@@ -17,4 +17,9 @@ public class FileChunk implements MsgBase {
      * The data of this chunk.
      */
     public byte[] data;
+
+    public FileChunk() {}
+    public FileChunk(byte[] data) {
+        this.data = data;
+    }
 }

@@ -10,6 +10,8 @@ import java.util.concurrent.Executors;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
+import me.matoosh.undernet.event.ftp.FileTransferErrorEvent;
+import me.matoosh.undernet.event.ftp.FileTransferFinishedEvent;
 import me.matoosh.undernet.p2p.Manager;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.Router;
@@ -77,7 +79,8 @@ public class FileTransferManager extends Manager {
      */
     @Override
     protected void registerEvents() {
-
+        EventManager.registerEvent(FileTransferErrorEvent.class);
+        EventManager.registerEvent(FileTransferFinishedEvent.class);
     }
 
     /**
