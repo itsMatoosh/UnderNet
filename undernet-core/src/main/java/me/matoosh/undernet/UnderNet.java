@@ -4,6 +4,8 @@ import org.cfg4j.provider.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.security.SecureRandom;
+
 import me.matoosh.undernet.file.FileManager;
 import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.p2p.cache.EntryNodeCache;
@@ -44,11 +46,19 @@ public class UnderNet
     public static Router router;
 
     /**
+     * Secure random generator.
+     */
+    public static SecureRandom secureRandom;
+
+    /**
      * Sets up UnderNet.
      */
     public static void setup(FileManager fileManager, ConfigurationProvider configProvider) {
         //Writing the init message.
         writeInitMessage();
+
+        //Setting the secure random generator.
+        secureRandom = new SecureRandom();
 
         //Setting the file manager.
         UnderNet.fileManager = fileManager;

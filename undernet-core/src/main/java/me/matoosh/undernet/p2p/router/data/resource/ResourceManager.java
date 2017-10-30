@@ -59,6 +59,9 @@ public class ResourceManager extends Manager {
         //Creating a new ResourcePushMessage.
         final ResourcePushMessage pushMessage = new ResourcePushMessage(resource);
 
+        //Log
+        logger.info("Publishing resource: " + resource + "...");
+
         //Sending the message to the neighbor closest to it.
         executor.submit(new Runnable() {
             @Override
@@ -80,6 +83,8 @@ public class ResourceManager extends Manager {
             //This is the final node of the resource.
             EventManager.callEvent(new ResourceFinalStopEvent(pushMessage.resource, pushMessage, null));
         } else {
+            logger.info("Pushing resource: " + pushMessage.resource + " to node: " + closest);
+
             //Calling the onPush method.
             pushMessage.resource.onPush(pushMessage, closest);
 

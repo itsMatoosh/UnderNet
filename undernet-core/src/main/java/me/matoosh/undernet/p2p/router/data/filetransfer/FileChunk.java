@@ -18,8 +18,8 @@ public class FileChunk implements MsgBase {
      */
     public byte[] data;
 
-    public FileChunk() {}
-    public FileChunk(byte[] data) {
+    public FileChunk(NetworkID transferId, byte[] data) {
+        this.transferId = transferId;
         this.data = data;
     }
 }

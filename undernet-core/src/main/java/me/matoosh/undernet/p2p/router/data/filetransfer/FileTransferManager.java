@@ -15,6 +15,7 @@ import me.matoosh.undernet.event.ftp.FileTransferFinishedEvent;
 import me.matoosh.undernet.p2p.Manager;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.Router;
+import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.message.MsgType;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 import me.matoosh.undernet.p2p.router.data.resource.FileResource;
@@ -26,9 +27,13 @@ import me.matoosh.undernet.p2p.router.data.resource.FileResource;
 
 public class FileTransferManager extends Manager {
     /**
-     * The currently active file transfers.
+     * The currently active inbound file transfers.
      */
-    public ArrayList<FileTransfer> transfers = new ArrayList<>();
+    public ArrayList<FileTransfer> inboundTransfers = new ArrayList<>();
+    /**
+     * The currently active outbound file transfers.
+     */
+    public ArrayList<FileTransfer> outboundTransfers = new ArrayList<>();
 
     /**
      * Executor used for async file transfers.
@@ -56,7 +61,7 @@ public class FileTransferManager extends Manager {
     public FileTransfer prepareFileTranfer(FileResource resource, Node recipient) {
         //Creating a new file transfer instance.
         FileTransfer transfer = new FileTransfer(resource, recipient, FileTransferType.OUTBOUND);
-        transfers.add(transfer);
+        outboundTransfers.add(transfer);
         return transfer;
     }
 
@@ -70,7 +75,7 @@ public class FileTransferManager extends Manager {
 
         //Caching a new transfer instance.
         FileTransfer transfer = new FileTransfer(resource, receivedFrom, FileTransferType.INBOUND);
-        transfers.add(transfer);
+        inboundTransfers.add(transfer);
 
         //Sending a new FileRequest message.
         receivedFrom.send(new NetworkMessage(MsgType.FILE_REQ, new FileTransferRequestMessage(resource.networkID)));
@@ -93,6 +98,7 @@ public class FileTransferManager extends Manager {
     protected void registerHandlers() {
         //Message handler.
         EventManager.registerHandler(this, ChannelMessageReceivedEvent.class);
+        EventManager.registerHandler(this, FileTransferFinishedEvent.class);
     }
 
     /**
@@ -102,39 +108,53 @@ public class FileTransferManager extends Manager {
      */
     @Override
     public void onEventCalled(Event e) {
-        ChannelMessageReceivedEvent messageReceivedEvent = (ChannelMessageReceivedEvent)e;
-        if(messageReceivedEvent.message.msgId == MsgType.FILE_REQ.ordinal()) { //File request received.
-            //Deserializing msg.
-            FileTransferRequestMessage requestMsg = (FileTransferRequestMessage)NetworkMessage.deserializeMessage(messageReceivedEvent.message.data.array());
+        if(e instanceof ChannelMessageReceivedEvent) {
+            ChannelMessageReceivedEvent messageReceivedEvent = (ChannelMessageReceivedEvent)e;
+            if(messageReceivedEvent.message.msgId == MsgType.FILE_REQ.ordinal()) { //File request received.
+                //Deserializing msg.
+                FileTransferRequestMessage requestMsg = (FileTransferRequestMessage)NetworkMessage.deserializeMessage(messageReceivedEvent.message.data.array());
 
-            //A file was requested from this node. Checking if the requested transfer has been prepared.
-            for (final FileTransfer transfer :
-                    transfers) {
-                if(transfer.id == requestMsg.transferId) {
-                    //Checking if the recipient is the same.
-                    if(transfer.recipient == messageReceivedEvent.remoteNode){
-                        executor.submit(new Runnable() {
-                            @Override
-                            public void run() {
-                                transfer.startSending();
-                            }
-                        });
+                logger.info("Received a file transfer request for: " + requestMsg.transferId);
+
+                //A file was requested from this node. Checking if the requested transfer has been prepared.
+                for (final FileTransfer transfer :
+                        outboundTransfers) {
+                    if(NetworkID.compare(transfer.id.data, requestMsg.transferId.data) == 0) {
+                        //Checking if the recipient is the same.
+                        if(transfer.recipient == messageReceivedEvent.remoteNode){
+                            executor.submit(new Runnable() {
+                                @Override
+                                public void run() {
+                                    transfer.startSending();
+                                }
+                            });
+                        }
+                    }
+                }
+            } else if(messageReceivedEvent.message.msgId == MsgType.FILE_CHUNK.ordinal()) { //File chunk received.
+                //Deserializing msg.
+                FileChunk fileChunk = (FileChunk) NetworkMessage.deserializeMessage(messageReceivedEvent.message.data.array());
+
+                //A file was requested from this node. Checking if the requested transfer has been prepared.
+                for (final FileTransfer transfer :
+                        inboundTransfers) {
+                    if(NetworkID.compare(transfer.id.data, fileChunk.transferId.data) == 0) { //Locating the right file transfer.
+                        //Running chunk received callback.
+                        logger.info("File chunk received for transfer: " + fileChunk.transferId);
+                        transfer.onChunkReceived(fileChunk);
+                        return;
                     }
                 }
             }
-        } else if(messageReceivedEvent.message.msgId == MsgType.FILE_CHUNK.ordinal()) { //File chunk received.
-            //Deserializing msg.
-            FileChunk fileChunk = (FileChunk) NetworkMessage.deserializeMessage(messageReceivedEvent.message.data.array());
-
-            //A file was requested from this node. Checking if the requested transfer has been prepared.
-            for (final FileTransfer transfer :
-                    transfers) {
-                if(transfer.id == fileChunk.transferId) { //Locating the right file transfer.
-                    //Running chunk received callback.
-                    transfer.onChunkReceived(fileChunk);
-                    return;
-                }
+        } else if(e instanceof FileTransferFinishedEvent) {
+            //Removing the transfer from the queue.
+            FileTransferFinishedEvent fileTransferFinishedEvent = (FileTransferFinishedEvent)e;
+            if(fileTransferFinishedEvent.transfer.fileTransferType == FileTransferType.INBOUND) {
+                inboundTransfers.remove(fileTransferFinishedEvent.transfer);
+            } else {
+                outboundTransfers.remove(fileTransferFinishedEvent.transfer);
             }
+            logger.info("File transfer " + fileTransferFinishedEvent.transfer + " finished.");
         }
     }
 }

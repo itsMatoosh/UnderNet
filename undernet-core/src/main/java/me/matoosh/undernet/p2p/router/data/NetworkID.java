@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Random;
 
 import me.matoosh.undernet.UnderNet;
@@ -21,16 +22,16 @@ public class NetworkID implements Serializable {
     /**
      * The data of the network id.
      */
-    public BigInteger data;
+    public byte[] data;
 
     public NetworkID() {
 
     }
     public NetworkID(String value) {
-        this.data = new BigInteger(value, 512);
+        this.data = getHashedDataFromString(value);
     }
-    public NetworkID(BigInteger id) {
-        if(id.toByteArray().length > 65) {
+    public NetworkID(byte[] id) {
+        if(id.length > 65) {
             UnderNet.router.logger.error("Network id has too many bytes.");
             return;
         }
@@ -38,12 +39,17 @@ public class NetworkID implements Serializable {
     }
 
     /**
-     * Calculates the distrance between this id and an other id.
+     * Calculates the distance between this id and an other id.
      * @param other
      * @return
      */
-    public BigInteger distanceTo(NetworkID other) {
-        return data.xor(other.data);
+    public byte[] distanceTo(NetworkID other) {
+        byte[] output = new byte[64];
+        int i = 0;
+        for(byte b : other.data) {
+          output[i] = (byte)(b ^ this.data[i++]);
+        }
+        return output;
     }
 
     /**
@@ -51,9 +57,9 @@ public class NetworkID implements Serializable {
      * @return
      */
     public static NetworkID random() {
-        NetworkID random = new NetworkID();
-        random.data = new BigInteger(512, new Random());
-        return random;
+        byte[] data = new byte[64];
+        UnderNet.secureRandom.nextBytes(data);
+        return new NetworkID(data);
     }
 
     /**
@@ -63,7 +69,7 @@ public class NetworkID implements Serializable {
      */
     private void writeObject(ObjectOutputStream oos)
             throws IOException {
-        oos.writeObject(data);
+        oos.write(data);
     }
 
     /**
@@ -74,12 +80,13 @@ public class NetworkID implements Serializable {
      */
     private void readObject(ObjectInputStream ois)
             throws ClassNotFoundException, IOException {
-        data = (BigInteger)ois.readObject();
+        data = new byte[64];
+        ois.read(data);
     }
 
     @Override
     public String toString() {
-        return "NetworkID{" + data +
+        return "NetworkID{" + new String(data) +
                 '}';
     }
 
@@ -89,21 +96,43 @@ public class NetworkID implements Serializable {
      * @return
      * @throws NoSuchAlgorithmException
      */
-    public static String getHashCodeFromString(String str) {
+    public static byte[] getHashedDataFromString(String str) {
         MessageDigest md = null;
         try {
             md = MessageDigest.getInstance("SHA-512");
         } catch (NoSuchAlgorithmException e) {
-            NetworkMessage.logger.error("Couldn't encrypt string with SHA-512 as the algorithm is missing!", e);
+            NetworkMessage.logger.error("Couldn't encrypt string with SHA-512, the algorithm is missing!", e);
         }
         md.update(str.getBytes());
-        byte byteData[] = md.digest();
 
-        //convert the byte to hex format method 1
-        StringBuffer hashCodeBuffer = new StringBuffer();
-        for (int i = 0; i < byteData.length; i++) {
-            hashCodeBuffer.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
+        return md.digest();
+    }
+
+    /**
+     * Compares two byte arrays of the same size.
+     * @param a
+     * @param b
+     * @return result of comparation; -1 = less than, 0 = equal
+     */
+    public static int compare(byte[] a, byte[] b) {
+        int diff = 0; //How many bytes are different between these arrays.
+
+        int i = 0;
+        for (byte ba : a) {
+            if (ba>b[i]){
+                diff++;
+            } else if(ba<b[i]) {
+                diff--;
+            }
+            i++;
         }
-        return hashCodeBuffer.toString();
+
+        if(diff > 0) {
+            return 1;
+        } else if(diff < 0) {
+            return -1;
+        } else {
+            return 0;
+        }
     }
 }

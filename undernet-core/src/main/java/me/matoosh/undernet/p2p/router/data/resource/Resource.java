@@ -47,4 +47,11 @@ public abstract class Resource implements Serializable {
     public void onPushReady() {
         UnderNet.router.resourceManager.pushForward(pushMessage);
     }
+
+    @Override
+    public String toString() {
+        return "Resource{" +
+                "networkID=" + networkID +
+                '}';
+    }
 }

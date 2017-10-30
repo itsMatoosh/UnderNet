@@ -1,6 +1,8 @@
 package me.matoosh.undernet.event.ftp;
 
+import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.p2p.router.data.filetransfer.FileTransfer;
+import me.matoosh.undernet.p2p.router.data.filetransfer.FileTransferType;
 
 /**
  * Called when a file transfer finished.

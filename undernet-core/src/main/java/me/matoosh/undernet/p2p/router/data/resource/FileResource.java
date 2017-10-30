@@ -55,7 +55,7 @@ public class FileResource extends Resource {
      */
     @Override
     public void calcNetworkId() {
-        networkID = new NetworkID(NetworkID.getHashCodeFromString(fileInfo.fileName));
+        networkID = new NetworkID(NetworkID.getHashedDataFromString(fileInfo.fileName));
     }
 
     /**
@@ -129,5 +129,13 @@ public class FileResource extends Resource {
             }
         }, FileTransferFinishedEvent.class);
 
+    }
+
+    @Override
+    public String toString() {
+        return "FileResource{" +
+                "networkID=" + networkID +
+                ", fileInfo=" + fileInfo +
+                '}';
     }
 }

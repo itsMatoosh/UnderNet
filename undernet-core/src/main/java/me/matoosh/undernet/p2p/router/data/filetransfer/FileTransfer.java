@@ -14,8 +14,11 @@ import me.matoosh.undernet.event.ftp.FileTransferErrorEvent;
 import me.matoosh.undernet.event.ftp.FileTransferFinishedEvent;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
+import me.matoosh.undernet.p2p.router.data.message.MsgType;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 import me.matoosh.undernet.p2p.router.data.resource.FileResource;
+
+import static me.matoosh.undernet.p2p.router.Router.logger;
 
 /**
  * Represents a single active file transfer.
@@ -139,8 +142,7 @@ public class FileTransfer {
      * @param buffer
      */
     private void sendChunk(byte[] buffer) {
-        NetworkMessage msg = new NetworkMessage();
-        msg.data = ByteBuffer.wrap(NetworkMessage.serializeMessage(new FileChunk(buffer)));
+        NetworkMessage msg = new NetworkMessage(MsgType.FILE_CHUNK, NetworkMessage.serializeMessage(new FileChunk(id, buffer)));
         recipient.send(msg);
     }
 
@@ -149,7 +151,7 @@ public class FileTransfer {
      * @param chunk
      */
     public void onChunkReceived(FileChunk chunk) {
-        if(fileTransferType.equals(FileTransferType.INBOUND)) {
+        if(fileTransferType == FileTransferType.INBOUND) {
             //Adding the data to the data byte[] of the transfer.
             try {
                 outputStream.write(chunk.data);

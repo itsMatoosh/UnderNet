@@ -137,7 +137,7 @@ public class AppFrame extends JFrame {
         //Resource menu
         resourceMenu = new JMenu("Resource");
         menuBar.add(resourceMenu);
-        resourceUploadItem = new JMenuItem("Upload resource");
+        resourceUploadItem = new JMenuItem("Publish resource");
         resourceUploadItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
