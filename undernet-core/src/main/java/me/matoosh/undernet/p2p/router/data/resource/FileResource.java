@@ -8,9 +8,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import me.matoosh.undernet.UnderNet;
+import me.matoosh.undernet.event.Event;
+import me.matoosh.undernet.event.EventHandler;
+import me.matoosh.undernet.event.EventManager;
+import me.matoosh.undernet.event.ftp.FileTransferFinishedEvent;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.filetransfer.FileInfo;
+import me.matoosh.undernet.p2p.router.data.filetransfer.FileTransfer;
 import me.matoosh.undernet.p2p.router.data.message.ResourcePushMessage;
 
 /**
@@ -28,6 +33,11 @@ public class FileResource extends Resource {
      * The file.
      */
     private transient File file;
+
+    /**
+     * The file transfer of this resource.
+     */
+    private FileTransfer transfer;
 
     /**
      * Creates a new file resource given file.
@@ -107,6 +117,17 @@ public class FileResource extends Resource {
     @Override
     public void onPushReceive(ResourcePushMessage msg, Node receivedFrom) {
         //Requesting the file trasnfer.
-        UnderNet.router.fileTransferManager.requestFileTransfer(receivedFrom, (FileResource)msg.resource);
+        transfer = UnderNet.router.fileTransferManager.requestFileTransfer(receivedFrom, (FileResource)msg.resource);
+        EventManager.registerHandler(new EventHandler() {
+            @Override
+            public void onEventCalled(Event e) {
+                FileTransferFinishedEvent transferFinishedEvent = (FileTransferFinishedEvent)e;
+                if(transferFinishedEvent.transfer == FileResource.this.transfer) {
+                    //Transfer of the resource has finished. The resource is ready to push.
+                    onPushReady();
+                }
+            }
+        }, FileTransferFinishedEvent.class);
+
     }
 }

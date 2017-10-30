@@ -24,6 +24,7 @@ import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
 import me.matoosh.undernet.standalone.UnderNetStandalone;
 import me.matoosh.undernet.standalone.ui.dialog.ChangeIdentityDialog;
+import me.matoosh.undernet.standalone.ui.dialog.UploadResourceDialog;
 
 /**
  * The main frame of the app.
@@ -64,7 +65,16 @@ public class AppFrame extends JFrame {
     /**
      * The change identity menu item.
      */
-    private JMenuItem identityChangeMenu;
+    private JMenuItem identityChangeItem;
+
+    /**
+     * The resource menu of the frame.
+     */
+    private JMenu resourceMenu;
+    /**
+     * The resource upload menu item.
+     */
+    private JMenuItem resourceUploadItem;
 
 
     public AppFrame() {
@@ -114,15 +124,28 @@ public class AppFrame extends JFrame {
         //Identity menu
         identityMenu = new JMenu("Identity");
         menuBar.add(identityMenu);
-        identityChangeMenu = new JMenuItem("Change identity");
-        identityChangeMenu.addActionListener(new ActionListener() {
+        identityChangeItem = new JMenuItem("Change identity");
+        identityChangeItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JDialog identityChangeDialog = new ChangeIdentityDialog(UnderNetStandalone.mainAppFrame);
                 identityChangeDialog.setVisible(true);
             }
         });
-        identityMenu.add(identityChangeMenu);
+        identityMenu.add(identityChangeItem);
+
+        //Resource menu
+        resourceMenu = new JMenu("Resource");
+        menuBar.add(resourceMenu);
+        resourceUploadItem = new JMenuItem("Upload resource");
+        resourceUploadItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JDialog resourceUploadDialog = new UploadResourceDialog(UnderNetStandalone.mainAppFrame);
+                resourceUploadDialog.setVisible(true);
+            }
+        });
+        resourceMenu.add(resourceUploadItem);
 
         setJMenuBar(menuBar);
     }

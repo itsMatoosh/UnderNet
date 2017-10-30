@@ -53,10 +53,11 @@ public class FileTransferManager extends Manager {
      * Prepares a file tranfer for the specified file.
      * @param resource
      */
-    public void prepareFileTranfer(FileResource resource, Node recipient) {
+    public FileTransfer prepareFileTranfer(FileResource resource, Node recipient) {
         //Creating a new file transfer instance.
         FileTransfer transfer = new FileTransfer(resource, recipient, FileTransferType.OUTBOUND);
         transfers.add(transfer);
+        return transfer;
     }
 
     /**
@@ -64,14 +65,16 @@ public class FileTransferManager extends Manager {
      * @param receivedFrom
      * @param resource
      */
-    public void requestFileTransfer(Node receivedFrom, FileResource resource) {
+    public FileTransfer requestFileTransfer(Node receivedFrom, FileResource resource) {
         logger.info("Requesting the transfer " + resource.networkID + " from " + receivedFrom);
 
         //Caching a new transfer instance.
-        transfers.add(new FileTransfer(resource, receivedFrom, FileTransferType.INBOUND));
+        FileTransfer transfer = new FileTransfer(resource, receivedFrom, FileTransferType.INBOUND);
+        transfers.add(transfer);
 
         //Sending a new FileRequest message.
         receivedFrom.send(new NetworkMessage(MsgType.FILE_REQ, new FileTransferRequestMessage(resource.networkID)));
+        return transfer;
     }
 
     /**

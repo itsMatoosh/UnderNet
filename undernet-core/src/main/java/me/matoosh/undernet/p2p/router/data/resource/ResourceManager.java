@@ -113,14 +113,6 @@ public class ResourceManager extends Manager {
 
                         //Call event.
                         EventManager.callEvent(new ResourcePushReceivedEvent(pushMessage.resource, pushMessage, messageReceivedEvent.remoteNode));
-
-                        //Pushing the message on.
-                        executor.submit(new Runnable() {
-                            @Override
-                            public void run() {
-                                pushForward(pushMessage);
-                            }
-                        });
                     }
                 });
             }

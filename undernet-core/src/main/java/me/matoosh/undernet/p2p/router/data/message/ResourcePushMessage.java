@@ -24,6 +24,7 @@ public class ResourcePushMessage implements MsgBase {
      */
     public ResourcePushMessage(Resource resource) {
         this.resource = resource;
+        this.resource.pushMessage = this;
         this.resourceType = resource.getResourceType();
     }
 }
