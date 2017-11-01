@@ -1,5 +1,7 @@
 package me.matoosh.undernet.standalone.ui.dialog;
 
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -32,8 +34,8 @@ public class UploadResourceDialog extends JDialog {
         super(parent, "Publish Resource", true);
 
         //Setting the content.
-        setLayout(new BoxLayout(this.getContentPane(), BoxLayout.Y_AXIS));
-        setSize(500, 400);
+        setLayout(new GridBagLayout());
+        setSize(220, 110);
         centerDialogOnMouse();
         addContent();
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
@@ -64,7 +66,7 @@ public class UploadResourceDialog extends JDialog {
                 }
             }
         });
-        add(chooseFileButton);
+        add(chooseFileButton, new GridBagConstraints());
 
         JButton uploadButton = new JButton("Publish!");
         uploadButton.addActionListener(new ActionListener() {
@@ -78,6 +80,6 @@ public class UploadResourceDialog extends JDialog {
                 }
             }
         });
-        add(uploadButton);
+        add(uploadButton, new GridBagConstraints());
     }
 }

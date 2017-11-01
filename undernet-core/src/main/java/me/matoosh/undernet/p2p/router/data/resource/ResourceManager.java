@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
@@ -15,6 +16,7 @@ import me.matoosh.undernet.event.resource.ResourcePushReceivedEvent;
 import me.matoosh.undernet.event.resource.ResourcePushSentEvent;
 import me.matoosh.undernet.p2p.Manager;
 import me.matoosh.undernet.p2p.node.Node;
+import me.matoosh.undernet.p2p.router.InterfaceStatus;
 import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.data.message.MsgType;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
@@ -56,6 +58,12 @@ public class ResourceManager extends Manager {
      * @param resource
      */
     public void publish(Resource resource) {
+        //Making sure we're connected to the network.
+        if(UnderNet.router.status != InterfaceStatus.STARTED) {
+            logger.warn("Cannot publish a resource without connection to the network.");
+            return;
+        }
+
         //Creating a new ResourcePushMessage.
         final ResourcePushMessage pushMessage = new ResourcePushMessage(resource);
 
@@ -80,7 +88,6 @@ public class ResourceManager extends Manager {
         //Getting the node closest to the resource.
         Node closest = router.neighborNodesManager.getClosestTo(pushMessage.resource.networkID);
         if(closest == Node.self) {
-            logger.info("Resource " + pushMessage.resource + "'s final stop!");
             //This is the final node of the resource.
             EventManager.callEvent(new ResourceFinalStopEvent(pushMessage.resource, pushMessage, null));
         } else {

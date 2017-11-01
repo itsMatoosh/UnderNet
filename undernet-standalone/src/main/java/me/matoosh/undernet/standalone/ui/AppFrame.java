@@ -74,7 +74,7 @@ public class AppFrame extends JFrame {
     /**
      * The resource upload menu item.
      */
-    private JMenuItem resourceUploadItem;
+    private JMenuItem resourcePublishItem;
 
 
     public AppFrame() {
@@ -137,15 +137,16 @@ public class AppFrame extends JFrame {
         //Resource menu
         resourceMenu = new JMenu("Resource");
         menuBar.add(resourceMenu);
-        resourceUploadItem = new JMenuItem("Publish resource");
-        resourceUploadItem.addActionListener(new ActionListener() {
+        resourcePublishItem = new JMenuItem("Publish resource");
+        resourcePublishItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JDialog resourceUploadDialog = new UploadResourceDialog(UnderNetStandalone.mainAppFrame);
                 resourceUploadDialog.setVisible(true);
             }
         });
-        resourceMenu.add(resourceUploadItem);
+        resourcePublishItem.setEnabled(false);
+        resourceMenu.add(resourcePublishItem);
 
         setJMenuBar(menuBar);
     }
@@ -192,9 +193,12 @@ public class AppFrame extends JFrame {
                             connectButton.removeActionListener( al );
                         }
                         connectButton.addActionListener(connectActionListener);
+
+                        resourcePublishItem.setEnabled(false);
                         break;
                     case STARTING:
                         connectButton.setEnabled(false);
+                        resourcePublishItem.setEnabled(false);
                         break;
                     case STARTED:
                         connectButton.setText("Disconnect");
@@ -203,9 +207,12 @@ public class AppFrame extends JFrame {
                             connectButton.removeActionListener( al );
                         }
                         connectButton.addActionListener(disconnectActionListener);
+
+                        resourcePublishItem.setEnabled(true);
                         break;
                     case STOPPING:
                         connectButton.setEnabled(false);
+                        resourcePublishItem.setEnabled(false);
                         break;
                 }
             }
