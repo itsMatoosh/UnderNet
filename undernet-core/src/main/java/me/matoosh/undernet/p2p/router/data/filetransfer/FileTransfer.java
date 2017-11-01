@@ -95,7 +95,6 @@ public class FileTransfer {
             }
         } else {
             //Creating or replacing the file.
-            file = new File(file.toString() + "-r");
             if (file.exists()) {
                 file.delete();
             }
