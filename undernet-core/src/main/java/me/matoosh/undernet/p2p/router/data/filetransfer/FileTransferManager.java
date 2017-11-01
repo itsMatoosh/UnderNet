@@ -140,7 +140,6 @@ public class FileTransferManager extends Manager {
                         inboundTransfers) {
                     if(NetworkID.compare(transfer.id.data, fileChunk.transferId.data) == 0) { //Locating the right file transfer.
                         //Running chunk received callback.
-                        logger.info("File chunk received for transfer: " + fileChunk.transferId);
                         transfer.onChunkReceived(fileChunk);
                         return;
                     }

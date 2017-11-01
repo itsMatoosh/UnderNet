@@ -37,7 +37,7 @@ public class FileResource extends Resource {
     /**
      * The file transfer of this resource.
      */
-    private FileTransfer transfer;
+    private transient FileTransfer transfer;
 
     /**
      * Creates a new file resource given file.

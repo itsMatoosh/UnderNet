@@ -85,27 +85,27 @@ public class FileTransfer {
         file = new File(UnderNet.fileManager.getContentFolder() + "/" + fileInfo.fileName);
 
         if(fileTransferType == FileTransferType.OUTBOUND) {
+            try {
+                inputStream = new FileInputStream(file);
+            } catch (FileNotFoundException e) { //File doesn't exist.
+                //Calling a transfer error.
+                FileTransferManager.logger.error("Couldn't find file: " + file, new FileNotFoundException(file.toString()));
+                EventManager.callEvent(new FileTransferErrorEvent(this, new FileNotFoundException(file.toString())));
+                return;
+            }
+        } else {
             //Creating or replacing the file.
+            file = new File(file.toString() + "-r");
             if (file.exists()) {
                 file.delete();
             }
             try { //Creating new file.
                 file.createNewFile();
-                inputStream = new FileInputStream(file);
+                outputStream = new FileOutputStream(file);
             } catch (IOException e) {
                 //Calling a transfer error.
                 FileTransferManager.logger.error("Couldn't create file: " + file, e);
                 EventManager.callEvent(new FileTransferErrorEvent(this, e));
-                return;
-            }
-
-        } else {
-            try {
-                outputStream = new FileOutputStream(file);
-            } catch (FileNotFoundException e) { //File doesn't exist.
-                //Calling a transfer error.
-                FileTransferManager.logger.error("Couldn't find file: " + file, new FileNotFoundException(file.toString()));
-                EventManager.callEvent(new FileTransferErrorEvent(this, new FileNotFoundException(file.toString())));
                 return;
             }
         }
@@ -122,11 +122,15 @@ public class FileTransfer {
                 public Object call() throws Exception {
                     int totalRead = 0; //Amount of bytes read from the send stream.
                     try {
-                        while(totalRead < fileInfo.fileLength) {
-                            byte[] buffer = new byte[BUFFER_SIZE];
-                            int read = inputStream.read(buffer);
+                        //The send buffer.
+                        byte[] buffer = new byte[BUFFER_SIZE];
+                        int read = 0;
+                        while ((read = inputStream.read(buffer)) > 0) {
                             totalRead += read;
-                            sendChunk(buffer, read);
+
+                            byte[] data = new byte[read];
+                            System.arraycopy(buffer, 0, data, 0, read);
+                            sendChunk(data);
                             logger.info("Chunk sent " + totalRead + "/" + fileInfo.fileLength);
                         }
                     } catch (IOException e) {
@@ -136,7 +140,6 @@ public class FileTransfer {
                     finally {
                         //File sent or error.
                         EventManager.callEvent(new FileTransferFinishedEvent(FileTransfer.this));
-                        logger.debug("File sent");
                     }
                     return null;
                 }
@@ -149,8 +152,8 @@ public class FileTransfer {
      * Sends a chunk of data to the recipient.
      * @param buffer
      */
-    private void sendChunk(byte[] buffer, int lenght) {
-        NetworkMessage msg = new NetworkMessage(MsgType.FILE_CHUNK, NetworkMessage.serializeMessage(new FileChunk(id, Arrays.copyOf(buffer, lenght))));
+    private void sendChunk(byte[] buffer) {
+        NetworkMessage msg = new NetworkMessage(MsgType.FILE_CHUNK, NetworkMessage.serializeMessage(new FileChunk(id, buffer)));
         recipient.send(msg);
     }
 
@@ -161,10 +164,10 @@ public class FileTransfer {
     public void onChunkReceived(FileChunk chunk) {
         if(fileTransferType == FileTransferType.INBOUND) {
             //Adding the data to the data byte[] of the transfer.
-            logger.info("File chunk received for: " + id + " " + written + "/" + fileInfo.fileLength);
             try {
                 outputStream.write(chunk.data);
                 written += chunk.data.length;
+                logger.info("File chunk received for: " + id + " " + written + "/" + fileInfo.fileLength);
                 if(written >= fileInfo.fileLength) {
                     //File fully received.
                     EventManager.callEvent(new FileTransferFinishedEvent(this));

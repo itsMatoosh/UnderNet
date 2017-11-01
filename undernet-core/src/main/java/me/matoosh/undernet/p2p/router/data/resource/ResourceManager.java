@@ -80,6 +80,7 @@ public class ResourceManager extends Manager {
         //Getting the node closest to the resource.
         Node closest = router.neighborNodesManager.getClosestTo(pushMessage.resource.networkID);
         if(closest == Node.self) {
+            logger.info("Resource " + pushMessage.resource + "'s final stop!");
             //This is the final node of the resource.
             EventManager.callEvent(new ResourceFinalStopEvent(pushMessage.resource, pushMessage, null));
         } else {

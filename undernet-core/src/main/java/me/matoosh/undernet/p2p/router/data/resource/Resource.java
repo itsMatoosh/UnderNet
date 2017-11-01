@@ -17,10 +17,6 @@ public abstract class Resource implements Serializable {
      * The network id of this resource.
      */
     public NetworkID networkID;
-    /**
-     * The push message of the resource.
-     */
-    public ResourcePushMessage pushMessage;
 
     /**
      * Calculates the network id of the resource based on its contents.
@@ -45,7 +41,7 @@ public abstract class Resource implements Serializable {
      * Called when the resource is ready to be pushed.
      */
     public void onPushReady() {
-        UnderNet.router.resourceManager.pushForward(pushMessage);
+        UnderNet.router.resourceManager.pushForward(new ResourcePushMessage(this));
     }
 
     @Override

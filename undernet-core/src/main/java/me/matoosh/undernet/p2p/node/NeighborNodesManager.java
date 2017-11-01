@@ -97,12 +97,12 @@ public class NeighborNodesManager extends Manager {
      * @return
      */
     public Node getClosestTo(NetworkID id) {
-        Node closest = null;
-        byte[] closestDist = null;
+        Node closest = Node.self;
+        byte[] closestDist = Node.self.getIdentity().getNetworkId().distanceTo(id);
         for (Node n : router.connectedNodes) {
-            byte[] distance = Node.self.getIdentity().getNetworkId().distanceTo(id);
+            byte[] distance = n.getIdentity().getNetworkId().distanceTo(id);
 
-            if(closestDist == null || closest == null || NetworkID.compare(distance, closestDist) < 0) {
+            if(NetworkID.compare(closestDist, distance) < 0) {
                 closest = n;
                 closestDist = distance;
             }

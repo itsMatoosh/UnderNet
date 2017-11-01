@@ -13,6 +13,8 @@ import java.util.Random;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 
+import static me.matoosh.undernet.p2p.router.Router.logger;
+
 /**
  * Represents a network id.
  * Created by Mateusz Rębacz on 25.09.2017.
@@ -32,7 +34,7 @@ public class NetworkID implements Serializable {
     }
     public NetworkID(byte[] id) {
         if(id.length > 65) {
-            UnderNet.router.logger.error("Network id has too many bytes.");
+            logger.error("Network id has too many bytes.");
             return;
         }
         this.data = id;
@@ -67,8 +69,10 @@ public class NetworkID implements Serializable {
      * @param oos
      * @throws IOException
      */
-    private void writeObject(ObjectOutputStream oos)
-            throws IOException {
+    private void writeObject(ObjectOutputStream oos) throws IOException {
+        if(data == null) {
+            logger.error("SSSSS");
+        }
         oos.write(data);
     }
 
