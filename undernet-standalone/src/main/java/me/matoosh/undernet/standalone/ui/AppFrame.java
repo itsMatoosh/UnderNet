@@ -24,6 +24,7 @@ import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
 import me.matoosh.undernet.standalone.UnderNetStandalone;
 import me.matoosh.undernet.standalone.ui.dialog.ChangeIdentityDialog;
+import me.matoosh.undernet.standalone.ui.dialog.UploadResourceDialog;
 
 /**
  * The main frame of the app.
@@ -42,7 +43,7 @@ public class AppFrame extends JFrame {
     /**
      * The list of communities.
      */
-    public CommunitiesPanel communitiesList;
+    public SectionsPanel sectionsPanel;
 
     /**
      * The menu bar of the frame.
@@ -64,7 +65,16 @@ public class AppFrame extends JFrame {
     /**
      * The change identity menu item.
      */
-    private JMenuItem identityChangeMenu;
+    private JMenuItem identityChangeItem;
+
+    /**
+     * The resource menu of the frame.
+     */
+    private JMenu resourceMenu;
+    /**
+     * The resource upload menu item.
+     */
+    private JMenuItem resourcePublishItem;
 
 
     public AppFrame() {
@@ -114,15 +124,29 @@ public class AppFrame extends JFrame {
         //Identity menu
         identityMenu = new JMenu("Identity");
         menuBar.add(identityMenu);
-        identityChangeMenu = new JMenuItem("Change identity");
-        identityChangeMenu.addActionListener(new ActionListener() {
+        identityChangeItem = new JMenuItem("Change identity");
+        identityChangeItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 JDialog identityChangeDialog = new ChangeIdentityDialog(UnderNetStandalone.mainAppFrame);
                 identityChangeDialog.setVisible(true);
             }
         });
-        identityMenu.add(identityChangeMenu);
+        identityMenu.add(identityChangeItem);
+
+        //Resource menu
+        resourceMenu = new JMenu("Resource");
+        menuBar.add(resourceMenu);
+        resourcePublishItem = new JMenuItem("Publish resource");
+        resourcePublishItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JDialog resourceUploadDialog = new UploadResourceDialog(UnderNetStandalone.mainAppFrame);
+                resourceUploadDialog.setVisible(true);
+            }
+        });
+        resourcePublishItem.setEnabled(false);
+        resourceMenu.add(resourcePublishItem);
 
         setJMenuBar(menuBar);
     }
@@ -135,9 +159,9 @@ public class AppFrame extends JFrame {
         contentPanel.setBorder(BorderFactory.createLineBorder(Color.red));
         nodesPanel = new NodesPanel();
         nodesPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-        communitiesList = new CommunitiesPanel();
-        communitiesList.setBorder(BorderFactory.createLineBorder(Color.black));
-        add(communitiesList, new GridBagConstraints(0, 0, 1, 1, 0.125, 1, GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+        sectionsPanel = new SectionsPanel();
+        sectionsPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+        add(sectionsPanel, new GridBagConstraints(0, 0, 1, 1, 0.125, 1, GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
         add(contentPanel, new GridBagConstraints(1, 0, 1, 1, 0.75, 1, GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
         add(nodesPanel, new GridBagConstraints(2, 0, 1, 1, 0.125, 1, GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
 
@@ -169,9 +193,12 @@ public class AppFrame extends JFrame {
                             connectButton.removeActionListener( al );
                         }
                         connectButton.addActionListener(connectActionListener);
+
+                        resourcePublishItem.setEnabled(false);
                         break;
                     case STARTING:
                         connectButton.setEnabled(false);
+                        resourcePublishItem.setEnabled(false);
                         break;
                     case STARTED:
                         connectButton.setText("Disconnect");
@@ -180,9 +207,12 @@ public class AppFrame extends JFrame {
                             connectButton.removeActionListener( al );
                         }
                         connectButton.addActionListener(disconnectActionListener);
+
+                        resourcePublishItem.setEnabled(true);
                         break;
                     case STOPPING:
                         connectButton.setEnabled(false);
+                        resourcePublishItem.setEnabled(false);
                         break;
                 }
             }

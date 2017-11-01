@@ -11,11 +11,11 @@ public class ResourcePushMessage implements MsgBase {
     /**
      * The resource to be pushed.
      */
-    private Resource resource;
+    public Resource resource;
     /**
      * The type of the resource.
      */
-    private byte resourceType;
+    public byte resourceType;
 
 
     /**

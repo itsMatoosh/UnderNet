@@ -99,7 +99,11 @@ public class Node implements Serializable {
         if(channel == null) {
             logger.error("Long distance message have not been implemented yet :(", new NotImplementedException());
         } else {
-            channel.writeAndFlush(msg);
+            try {
+                channel.writeAndFlush(msg).sync();
+            } catch (InterruptedException e) {
+                logger.error("Sending a message to: " + address + " has been interrupted!", e);
+            }
         }
     }
 

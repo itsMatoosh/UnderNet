@@ -4,12 +4,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 /**
- * List of communities discovered.
+ * List of sections within the current community.
  * Created by Mateusz Rębacz on 09.09.2017.
  */
 
-public class CommunitiesPanel extends JPanel {
-    public CommunitiesPanel() {
-        add(new JLabel("Communities"));
+public class SectionsPanel extends JPanel {
+    public SectionsPanel() {
+        add(new JLabel("Sections"));
     }
 }

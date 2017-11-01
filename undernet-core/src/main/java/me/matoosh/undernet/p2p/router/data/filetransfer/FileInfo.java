@@ -27,4 +27,12 @@ public class FileInfo implements Serializable {
         this.fileName = file.getName();
         this.fileLength = file.length();
     }
+
+    @Override
+    public String toString() {
+        return "FileInfo{" +
+                "fileName='" + fileName + '\'' +
+                ", fileLength=" + fileLength +
+                '}';
+    }
 }

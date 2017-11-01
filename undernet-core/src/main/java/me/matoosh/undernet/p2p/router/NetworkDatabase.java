@@ -4,9 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import me.matoosh.undernet.event.Event;
-import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
+import me.matoosh.undernet.p2p.Manager;
 import me.matoosh.undernet.p2p.router.data.message.MsgType;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 
@@ -15,23 +15,32 @@ import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
  * Created by Mateusz Rębacz on 24.09.2017.
  */
 
-public class NetworkDatabase extends EventHandler {
+public class NetworkDatabase extends Manager {
     /**
      * The logger of the class.
      */
     public static Logger logger = LoggerFactory.getLogger(NetworkDatabase.class);
 
     /**
-     * Sets up the network database.
+     * Router specification is mandatory.
+     *
+     * @param router
      */
-    public void setup() {
-        registerHandlers();
+    public NetworkDatabase(Router router) {
+        super(router);
     }
 
     /**
-     * Registers handlers.
+     * Registers the events of the manager.
      */
-    private void registerHandlers() {
+    @Override
+    protected void registerEvents() {}
+
+    /**
+     * Registers the handlers of the manager.
+     */
+    @Override
+    protected void registerHandlers() {
         EventManager.registerHandler(this, ChannelMessageReceivedEvent.class);
     }
 

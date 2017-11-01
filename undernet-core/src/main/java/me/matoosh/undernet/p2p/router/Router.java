@@ -22,6 +22,7 @@ import me.matoosh.undernet.p2p.node.NeighborNodesManager;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.client.Client;
 import me.matoosh.undernet.p2p.router.client.ClientNetworkMessageHandler;
+import me.matoosh.undernet.p2p.router.data.filetransfer.FileTransferManager;
 import me.matoosh.undernet.p2p.router.data.resource.ResourceManager;
 import me.matoosh.undernet.p2p.router.server.Server;
 
@@ -57,6 +58,10 @@ public class Router extends EventHandler {
      * The resource manager.
      */
     public ResourceManager resourceManager;
+    /**
+     * The file transfer manager.
+     */
+    public FileTransferManager fileTransferManager;
 
     /**
      * The number of reconnect attempts, the router attempted.
@@ -101,16 +106,20 @@ public class Router extends EventHandler {
         client.setup();
 
         //Setting up the network database.
-        netDb = new NetworkDatabase();
+        netDb = new NetworkDatabase(this);
         netDb.setup();
 
         //Instantiating the neighbor nodes manager.
-        neighborNodesManager = new NeighborNodesManager();
+        neighborNodesManager = new NeighborNodesManager(this);
         neighborNodesManager.setup();
 
         //Instantiating the resource manager.
-        resourceManager = new ResourceManager();
+        resourceManager = new ResourceManager(this);
         resourceManager.setup();
+
+        //Instantiating the file transfer manager.
+        fileTransferManager = new FileTransferManager(this);
+        fileTransferManager.setup();
     }
     /**
      * Starts the router.

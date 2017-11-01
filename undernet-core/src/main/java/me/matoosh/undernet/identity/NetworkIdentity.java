@@ -20,6 +20,12 @@ public class NetworkIdentity implements Serializable {
      */
     private NetworkID networkID;
 
+    /**
+     * Default to anon identity.
+     */
+    public NetworkIdentity() {
+        setUsername(null);
+    }
 
     /**
      * Checks whether the NetworkIdentity is correct.

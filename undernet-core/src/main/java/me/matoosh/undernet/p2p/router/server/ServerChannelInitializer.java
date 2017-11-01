@@ -38,7 +38,6 @@ public class ServerChannelInitializer extends ChannelInitializer {
         ch.pipeline().addLast(new NetworkMessageEncoder());
         ch.pipeline().addLast(new NetworkMessageDecoder());
         ch.pipeline().addLast(new ServerNetworkMessageHandler(server));
-        ch.pipeline().addLast(new ServerFileTransferHandler(server));
     }
 
     /**
