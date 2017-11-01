@@ -1,5 +1,5 @@
 # UnderNet
-[WIP] A P2P mesh social network.
+[Early Alpha] A P2P mesh social network.
 
 ![Imgur](https://i.imgur.com/po8xteU.png)
 ## Features
