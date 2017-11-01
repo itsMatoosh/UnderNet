@@ -5,7 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.concurrent.Callable;
 
 import me.matoosh.undernet.UnderNet;
@@ -57,12 +57,17 @@ public class FileTransfer {
     /**
      * The standard buffer size for file chunks.
      */
-    public static int BUFFER_SIZE = 1024;
+    public static int BUFFER_SIZE = 512;
 
     /**
      * The node meant to receive the file.
      */
     public Node recipient;
+
+    /**
+     * The amount of bytes written from the received chunks.
+     */
+    private int written = 0;
 
     public FileTransfer(FileResource resource, Node remoteNode, FileTransferType fileTransferType) {
         this.id = resource.networkID;
@@ -115,20 +120,23 @@ public class FileTransfer {
             UnderNet.router.fileTransferManager.executor.submit(new Callable() {
                 @Override
                 public Object call() throws Exception {
-                    int read = 0;
+                    int totalRead = 0; //Amount of bytes read from the send stream.
                     try {
-                        while(read < fileInfo.fileLength) {
+                        while(totalRead < fileInfo.fileLength) {
                             byte[] buffer = new byte[BUFFER_SIZE];
-                            read += inputStream.read(buffer);
-                            sendChunk(buffer);
+                            int read = inputStream.read(buffer);
+                            totalRead += read;
+                            sendChunk(buffer, read);
+                            logger.info("Chunk sent " + totalRead + "/" + fileInfo.fileLength);
                         }
                     } catch (IOException e) {
-                        FileTransferManager.logger.error("Error reading chunk from file: " + file, e);
+                        FileTransferManager.logger.error("Error reading " + BUFFER_SIZE + " chunk from file: " + file, e);
                         EventManager.callEvent(new FileTransferErrorEvent(FileTransfer.this, e));
                     }
                     finally {
                         //File sent or error.
                         EventManager.callEvent(new FileTransferFinishedEvent(FileTransfer.this));
+                        logger.debug("File sent");
                     }
                     return null;
                 }
@@ -141,8 +149,8 @@ public class FileTransfer {
      * Sends a chunk of data to the recipient.
      * @param buffer
      */
-    private void sendChunk(byte[] buffer) {
-        NetworkMessage msg = new NetworkMessage(MsgType.FILE_CHUNK, NetworkMessage.serializeMessage(new FileChunk(id, buffer)));
+    private void sendChunk(byte[] buffer, int lenght) {
+        NetworkMessage msg = new NetworkMessage(MsgType.FILE_CHUNK, NetworkMessage.serializeMessage(new FileChunk(id, Arrays.copyOf(buffer, lenght))));
         recipient.send(msg);
     }
 
@@ -153,9 +161,11 @@ public class FileTransfer {
     public void onChunkReceived(FileChunk chunk) {
         if(fileTransferType == FileTransferType.INBOUND) {
             //Adding the data to the data byte[] of the transfer.
+            logger.info("File chunk received for: " + id + " " + written + "/" + fileInfo.fileLength);
             try {
                 outputStream.write(chunk.data);
-                if(file.length() <= fileInfo.fileLength) {
+                written += chunk.data.length;
+                if(written >= fileInfo.fileLength) {
                     //File fully received.
                     EventManager.callEvent(new FileTransferFinishedEvent(this));
                 }
