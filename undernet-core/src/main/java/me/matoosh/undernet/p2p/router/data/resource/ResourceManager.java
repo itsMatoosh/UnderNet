@@ -18,9 +18,11 @@ import me.matoosh.undernet.p2p.Manager;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
 import me.matoosh.undernet.p2p.router.Router;
+import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.message.MsgType;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 import me.matoosh.undernet.p2p.router.data.message.ResourcePushMessage;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Manages network resources locally.
@@ -77,6 +79,20 @@ public class ResourceManager extends Manager {
                 pushForward(pushMessage);
             }
         });
+    }
+
+    /**
+     * Pulls a resource with the specified network id.
+     * @param networkID
+     */
+    public void pull(NetworkID networkID) {
+        //Making sure we're connected to the network.
+        if(UnderNet.router.status != InterfaceStatus.STARTED) {
+            logger.warn("Cannot pull a resource without connection to the network.");
+            return;
+        }
+
+        throw new NotImplementedException();
     }
 
     /**

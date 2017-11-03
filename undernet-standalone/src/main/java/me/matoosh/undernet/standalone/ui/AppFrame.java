@@ -24,6 +24,7 @@ import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
 import me.matoosh.undernet.standalone.UnderNetStandalone;
 import me.matoosh.undernet.standalone.ui.dialog.ChangeIdentityDialog;
+import me.matoosh.undernet.standalone.ui.dialog.PullResourceDialog;
 import me.matoosh.undernet.standalone.ui.dialog.UploadResourceDialog;
 
 /**
@@ -75,6 +76,10 @@ public class AppFrame extends JFrame {
      * The resource upload menu item.
      */
     private JMenuItem resourcePublishItem;
+    /**
+     * The resource pull menu item.
+     */
+    private JMenuItem resourcePullItem;
 
 
     public AppFrame() {
@@ -148,6 +153,17 @@ public class AppFrame extends JFrame {
         resourcePublishItem.setEnabled(false);
         resourceMenu.add(resourcePublishItem);
 
+        resourcePullItem = new JMenuItem("Pull resource");
+        resourcePullItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                JDialog resourcePullDialog = new PullResourceDialog(UnderNetStandalone.mainAppFrame);
+                resourcePullDialog.setVisible(true);
+            }
+        });
+        resourcePullItem.setEnabled(false);
+        resourceMenu.add(resourcePullItem);
+
         setJMenuBar(menuBar);
     }
     /**
@@ -195,10 +211,12 @@ public class AppFrame extends JFrame {
                         connectButton.addActionListener(connectActionListener);
 
                         resourcePublishItem.setEnabled(false);
+                        resourcePullItem.setEnabled(false);
                         break;
                     case STARTING:
                         connectButton.setEnabled(false);
                         resourcePublishItem.setEnabled(false);
+                        resourcePullItem.setEnabled(false);
                         break;
                     case STARTED:
                         connectButton.setText("Disconnect");
@@ -209,10 +227,12 @@ public class AppFrame extends JFrame {
                         connectButton.addActionListener(disconnectActionListener);
 
                         resourcePublishItem.setEnabled(true);
+                        resourcePullItem.setEnabled(true);
                         break;
                     case STOPPING:
                         connectButton.setEnabled(false);
                         resourcePublishItem.setEnabled(false);
+                        resourcePullItem.setEnabled(false);
                         break;
                 }
             }

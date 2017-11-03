@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.concurrent.Callable;
 
 import me.matoosh.undernet.UnderNet;
@@ -130,7 +129,7 @@ public class FileTransfer {
                             byte[] data = new byte[read];
                             System.arraycopy(buffer, 0, data, 0, read);
                             sendChunk(data);
-                            logger.info("Chunk sent " + totalRead + "/" + fileInfo.fileLength);
+                            logger.debug("Chunk sent " + totalRead + "/" + fileInfo.fileLength);
                         }
                     } catch (IOException e) {
                         FileTransferManager.logger.error("Error reading " + BUFFER_SIZE + " chunk from file: " + file, e);
@@ -166,7 +165,7 @@ public class FileTransfer {
             try {
                 outputStream.write(chunk.data);
                 written += chunk.data.length;
-                logger.info("File chunk received for: " + id + " " + written + "/" + fileInfo.fileLength);
+                logger.debug("File chunk received for: " + id + " " + written + "/" + fileInfo.fileLength);
                 if(written >= fileInfo.fileLength) {
                     //File fully received.
                     EventManager.callEvent(new FileTransferFinishedEvent(this));

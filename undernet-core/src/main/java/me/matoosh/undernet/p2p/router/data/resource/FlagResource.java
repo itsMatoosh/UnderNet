@@ -11,6 +11,12 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  */
 
 public class FlagResource extends Resource {
+
+    /**
+     * The data of the flag.
+     */
+    public byte data;
+
     /**
      * Calculates the network id of the resource based on its contents.
      */
