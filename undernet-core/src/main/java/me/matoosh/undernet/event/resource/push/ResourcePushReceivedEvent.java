@@ -1,28 +1,29 @@
-package me.matoosh.undernet.event.resource;
+package me.matoosh.undernet.event.resource.push;
 
+import me.matoosh.undernet.event.resource.ResourceEvent;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.message.ResourcePushMessage;
 import me.matoosh.undernet.p2p.router.data.resource.Resource;
 
 /**
- * Called when a resource push is sent to a neighbor.
+ * Called when a resource push is received.
  * Created by Mateusz Rębacz on 02.10.2017.
  */
 
-public class ResourcePushSentEvent extends ResourceEvent {
+public class ResourcePushReceivedEvent extends ResourceEvent {
     /**
      * The push message.
      */
     public ResourcePushMessage pushMessage;
     /**
-     * The node the message is sent to.
+     * The sender of the push.
      */
-    public Node recipientNode;
+    public Node sender;
 
-    public ResourcePushSentEvent(Resource resource, ResourcePushMessage msg, Node recipientNode) {
+    public ResourcePushReceivedEvent(Resource resource, ResourcePushMessage msg, Node sender) {
         super(resource);
         this.pushMessage = msg;
-        this.recipientNode = recipientNode;
+        this.sender = sender;
     }
 
     /**

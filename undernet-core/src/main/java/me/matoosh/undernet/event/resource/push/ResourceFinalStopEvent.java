@@ -1,4 +1,4 @@
-package me.matoosh.undernet.event.resource;
+package me.matoosh.undernet.event.resource.push;
 
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.message.ResourcePushMessage;

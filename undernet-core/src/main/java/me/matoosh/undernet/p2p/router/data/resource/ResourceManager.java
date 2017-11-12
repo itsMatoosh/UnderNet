@@ -11,9 +11,9 @@ import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
-import me.matoosh.undernet.event.resource.ResourceFinalStopEvent;
-import me.matoosh.undernet.event.resource.ResourcePushReceivedEvent;
-import me.matoosh.undernet.event.resource.ResourcePushSentEvent;
+import me.matoosh.undernet.event.resource.push.ResourceFinalStopEvent;
+import me.matoosh.undernet.event.resource.push.ResourcePushReceivedEvent;
+import me.matoosh.undernet.event.resource.push.ResourcePushSentEvent;
 import me.matoosh.undernet.p2p.Manager;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
@@ -21,6 +21,7 @@ import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.message.MsgType;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
+import me.matoosh.undernet.p2p.router.data.message.ResourcePullMessage;
 import me.matoosh.undernet.p2p.router.data.message.ResourcePushMessage;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -83,9 +84,9 @@ public class ResourceManager extends Manager {
 
     /**
      * Pulls a resource with the specified network id.
-     * @param networkID
+     * @param resourceID
      */
-    public void pull(NetworkID networkID) {
+    public void pull(NetworkID resourceID) {
         //Making sure we're connected to the network.
         if(UnderNet.router.status != InterfaceStatus.STARTED) {
             logger.warn("Cannot pull a resource without connection to the network.");
@@ -105,6 +106,30 @@ public class ResourceManager extends Manager {
         Node closest = router.neighborNodesManager.getClosestTo(pushMessage.resource.networkID);
         if(closest == Node.self) {
             //This is the final node of the resource.
+            EventManager.callEvent(new ResourceFinalStopEvent(pushMessage.resource, pushMessage, null));
+        } else {
+            logger.info("Pushing resource: " + pushMessage.resource + " to node: " + closest);
+
+            //Calling the onPush method.
+            pushMessage.resource.onPush(pushMessage, closest);
+
+            //Sending the push msg.
+            closest.send(new NetworkMessage(MsgType.RES_PUSH, pushMessage));
+
+            //Calling event.
+            EventManager.callEvent(new ResourcePushSentEvent(pushMessage.resource, pushMessage, closest));
+        }
+    }
+
+    /**
+     * Passes the pull message of a specific resource to the next closest node.
+     * @param pullMessage
+     */
+    public void pullFurther(ResourcePullMessage pullMessage) {
+        //Getting the node closest to the resource.
+        Node closest = router.neighborNodesManager.getClosestTo(pullMessage.resourceId);
+        if(closest == Node.self) {
+            //This is the final node of the pull message.
             EventManager.callEvent(new ResourceFinalStopEvent(pushMessage.resource, pushMessage, null));
         } else {
             logger.info("Pushing resource: " + pushMessage.resource + " to node: " + closest);
