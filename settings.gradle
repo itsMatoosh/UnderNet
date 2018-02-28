@@ -1,1 +1,2 @@
-include ':undernet-android', ':undernet-core', ':undernet-standalone'
+rootProject.name = 'undernet-core'
+
