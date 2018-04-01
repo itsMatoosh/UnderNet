@@ -1,4 +1,4 @@
-# UnderNet
+# UnderNet [![Build Status](https://travis-ci.org/itsMatoosh/UnderNet.svg?branch=master)](https://travis-ci.org/itsMatoosh/UnderNet)
 [Early Alpha] A P2P mesh social network.
 
 ![Imgur](https://i.imgur.com/po8xteU.png)
