@@ -8,9 +8,11 @@ import me.matoosh.undernet.event.channel.ChannelClosedEvent;
 import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
 import me.matoosh.undernet.event.channel.ChannelErrorEvent;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
+import me.matoosh.undernet.event.client.ClientExceptionEvent;
 import me.matoosh.undernet.event.client.ClientStatusEvent;
 import me.matoosh.undernet.event.router.RouterErrorEvent;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
+import me.matoosh.undernet.event.server.ServerExceptionEvent;
 import me.matoosh.undernet.event.server.ServerStatusEvent;
 import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.p2p.node.NeighborNodesManager;
@@ -123,6 +125,8 @@ public class Router extends EventHandler {
     /**
      * Starts the router.
      * Starts the server listening process and establishes client connections.
+     *
+     * @param networkIdentity The identity with which to join the network.
      */
     public void start(NetworkIdentity networkIdentity) {
         //Checking whether the router is already running.
@@ -142,17 +146,17 @@ public class Router extends EventHandler {
         //Setting the status to starting.
         EventManager.callEvent(new RouterStatusEvent(this, InterfaceStatus.STARTING));
 
-        //Starting the server. Using a separate thread for blocking api.
-        new Thread(new Runnable() {
-            public void run() {
-                server.start();
-            }
-        }).start();
-
         //Starting the client. Using a separate thread for blocking api.
         new Thread(new Runnable() {
             public void run() {
                 client.start();
+            }
+        }).start();
+        
+        //Starting the server. Using a separate thread for blocking api.
+        new Thread(new Runnable() {
+            public void run() {
+                server.start();
             }
         }).start();
     }
@@ -163,7 +167,7 @@ public class Router extends EventHandler {
     public void stop() {
         //Checking if the server is running.
         if(status == InterfaceStatus.STOPPED) {
-            logger.debug("Can't stop the router, as it is not running!");
+            logger.warn("Can't stop the router, as it is not running!");
             return;
         }
 
@@ -229,7 +233,9 @@ public class Router extends EventHandler {
         EventManager.registerHandler(this, ChannelClosedEvent.class);
         EventManager.registerHandler(this, ChannelErrorEvent.class);
         EventManager.registerHandler(this, ClientStatusEvent.class);
+        EventManager.registerHandler(this, ClientExceptionEvent.class);
         EventManager.registerHandler(this, ServerStatusEvent.class);
+        EventManager.registerHandler(this, ServerExceptionEvent.class);
     }
 
     //EVENTS
@@ -296,6 +302,16 @@ public class Router extends EventHandler {
                     onRouterStopped();
                 }
             }
+        } else if (e.getClass() == ClientExceptionEvent.class) {
+            ClientExceptionEvent exceptionEvent = (ClientExceptionEvent)e;
+
+            logger.error("Exception occurred with the client, shutting down the router!", exceptionEvent.exception);
+            this.stop();
+        } else if(e.getClass() == ServerExceptionEvent.class) {
+            ServerExceptionEvent exceptionEvent = (ServerExceptionEvent)e;
+
+            logger.error("Exception occurred with the server, shutting down the router!", exceptionEvent.exception);
+            this.stop();
         }
     }
     /**

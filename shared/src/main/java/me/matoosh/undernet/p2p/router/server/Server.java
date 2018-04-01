@@ -34,6 +34,10 @@ public class Server
      * Current status of the server.
      */
     public InterfaceStatus status = InterfaceStatus.STOPPED;
+    /**
+     * Whether the server should stop the startup.
+     */
+    private boolean shouldStop = false;
 
     /**
      * Event loop group for accepting incoming connections.
@@ -81,6 +85,7 @@ public class Server
      */
     public void start() {
         //Changing the server status to starting.
+        shouldStop = false;
         EventManager.callEvent(new ServerStatusEvent(Server.this, InterfaceStatus.STARTING));
 
         //Creating the worker and boss server event groups.
@@ -92,7 +97,7 @@ public class Server
         serverBootstrap.group(bossEventLoopGroup, workerEventLoopGroup) //Assigning event loops to the server.
                 .channel(NioServerSocketChannel.class) //Using the non blocking io for transfer.
                 .childHandler(new ServerChannelInitializer(this))
-                .option(ChannelOption.SO_BACKLOG, 16)          //Setting the number of pending connections to keep in the queue.
+                .option(ChannelOption.SO_BACKLOG, UnderNet.networkConfig.backlogCapacity())//Setting the number of pending connections to keep in the queue.
                 .childOption(ChannelOption.SO_KEEPALIVE, true); //Making sure the connection event loop sends keep alive messages.
 
         //Binding and starting to accept incoming connections.
@@ -101,6 +106,9 @@ public class Server
             EventManager.callEvent(new ServerStatusEvent(Server.this, InterfaceStatus.STARTED));
 
             //Waiting for the server to close.
+            if(shouldStop) {
+                serverFuture.channel().close();
+            }
             serverFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             logger.error("Error binding the server!", e);
@@ -109,8 +117,11 @@ public class Server
         } finally {
             //Stopping the event loop groups.
             try {
+                serverFuture = null;
                 bossEventLoopGroup.shutdownGracefully().sync();
+                bossEventLoopGroup = null;
                 workerEventLoopGroup.shutdownGracefully().sync();
+                workerEventLoopGroup = null;
             } catch (InterruptedException e) {
                 logger.error("Server shutdown has been interrupted!", e);
             }
@@ -124,13 +135,16 @@ public class Server
     public void stop() {
         //Changing the server status to stopping.
         EventManager.callEvent(new ServerStatusEvent(Server.this, InterfaceStatus.STOPPING));
+        shouldStop = true;
 
         //Stopping the server.
-        //Closing the current channel
-        serverFuture.channel().close();
-        //Closing the parent channel (the one attached to the bind)
-        if(serverFuture.channel().parent() != null) {
-            serverFuture.channel().parent().close();
+        if(serverFuture != null) {
+            //Closing the current channel
+            serverFuture.channel().close();
+            //Closing the parent channel (the one attached to the bind)
+            if(serverFuture.channel().parent() != null) {
+                serverFuture.channel().parent().close();
+            }
         }
     }
 

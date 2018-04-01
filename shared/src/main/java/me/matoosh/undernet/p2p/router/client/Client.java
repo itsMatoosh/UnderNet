@@ -76,17 +76,16 @@ public class Client {
     public void start() {
         EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STARTING));
 
-        //Creating a new event loop group.
-        workerEventLoopGroup = new NioEventLoopGroup();
-
         //Attempting to connect to each of the 5 most reliable nodes.
         ArrayList<Node> nodesToConnectTo = EntryNodeCache.getMostReliable(5, null);
         if(nodesToConnectTo == null || nodesToConnectTo.size() == 0) {
             logger.warn("There are no cached nodes to connect to! The client will stop.");
             EventManager.callEvent(new ClientExceptionEvent(this, new ClientNoNodesCachedException(this)));
-            EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STOPPED));
             return;
         }
+
+        //Creating a new event loop group.
+        workerEventLoopGroup = new NioEventLoopGroup();
 
         //Creating a list of client futures.
         closeFutures = new ArrayList<>();
@@ -154,9 +153,13 @@ public class Client {
         EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STOPPING));
 
         //Stopping the client futures.
-        for (ChannelFuture future:
-                closeFutures) {
-            future.channel().close();
+        if(closeFutures == null) {
+            EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STOPPED));
+        } else {
+            for (ChannelFuture future:
+                    closeFutures) {
+                future.channel().close();
+            }
         }
     }
 

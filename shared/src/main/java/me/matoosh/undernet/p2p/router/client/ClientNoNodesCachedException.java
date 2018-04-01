@@ -9,4 +9,9 @@ public class ClientNoNodesCachedException extends ClientException {
     public ClientNoNodesCachedException(Client c) {
         super(c);
     }
+
+    @Override
+    public String getMessage() {
+        return "Couldn't start the client, no nodes cached!";
+    }
 }

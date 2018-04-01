@@ -17,4 +17,10 @@ public interface NetworkConfig {
      * @return
      */
     Integer networkTickRate();
+
+    /**
+     * Amount of incoming connections kept in the backlog.
+     * @return
+     */
+    Integer backlogCapacity();
 }

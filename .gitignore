@@ -25,6 +25,7 @@ Thumbs.db
 /*/out
 /*/*/build
 /*/*/production
+/run
 *.iws
 *.ipr
 *~
