@@ -1,14 +1,18 @@
-group 'me.matoosh.undernet'
-version '0.1'
+allprojects {
 
-apply plugin: 'java'
-
-sourceCompatibility = 1.8
-
-repositories {
-    mavenCentral()
 }
+subprojects {
+    apply plugin: "java"
+    sourceCompatibility = "1.7"
+    targetCompatibility = "1.7"
 
-dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
+        compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+        compile group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
+        compile group: "org.cfg4j", name:"cfg4j-core", version: "4.4.1"
+    }
 }

@@ -2,8 +2,14 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel>
-      <module name="undernet-core_main" target="1.8" />
-      <module name="undernet-core_test" target="1.8" />
+      <module name="api_main" target="1.7" />
+      <module name="api_test" target="1.7" />
+      <module name="shared_main" target="1.7" />
+      <module name="shared_test" target="1.7" />
+      <module name="standalone_main" target="1.7" />
+      <module name="standalone_test" target="1.7" />
+      <module name="UnderNet_main" target="1.8" />
+      <module name="UnderNet_test" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
