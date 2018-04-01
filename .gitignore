@@ -23,6 +23,7 @@ Thumbs.db
 /captures
 .externalNativeBuild
 /*/out
+/*/build
 /*/*/build
 /*/*/production
 /run
