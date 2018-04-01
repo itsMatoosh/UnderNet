@@ -1,6 +1,3 @@
-group 'me.matoosh.undernet'
-version '0.2'
-
 dependencies {
     // https://mvnrepository.com/artifact/io.netty/netty-all
     compile group: 'io.netty', name: 'netty-all', version: '4.1.22.Final'
