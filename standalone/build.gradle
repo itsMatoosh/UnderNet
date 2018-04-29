@@ -1,0 +1,30 @@
+apply plugin: 'java-library-distribution'
+
+dependencies {
+    compile project(path: ':shared')
+    compile 'com.esotericsoftware.yamlbeans:yamlbeans:1.12'
+}
+
+// Include dependent libraries in archive.
+String mainClassName = "me.matoosh.undernet.standalone.UnderNetStandalone"
+
+jar {
+    // Keep jar clean:
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.MF'
+
+    manifest {
+        attributes "Main-Class": "$mainClassName"
+    }
+
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+task run(dependsOn: classes, type: JavaExec) {
+    main = 'me.matoosh.undernet.standalone.UnderNetStandalone'
+    classpath = sourceSets.main.runtimeClasspath
+    //defaultInput = System.in
+    workingDir = '/debug'
+    ignoreExitValue = true
+}
