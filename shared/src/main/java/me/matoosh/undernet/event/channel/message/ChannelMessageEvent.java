@@ -11,7 +11,7 @@ import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 
 public abstract class ChannelMessageEvent extends ChannelEvent {
     /**
-     * The network message.
+     * The network content.
      */
     public NetworkMessage message;
 
@@ -24,6 +24,6 @@ public abstract class ChannelMessageEvent extends ChannelEvent {
     public ChannelMessageEvent(Channel c, boolean isServer, NetworkMessage msg) {
         super(c, isServer);
         this.message = msg;
-        this.message.message.sender = this.remoteNode;
+        this.message.content.sender = this.remoteNode;
     }
 }

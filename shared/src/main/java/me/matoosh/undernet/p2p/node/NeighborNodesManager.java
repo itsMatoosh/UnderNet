@@ -67,8 +67,8 @@ public class NeighborNodesManager extends Manager {
 
         } else if(e instanceof  ChannelMessageReceivedEvent) {
             ChannelMessageReceivedEvent messageReceivedEvent = (ChannelMessageReceivedEvent)e;
-            if(messageReceivedEvent.message.msgId == MsgType.NODE_INFO.ordinal()) {
-                NodeInfoMessage message = (NodeInfoMessage)messageReceivedEvent.message.message;
+            if(messageReceivedEvent.message.msgType == MsgType.NODE_INFO) {
+                NodeInfoMessage message = (NodeInfoMessage)messageReceivedEvent.message.content;
                 //TODO: Check the generated id with the database and update.
                 logger.info("Received node info for {}: {}", messageReceivedEvent.remoteNode, message.networkID);
                 NetworkIdentity networkIdentity = new NetworkIdentity();
@@ -79,12 +79,12 @@ public class NeighborNodesManager extends Manager {
     }
 
     /**
-     * Sends a message info about infoFrom to infoTo.
+     * Sends a node info message about infoFrom, to infoTo.
      * @param infoFrom
      * @param infoTo
      */
     public void sendNodeInfo(Node infoFrom, Node infoTo) {
-        logger.info("Sending " + infoFrom.toString() + " node info to: " + infoTo.toString());
+        logger.info("Sending {} node info to: {}", infoFrom, infoTo.toString());
         infoTo.send(new NetworkMessage(MsgType.NODE_INFO, new NodeInfoMessage(infoFrom)));
     }
 

@@ -27,14 +27,14 @@ public class NetworkMessageEncoder extends MessageToByteEncoder<NetworkMessage> 
         msg.serialize();
 
         //Allocating the buffer.
-        logger.info("Constructing a message with ID: {}, allocating {} bytes", msg.msgId, (15 + msg.data.array().length));
+        logger.info("Constructing a message of type: {}, allocating {} bytes", msg.msgType, (15 + msg.data.array().length));
         out.alloc().buffer(15 + msg.data.capacity());
 
         //Setting the msg expiration.
         msg.expiration = System.currentTimeMillis() + 1000;
 
         //Writing the buffer.
-        out.writeInt(msg.msgId);
+        out.writeShort(msg.msgType.id);
         out.writeLong(msg.expiration);
         out.writeByte(msg.checksum);
         out.writeShort(msg.dataLength);

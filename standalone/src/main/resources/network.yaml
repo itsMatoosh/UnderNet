@@ -2,3 +2,4 @@ network:
   listeningPort: 2017
   networkTickRate: 30
   backlogCapacity: 16
+  ignoreExceptions: false

@@ -77,7 +77,7 @@ public class ResourceManager extends Manager {
         //Log
         logger.info("Publishing resource: {}...", resource);
 
-        //Sending the message to the neighbor closest to it.
+        //Sending the content to the neighbor closest to it.
         executor.submit(new Runnable() {
             @Override
             public void run() {
@@ -103,7 +103,7 @@ public class ResourceManager extends Manager {
         //Log
         logger.info("Pulling resource with id: {}...", pullMessage.resource.networkID);
 
-        //Sending the resource pull message to the closest node.
+        //Sending the resource pull content to the closest node.
         executor.submit(new Runnable() {
             @Override
             public void run() {
@@ -138,7 +138,7 @@ public class ResourceManager extends Manager {
     }
 
     /**
-     * Passes the pull message of a specific resource to the next closest node.
+     * Passes the pull content of a specific resource to the next closest node.
      * @param pullMessage
      */
     public void pullFurther(ResourceMessage pullMessage) {
@@ -174,10 +174,10 @@ public class ResourceManager extends Manager {
             //Network message received.
             final ChannelMessageReceivedEvent messageReceivedEvent = (ChannelMessageReceivedEvent)e;
 
-            //Deserializing the resource message.
-            final ResourceMessage resourceMessage = (ResourceMessage) messageReceivedEvent.message.message;
+            if(messageReceivedEvent.message.msgType == MsgType.RES_PUSH) { //Push content.
+                //Deserializing the resource message.
+                final ResourceMessage resourceMessage = (ResourceMessage) messageReceivedEvent.message.content;
 
-            if(messageReceivedEvent.message.msgId == MsgType.RES_PUSH.ordinal()) { //Push message.
                 executor.submit(new Runnable() {
                     @Override
                     public void run() {
@@ -188,7 +188,10 @@ public class ResourceManager extends Manager {
                         EventManager.callEvent(new ResourcePushReceivedEvent(resourceMessage.resource, resourceMessage, messageReceivedEvent.remoteNode));
                     }
                 });
-            } else if(messageReceivedEvent.message.msgId == MsgType.RES_PULL.ordinal()) { //Pull message.
+            } else if(messageReceivedEvent.message.msgType == MsgType.RES_PULL) { //Pull content.
+                //Deserializing the resource message.
+                final ResourceMessage resourceMessage = (ResourceMessage) messageReceivedEvent.message.content;
+
                 executor.submit(new Runnable() {
                     @Override
                     public void run() {

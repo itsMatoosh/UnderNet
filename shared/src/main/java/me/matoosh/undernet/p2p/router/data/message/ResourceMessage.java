@@ -20,7 +20,7 @@ public class ResourceMessage extends MsgBase {
 
 
     /**
-     * Creates a new resource message given the resource.
+     * Creates a new resource content given the resource.
      * @param resource
      */
     public ResourceMessage(Resource resource) {

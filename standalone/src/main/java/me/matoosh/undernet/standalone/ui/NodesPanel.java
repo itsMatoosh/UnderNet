@@ -66,7 +66,7 @@ public class NodesPanel extends JPanel {
 
                         //Checking if the node is connected.
                         if(node.isConnected()) {
-                            //Sending a ping message.
+                            //Sending a ping content.
                             node.send(new NetworkMessage(MsgType.NODE_PING, new PingMessage(false)));
                         } else {
                             //Connecting to the node.

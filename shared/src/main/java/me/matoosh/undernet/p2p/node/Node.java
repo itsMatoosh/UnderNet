@@ -93,7 +93,7 @@ public class Node implements Serializable {
      * @param msg
      */
     public void send(NetworkMessage msg) {
-        logger.info("Sending a message to: {} with id: {}", address, msg.msgId);
+        logger.info("Sending a message to: {} of type: {}", address, msg.msgType);
         if(channel == null) {
             logger.error("Long distance messages have not been implemented yet :(", new Exception());
         } else {

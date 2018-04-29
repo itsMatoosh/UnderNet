@@ -7,22 +7,22 @@ import java.io.*;
 import java.nio.ByteBuffer;
 
 /**
- * A message that can be serialized and deserialized using the NetworkMessageSerializer.
+ * A content that can be serialized and deserialized using the NetworkMessageSerializer.
  * Created by Mateusz Rębacz on 29.04.2017.
  */
 
 public class NetworkMessage {
     /**
-     * Unique id of the message.
+     * Unique id of the content.
      */
-    public int msgId;
+    public MsgType msgType;
     /**
-     * The message.
+     * The content.
      */
-    public MsgBase message;
+    public MsgBase content;
 
     /**
-     * The expiration time of the message.
+     * The expiration time of the content.
      */
     public long expiration;
     /**
@@ -40,7 +40,7 @@ public class NetworkMessage {
     public static Logger logger = LoggerFactory.getLogger(NetworkMessage.class);
 
     /**
-     * The data transported by the message.
+     * The data transported by the content.
      * Can be up to 64 fragments (64KB)
      */
     public ByteBuffer data;
@@ -48,16 +48,17 @@ public class NetworkMessage {
     public NetworkMessage() {}
 
     /**
-     * Creates a network message given its type and content.
+     * Creates a network content given its type and content.
      * @param msgType
      * @param msg
      */
     public NetworkMessage(MsgType msgType, MsgBase msg) {
-        this.msgId = msgType.ordinal();
+        this.msgType = msgType;
+        this.content = msg;
     }
 
     /**
-     * Calculates the checksum of the message data.
+     * Calculates the checksum of the content data.
      * @return
      */
     public byte calcChecksum() {
@@ -69,14 +70,15 @@ public class NetworkMessage {
     }
 
     /**
-     * Serializes the message's content.
+     * Serializes the content's content.
      */
     public void serialize() {
+        logger.info("Serializing message {}", msgType);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutput out = null;
         try {
             out = new ObjectOutputStream(bos);
-            out.writeObject(this.message);
+            out.writeObject(this.content);
             out.flush();
             this.data = ByteBuffer.wrap(bos.toByteArray());
 
@@ -96,15 +98,16 @@ public class NetworkMessage {
     }
 
     /**
-     * Deserializes the message from its byte[] data.
+     * Deserializes the content from its byte[] data.
      * @return
      */
-    public void deserializeMessage() {
+    public void deserialize() {
+        logger.info("Deserializing message {}, length: {}", msgType, this.data.array().length);
         ByteArrayInputStream bis = new ByteArrayInputStream(this.data.array());
         ObjectInput in = null;
         try {
             in = new ObjectInputStream(bis);
-            this.message = (MsgBase)in.readObject();
+            this.content = (MsgBase)in.readObject();
         } catch (ClassNotFoundException e) {
             logger.error("Error occured while deserializing a network message!", e);
         } catch (IOException e) {

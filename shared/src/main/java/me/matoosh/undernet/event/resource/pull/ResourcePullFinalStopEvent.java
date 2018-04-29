@@ -6,7 +6,7 @@ import me.matoosh.undernet.p2p.router.data.resource.Resource;
 import me.matoosh.undernet.p2p.router.data.resource.ResourceManager;
 
 /**
- * Called when a resource pull message reaches its destination on the self node.
+ * Called when a resource pull content reaches its destination on the self node.
  * Created by Mateusz Rębacz on 12.11.2017.
  */
 

@@ -10,11 +10,11 @@ import me.matoosh.undernet.p2p.router.data.resource.Resource;
  */
 public class ResourcePullSentEvent extends ResourceEvent {
     /**
-     * The pull message.
+     * The pull content.
      */
     public ResourceMessage pullMessage;
     /**
-     * The node the message is sent to.
+     * The node the content is sent to.
      */
     public Node recipientNode;
 

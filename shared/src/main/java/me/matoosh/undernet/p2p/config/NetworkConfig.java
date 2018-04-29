@@ -23,4 +23,10 @@ public interface NetworkConfig {
      * @return
      */
     Integer backlogCapacity();
+
+    /**
+     * Whether to keep the router working despite a fatal exception.
+     * @return
+     */
+    Boolean ignoreExceptions();
 }

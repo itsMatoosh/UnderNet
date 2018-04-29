@@ -89,7 +89,7 @@ public class ServerNetworkMessageHandler extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        //Reading the incoming message as a NetworkMessage.
+        //Reading the incoming content as a NetworkMessage.
         if(msg instanceof NetworkMessage) {
             NetworkMessage networkMessage = (NetworkMessage) msg;
             try {

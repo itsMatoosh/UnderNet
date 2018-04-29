@@ -55,8 +55,8 @@ public class NetworkDatabase extends Manager {
         if(e instanceof ChannelMessageReceivedEvent) {
             //Checking message type.
             ChannelMessageReceivedEvent messageEvent = (ChannelMessageReceivedEvent)e;
-            if(messageEvent.message.msgId == MsgType.NODE_PING.ordinal()) {
-                PingMessage pingMessage = (PingMessage)messageEvent.message.message;
+            if(messageEvent.message.msgType == MsgType.NODE_PING) {
+                PingMessage pingMessage = (PingMessage)messageEvent.message.content;
 
                 //Sending a ping message back.
                 if(pingMessage.pong == true) {

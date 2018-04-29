@@ -12,7 +12,7 @@ import me.matoosh.undernet.p2p.router.data.resource.Resource;
 
 public class ResourcePushReceivedEvent extends ResourceEvent {
     /**
-     * The push message.
+     * The push content.
      */
     public ResourceMessage pushMessage;
     /**

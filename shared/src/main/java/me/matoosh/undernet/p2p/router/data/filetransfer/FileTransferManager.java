@@ -109,9 +109,9 @@ public class FileTransferManager extends Manager {
     public void onEventCalled(Event e) {
         if(e instanceof ChannelMessageReceivedEvent) {
             ChannelMessageReceivedEvent messageReceivedEvent = (ChannelMessageReceivedEvent)e;
-            if(messageReceivedEvent.message.msgId == MsgType.FILE_REQ.ordinal()) { //File request received.
+            if(messageReceivedEvent.message.msgType == MsgType.FILE_REQ) { //File request received.
                 //Deserializing msg.
-                FileTransferRequestMessage requestMsg = (FileTransferRequestMessage)messageReceivedEvent.message.message;
+                FileTransferRequestMessage requestMsg = (FileTransferRequestMessage)messageReceivedEvent.message.content;
 
                 logger.info("Received a file transfer request for: " + requestMsg.transferId);
 
@@ -130,9 +130,9 @@ public class FileTransferManager extends Manager {
                         }
                     }
                 }
-            } else if(messageReceivedEvent.message.msgId == MsgType.FILE_CHUNK.ordinal()) { //File chunk received.
+            } else if(messageReceivedEvent.message.msgType == MsgType.FILE_CHUNK) { //File chunk received.
                 //Deserializing msg.
-                FileChunk fileChunk = (FileChunk) messageReceivedEvent.message.message;
+                FileChunk fileChunk = (FileChunk) messageReceivedEvent.message.content;
 
                 //A file was requested from this node. Checking if the requested transfer has been prepared.
                 for (final FileTransfer transfer :

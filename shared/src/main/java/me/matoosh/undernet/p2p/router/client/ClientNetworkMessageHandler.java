@@ -102,7 +102,7 @@ public class ClientNetworkMessageHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if(msg instanceof NetworkMessage) {
-            //Reading the incoming message as a NetworkMessage.
+            //Reading the incoming content as a NetworkMessage.
             NetworkMessage networkMessage = (NetworkMessage) msg;
             try {
                 EventManager.callEvent(new ChannelMessageReceivedEvent(ctx.channel(), false, networkMessage));

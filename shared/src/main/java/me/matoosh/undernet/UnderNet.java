@@ -53,7 +53,7 @@ public class UnderNet
      * Sets up UnderNet.
      */
     public static void setup(FileManager fileManager, ConfigurationProvider configProvider) {
-        //Writing the init message.
+        //Writing the init content.
         writeInitMessage();
 
         //Setting the secure random generator.
@@ -99,7 +99,7 @@ public class UnderNet
     }
 
     /// <summary>
-    /// Writes the initial message to the console.
+    /// Writes the initial content to the console.
     /// </summary>
     private static void writeInitMessage()
     {

@@ -14,7 +14,7 @@ public class NodeInfoMessage extends MsgBase {
      */
     public NetworkID networkID;
     /**
-     * Constructs the info message using the node id.
+     * Constructs the info content using the node id.
      * @param node
      */
     public NodeInfoMessage (Node node) {

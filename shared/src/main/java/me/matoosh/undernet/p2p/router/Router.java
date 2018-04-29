@@ -1,6 +1,7 @@
 package me.matoosh.undernet.p2p.router;
 
 import io.netty.channel.Channel;
+import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
@@ -305,13 +306,17 @@ public class Router extends EventHandler {
         } else if (e.getClass() == ClientExceptionEvent.class) {
             ClientExceptionEvent exceptionEvent = (ClientExceptionEvent)e;
 
-            logger.error("Exception occurred with the client, shutting down the router!", exceptionEvent.exception);
-            this.stop();
+            logger.error("Exception occurred with the client!", exceptionEvent.exception);
+            if(!UnderNet.networkConfig.ignoreExceptions()) {
+                this.stop();
+            }
         } else if(e.getClass() == ServerExceptionEvent.class) {
             ServerExceptionEvent exceptionEvent = (ServerExceptionEvent)e;
 
-            logger.error("Exception occurred with the server, shutting down the router!", exceptionEvent.exception);
-            this.stop();
+            logger.error("Exception occurred with the server!", exceptionEvent.exception);
+            if(!UnderNet.networkConfig.ignoreExceptions()) {
+                this.stop();
+            }
         }
     }
     /**

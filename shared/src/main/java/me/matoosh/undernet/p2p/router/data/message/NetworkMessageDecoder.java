@@ -48,7 +48,7 @@ public class NetworkMessageDecoder extends ByteToMessageDecoder {
         //Caching the message header if not yet cached.
         if(in.readableBytes() >= 15 && cachedMessage == null) {
             //Decoding the message header.
-            int msgId = in.readInt();
+            short msgId = in.readShort();
             long expiration = in.readLong();
             byte checksum = in.readByte();
             short dataLenght = in.readShort();
@@ -58,7 +58,7 @@ public class NetworkMessageDecoder extends ByteToMessageDecoder {
                 //Creating the cached message.
                 cachedMessage = new NetworkMessage();
 
-                cachedMessage.msgId = msgId;
+                cachedMessage.msgType = MsgType.getById(msgId);
                 cachedMessage.expiration = expiration;
                 cachedMessage.checksum = checksum;
                 cachedMessage.dataLength = dataLenght;
@@ -89,7 +89,7 @@ public class NetworkMessageDecoder extends ByteToMessageDecoder {
         //Checking if all the data has been received.
         if(dataWriteIndex >= cachedMessage.data.capacity()) {
             //Message data received. Outputting the constructed message.
-            cachedMessage.deserializeMessage();
+            cachedMessage.deserialize();
             out.add(cachedMessage);
 
             //Resetting vars.

@@ -27,7 +27,7 @@ public class RouterStatusEvent extends RouterEvent {
     @Override
     public void onCalled() {
         //Sets the server status to the new status.
-        logger.info("Router status changed to: " + newStatus);
+        logger.info("Router status changed to: {}", newStatus);
         router.status = newStatus;
     }
 }
