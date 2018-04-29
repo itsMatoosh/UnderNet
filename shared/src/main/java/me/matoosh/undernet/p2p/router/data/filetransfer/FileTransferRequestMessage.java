@@ -8,7 +8,7 @@ import me.matoosh.undernet.p2p.router.data.message.MsgBase;
  * Created by Mateusz Rębacz on 01.10.2017.
  */
 
-public class FileTransferRequestMessage implements MsgBase {
+public class FileTransferRequestMessage extends MsgBase {
     /**
      * The id of the requested transfer.
      */

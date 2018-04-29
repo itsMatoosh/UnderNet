@@ -26,9 +26,9 @@ public class ChannelClosedEvent extends ChannelEvent {
     @Override
     public void onCalled() {
         if(isServer) {
-            Server.logger.info("Connection with: " + channel.remoteAddress() + " has been dropped");
+            Server.logger.info("Connection with: {} has been dropped", channel.remoteAddress());
         } else {
-            Client.logger.info("Connection with: " + channel.remoteAddress() + " has been dropped");
+            Client.logger.info("Connection with: {} has been dropped", channel.remoteAddress());
         }
     }
 }

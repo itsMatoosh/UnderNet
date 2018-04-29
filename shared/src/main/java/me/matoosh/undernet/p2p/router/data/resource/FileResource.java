@@ -1,12 +1,5 @@
 package me.matoosh.undernet.p2p.router.data.resource;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventHandler;
@@ -16,7 +9,9 @@ import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.filetransfer.FileInfo;
 import me.matoosh.undernet.p2p.router.data.filetransfer.FileTransfer;
-import me.matoosh.undernet.p2p.router.data.message.ResourcePushMessage;
+import me.matoosh.undernet.p2p.router.data.message.ResourceMessage;
+
+import java.io.*;
 
 /**
  * Represents a stored file resource.
@@ -103,7 +98,7 @@ public class FileResource extends Resource {
      * @param pushTo
      */
     @Override
-    public void onPush(ResourcePushMessage msg, final Node pushTo) {
+    public void onPush(ResourceMessage msg, final Node pushTo) {
         //Preparing a file transfer to the pushTo node.
         UnderNet.router.fileTransferManager.prepareFileTranfer(FileResource.this, pushTo);
     }
@@ -115,7 +110,7 @@ public class FileResource extends Resource {
      * @param receivedFrom
      */
     @Override
-    public void onPushReceive(ResourcePushMessage msg, Node receivedFrom) {
+    public void onPushReceive(ResourceMessage msg, Node receivedFrom) {
         //Requesting the file trasnfer.
         transfer = UnderNet.router.fileTransferManager.requestFileTransfer(receivedFrom, (FileResource)msg.resource);
         EventManager.registerHandler(new EventHandler() {
@@ -129,6 +124,16 @@ public class FileResource extends Resource {
             }
         }, FileTransferFinishedEvent.class);
 
+    }
+
+    @Override
+    public void onPull(ResourceMessage msg, Node pullFrom) {
+        //File resource won't ever be pulled directly.
+    }
+
+    @Override
+    public void onPullReceived(ResourceMessage msg, Node receivedFrom) {
+        //File resource won't ever be pulled directly.
     }
 
     @Override

@@ -1,7 +1,7 @@
 package me.matoosh.undernet.p2p.router.data.resource;
 
 import me.matoosh.undernet.p2p.node.Node;
-import me.matoosh.undernet.p2p.router.data.message.ResourcePushMessage;
+import me.matoosh.undernet.p2p.router.data.message.ResourceMessage;
 
 /**
  * Represents a flag resource.
@@ -41,7 +41,7 @@ public class FlagResource extends Resource {
      * @param pushTo
      */
     @Override
-    public void onPush(ResourcePushMessage msg, Node pushTo) {
+    public void onPush(ResourceMessage msg, Node pushTo) {
         return; //TODO: on push
     }
 
@@ -52,7 +52,17 @@ public class FlagResource extends Resource {
      * @param receivedFrom
      */
     @Override
-    public void onPushReceive(ResourcePushMessage msg, Node receivedFrom) {
+    public void onPushReceive(ResourceMessage msg, Node receivedFrom) {
         return; //TODO: On push receive
+    }
+
+    @Override
+    public void onPull(ResourceMessage msg, Node pullFrom) {
+
+    }
+
+    @Override
+    public void onPullReceived(ResourceMessage msg, Node receivedFrom) {
+
     }
 }

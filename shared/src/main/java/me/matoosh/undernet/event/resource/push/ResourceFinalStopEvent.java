@@ -1,7 +1,7 @@
 package me.matoosh.undernet.event.resource.push;
 
 import me.matoosh.undernet.p2p.node.Node;
-import me.matoosh.undernet.p2p.router.data.message.ResourcePushMessage;
+import me.matoosh.undernet.p2p.router.data.message.ResourceMessage;
 import me.matoosh.undernet.p2p.router.data.resource.Resource;
 import me.matoosh.undernet.p2p.router.data.resource.ResourceManager;
 
@@ -11,12 +11,12 @@ import me.matoosh.undernet.p2p.router.data.resource.ResourceManager;
  */
 
 public class ResourceFinalStopEvent extends ResourcePushReceivedEvent {
-    public ResourceFinalStopEvent(Resource resource, ResourcePushMessage msg, Node sender) {
+    public ResourceFinalStopEvent(Resource resource, ResourceMessage msg, Node sender) {
         super(resource, msg, sender);
     }
 
     @Override
     public void onCalled() {
-        ResourceManager.logger.info("Resource: " + resource.toString() + " reached its destination on the " + Node.self + " node and was saved in the content folder.");
+        ResourceManager.logger.info("Resource: {} reached its destination on the {} node and was saved in the content folder.", resource.toString(), Node.self);
     }
 }

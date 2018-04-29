@@ -8,7 +8,7 @@ import me.matoosh.undernet.p2p.router.data.NetworkID;
  * Created by Mateusz Rębacz on 26.09.2017.
  */
 
-public class NodeInfoMessage implements MsgBase {
+public class NodeInfoMessage extends MsgBase {
     /**
      * The netID.
      */

@@ -1,4 +1,4 @@
-package me.matoosh.undernet.event.resource.push;
+package me.matoosh.undernet.event.resource.pull;
 
 import me.matoosh.undernet.event.resource.ResourceEvent;
 import me.matoosh.undernet.p2p.node.Node;
@@ -6,24 +6,22 @@ import me.matoosh.undernet.p2p.router.data.message.ResourceMessage;
 import me.matoosh.undernet.p2p.router.data.resource.Resource;
 
 /**
- * Called when a resource push is received.
- * Created by Mateusz Rębacz on 02.10.2017.
+ * Called when a resource pull is received.
  */
+public class ResourcePullReceivedEvent extends ResourceEvent {
 
-public class ResourcePushReceivedEvent extends ResourceEvent {
     /**
-     * The push message.
+     * The pull message.
      */
-    public ResourceMessage pushMessage;
+    public ResourceMessage pullMessage;
     /**
      * The sender of the push.
      */
     public Node sender;
 
-    public ResourcePushReceivedEvent(Resource resource, ResourceMessage msg, Node sender) {
+    public ResourcePullReceivedEvent(Resource resource, ResourceMessage msg) {
         super(resource);
-        this.pushMessage = msg;
-        this.sender = sender;
+        this.pullMessage = msg;
     }
 
     /**

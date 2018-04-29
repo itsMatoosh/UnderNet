@@ -37,9 +37,9 @@ public abstract class ChannelEvent extends Event {
         this.isServer = isServer;
 
         if(isServer) {
-            remoteNode = c.attr(ServerNetworkMessageHandler.ATTRIBUTE_KEY_CLIENT_NODE).get();
+            this.remoteNode = c.attr(ServerNetworkMessageHandler.ATTRIBUTE_KEY_CLIENT_NODE).get();
         } else {
-            remoteNode = c.attr(ClientNetworkMessageHandler.ATTRIBUTE_KEY_SERVER_NODE).get();
+            this.remoteNode = c.attr(ClientNetworkMessageHandler.ATTRIBUTE_KEY_SERVER_NODE).get();
         }
     }
 }

@@ -1,12 +1,5 @@
 package me.matoosh.undernet.p2p.router.data.filetransfer;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.concurrent.Callable;
-
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.ftp.FileTransferErrorEvent;
@@ -16,6 +9,9 @@ import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.message.MsgType;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 import me.matoosh.undernet.p2p.router.data.resource.FileResource;
+
+import java.io.*;
+import java.util.concurrent.Callable;
 
 import static me.matoosh.undernet.p2p.router.Router.logger;
 
@@ -151,7 +147,7 @@ public class FileTransfer {
      * @param buffer
      */
     private void sendChunk(byte[] buffer) {
-        NetworkMessage msg = new NetworkMessage(MsgType.FILE_CHUNK, NetworkMessage.serializeMessage(new FileChunk(id, buffer)));
+        NetworkMessage msg = new NetworkMessage(MsgType.FILE_CHUNK, new FileChunk(id, buffer));
         recipient.send(msg);
     }
 

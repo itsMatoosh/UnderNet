@@ -6,6 +6,7 @@ import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
 import me.matoosh.undernet.p2p.Manager;
 import me.matoosh.undernet.p2p.router.data.message.MsgType;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
+import me.matoosh.undernet.p2p.router.data.message.PingMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +56,8 @@ public class NetworkDatabase extends Manager {
             //Checking message type.
             ChannelMessageReceivedEvent messageEvent = (ChannelMessageReceivedEvent)e;
             if(messageEvent.message.msgId == MsgType.NODE_PING.ordinal()) {
+                PingMessage pingMessage = (PingMessage)messageEvent.message.message;
+
                 //Sending a ping message back.
                 if(messageEvent.message.data.get() == 0x01) {
                     return;

@@ -17,6 +17,11 @@ public class NetworkMessage {
      */
     public int msgId;
     /**
+     * The message.
+     */
+    public MsgBase message;
+
+    /**
      * The expiration time of the message.
      */
     public long expiration;
@@ -43,29 +48,12 @@ public class NetworkMessage {
     public NetworkMessage() {}
 
     /**
-     * Creates a network message given its type and raw data.
-     * @param msgType
-     * @param data
-     */
-    public NetworkMessage(MsgType msgType, byte[] data) {
-        this.msgId = msgType.ordinal();
-        this.data = ByteBuffer.wrap(data);
-        this.dataLength = (short)(Short.MIN_VALUE + data.length);
-        this.checksum = calcChecksum();
-        this.expiration = 0;
-    }
-
-    /**
      * Creates a network message given its type and content.
      * @param msgType
      * @param msg
      */
     public NetworkMessage(MsgType msgType, MsgBase msg) {
         this.msgId = msgType.ordinal();
-        this.data = ByteBuffer.wrap(serializeMessage(msg));
-        this.dataLength = (short)(Short.MIN_VALUE + this.data.array().length);
-        this.checksum = calcChecksum();
-        this.expiration = 0;
     }
 
     /**
@@ -81,18 +69,23 @@ public class NetworkMessage {
     }
 
     /**
-     * Serializes an object to a byte[].
+     * Serializes the message's content.
      */
-    public static byte[] serializeMessage(MsgBase msg) {
+    public void serialize() {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutput out = null;
         try {
             out = new ObjectOutputStream(bos);
-            out.writeObject(msg);
+            out.writeObject(this.message);
             out.flush();
-            return bos.toByteArray();
+            this.data = ByteBuffer.wrap(bos.toByteArray());
+
+            //Setting the msg info.
+            this.dataLength = (short)(Short.MIN_VALUE + this.data.array().length);
+            this.checksum = calcChecksum();
+            this.expiration = 0;
         } catch (IOException e) {
-            logger.error("Error while serializing a network message: " + msg.toString(), e);
+            logger.error("Error while serializing a network message: " + this.toString(), e);
         } finally {
             try {
                 bos.close();
@@ -100,20 +93,18 @@ public class NetworkMessage {
                 // ignore close exception
             }
         }
-        return null;
     }
 
     /**
-     * Deserializes an object from a byte array.
-     * @param bytes
+     * Deserializes the message from its byte[] data.
      * @return
      */
-    public static MsgBase deserializeMessage(byte[] bytes) {
-        ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+    public void deserializeMessage() {
+        ByteArrayInputStream bis = new ByteArrayInputStream(this.data.array());
         ObjectInput in = null;
         try {
             in = new ObjectInputStream(bis);
-            return (MsgBase)in.readObject();
+            this.message = (MsgBase)in.readObject();
         } catch (ClassNotFoundException e) {
             logger.error("Error occured while deserializing a network message!", e);
         } catch (IOException e) {
@@ -127,6 +118,5 @@ public class NetworkMessage {
                 // ignore close exception
             }
         }
-        return null;
     }
 }

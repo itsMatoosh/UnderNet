@@ -24,5 +24,6 @@ public abstract class ChannelMessageEvent extends ChannelEvent {
     public ChannelMessageEvent(Channel c, boolean isServer, NetworkMessage msg) {
         super(c, isServer);
         this.message = msg;
+        this.message.message.sender = this.remoteNode;
     }
 }

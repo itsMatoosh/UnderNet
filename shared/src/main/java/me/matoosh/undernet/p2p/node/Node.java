@@ -93,9 +93,9 @@ public class Node implements Serializable {
      * @param msg
      */
     public void send(NetworkMessage msg) {
-        logger.info("Sending a message to: " + address + " with id: " + msg.msgId);
+        logger.info("Sending a message to: {} with id: {}", address, msg.msgId);
         if(channel == null) {
-            logger.error("Long distance message have not been implemented yet :(", new Exception());
+            logger.error("Long distance messages have not been implemented yet :(", new Exception());
         } else {
             try {
                 channel.writeAndFlush(msg).sync();
@@ -112,9 +112,9 @@ public class Node implements Serializable {
     public void setIdentity(NetworkIdentity identity) {
         if(identity.isCorrect()) {
             this.identity = identity;
-            logger.info(toString() + " node identity set to: " + this.identity);
+            logger.info("{} node identity set to: {}", toString(), this.identity);
         } else {
-            logger.error("Couldn't set " + toString() + " node identity, the identity object is not correct!");
+            logger.error("Couldn't set {} node identity, the identity object is not correct!", toString());
         }
     }
 

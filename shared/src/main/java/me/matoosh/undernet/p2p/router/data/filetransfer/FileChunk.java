@@ -8,7 +8,7 @@ import me.matoosh.undernet.p2p.router.data.message.MsgBase;
  * Created by Mateusz Rębacz on 14.10.2017.
  */
 
-public class FileChunk implements MsgBase {
+public class FileChunk extends MsgBase {
     /**
      * The id of the transfer the chunk belongs to.
      */

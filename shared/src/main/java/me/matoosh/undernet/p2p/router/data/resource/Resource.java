@@ -1,11 +1,11 @@
 package me.matoosh.undernet.p2p.router.data.resource;
 
-import java.io.Serializable;
-
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
-import me.matoosh.undernet.p2p.router.data.message.ResourcePushMessage;
+import me.matoosh.undernet.p2p.router.data.message.ResourceMessage;
+
+import java.io.Serializable;
 
 /**
  * Represents a stored resource.
@@ -31,18 +31,31 @@ public abstract class Resource implements Serializable {
     /**
      * Called before the resource is pushed.
      */
-    public abstract void onPush(ResourcePushMessage msg, Node pushTo);
+    public abstract void onPush(ResourceMessage msg, Node pushTo);
     /**
      * Called after the resource push has been received.
      * @param receivedFrom
      */
-    public abstract void onPushReceive(ResourcePushMessage msg, Node receivedFrom);
+    public abstract void onPushReceive(ResourceMessage msg, Node receivedFrom);
     /**
      * Called when the resource is ready to be pushed.
      */
     public void onPushReady() {
-        UnderNet.router.resourceManager.pushForward(new ResourcePushMessage(this));
+        UnderNet.router.resourceManager.pushForward(new ResourceMessage(this));
     }
+
+    /**
+     * Called before the resource is pull from the next closest node.
+     * @param msg
+     * @param pullFrom
+     */
+    public abstract void onPull(ResourceMessage msg, Node pullFrom);
+    /**
+     * Called when a pull request is received.
+     * @param msg
+     * @param receivedFrom
+     */
+    public abstract void onPullReceived(ResourceMessage msg, Node receivedFrom);
 
     @Override
     public String toString() {

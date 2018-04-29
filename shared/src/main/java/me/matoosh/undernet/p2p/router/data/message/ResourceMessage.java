@@ -1,13 +1,14 @@
 package me.matoosh.undernet.p2p.router.data.message;
 
+import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.resource.Resource;
 
 /**
- * Message containing resource and its publish info.
+ * Message containing a resource and its info.
  * Created by Mateusz Rębacz on 26.09.2017.
  */
 
-public class ResourcePushMessage implements MsgBase {
+public class ResourceMessage extends MsgBase {
     /**
      * The resource to be pushed.
      */
@@ -19,10 +20,10 @@ public class ResourcePushMessage implements MsgBase {
 
 
     /**
-     * Creates a new resource push message given the pushed resource.
+     * Creates a new resource message given the resource.
      * @param resource
      */
-    public ResourcePushMessage(Resource resource) {
+    public ResourceMessage(Resource resource) {
         this.resource = resource;
         this.resourceType = resource.getResourceType();
     }

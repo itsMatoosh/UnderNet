@@ -29,9 +29,9 @@ public class ChannelMessageReceivedEvent extends ChannelMessageEvent {
     @Override
     public void onCalled() {
         if(isServer) {
-            Server.logger.info("A network message with id: " + message.msgId + " received from: " + channel.remoteAddress());
+            Server.logger.info("A network message with id: {} received from: {}", message.msgId, channel.remoteAddress());
         } else {
-            Client.logger.info("A network message with id: " + message.msgId + " received from: " + channel.remoteAddress());
+            Client.logger.info("A network message with id: {} received from: {}", message.msgId, channel.remoteAddress());
         }
     }
 }
