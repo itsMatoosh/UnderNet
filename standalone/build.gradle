@@ -1,4 +1,4 @@
-apply plugin: 'java-library-distribution'
+apply plugin: 'application'
 
 dependencies {
     compile project(path: ':shared')
@@ -6,7 +6,7 @@ dependencies {
 }
 
 // Include dependent libraries in archive.
-String mainClassName = "me.matoosh.undernet.standalone.UnderNetStandalone"
+mainClassName = "me.matoosh.undernet.standalone.UnderNetStandalone"
 
 jar {
     // Keep jar clean:
@@ -19,12 +19,4 @@ jar {
     from {
         configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
     }
-}
-
-task run(dependsOn: classes, type: JavaExec) {
-    main = 'me.matoosh.undernet.standalone.UnderNetStandalone'
-    classpath = sourceSets.main.runtimeClasspath
-    //defaultInput = System.in
-    workingDir = '/debug'
-    ignoreExitValue = true
 }
