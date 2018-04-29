@@ -59,13 +59,11 @@ public class NetworkDatabase extends Manager {
                 PingMessage pingMessage = (PingMessage)messageEvent.message.message;
 
                 //Sending a ping message back.
-                if(messageEvent.message.data.get() == 0x01) {
+                if(pingMessage.pong == true) {
                     return;
                 }
                 logger.info("Ping!");
-                NetworkMessage msg = new NetworkMessage(MsgType.NODE_PING, new byte[] {
-                    0x01
-                });
+                NetworkMessage msg = new NetworkMessage(MsgType.NODE_PING, new PingMessage(true));
                 messageEvent.remoteNode.send(msg);
             }
         }

@@ -30,6 +30,7 @@ import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
 import me.matoosh.undernet.p2p.router.data.message.MsgType;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
+import me.matoosh.undernet.p2p.router.data.message.PingMessage;
 import me.matoosh.undernet.standalone.UnderNetStandalone;
 import me.matoosh.undernet.standalone.ui.dialog.AddNodeCacheDialog;
 
@@ -66,9 +67,7 @@ public class NodesPanel extends JPanel {
                         //Checking if the node is connected.
                         if(node.isConnected()) {
                             //Sending a ping message.
-                            node.send(new NetworkMessage(MsgType.NODE_PING, new byte[] {
-                                    0x00
-                            }));
+                            node.send(new NetworkMessage(MsgType.NODE_PING, new PingMessage(false)));
                         } else {
                             //Connecting to the node.
                             UnderNet.router.connectNode(node);
