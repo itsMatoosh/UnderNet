@@ -1,0 +1,14 @@
+//The current update info for the clients to fetch.
+{
+  "homepage": "https://github.com/itsMatoosh/logimine/releases",
+  "1.12": {
+    "0.9": "Initial public release of the mod", 
+    "0.9.1": "Fixed and issue with the mod not recognizing some of the Logitow Blocks. Added an option to retain the connection to a Logitow device once a build is finished.", 
+  },
+  "promos": {
+    "1.12-latest": "0.9.1",
+    // Declare the latest "bleeding-edge" version of your mod for the given Minecraft version
+    "1.12-recommended": "0.9.1",
+    // Declare the latest "stable" version of your mod for the given Minecraft version
+  }
+}
