@@ -76,6 +76,7 @@ public class ResourceManager extends Manager {
 
         //Creating a new ResourceMessage.
         final ResourceMessage pushMessage = new ResourceMessage(resource);
+        pushMessage.sender = Node.self;
 
         //Log
         logger.info("Publishing resource: {}...", resource);
