@@ -10,8 +10,8 @@ import me.matoosh.undernet.p2p.router.data.resource.ResourceManager;
  * Created by Mateusz Rębacz on 02.10.2017.
  */
 
-public class ResourceFinalStopEvent extends ResourcePushReceivedEvent {
-    public ResourceFinalStopEvent(Resource resource, ResourceMessage msg, Node sender) {
+public class ResourcePushFinalStopEvent extends ResourcePushReceivedEvent {
+    public ResourcePushFinalStopEvent(Resource resource, ResourceMessage msg, Node sender) {
         super(resource, msg, sender);
     }
 

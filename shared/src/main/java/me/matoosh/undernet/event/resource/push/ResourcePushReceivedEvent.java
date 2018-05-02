@@ -26,9 +26,6 @@ public class ResourcePushReceivedEvent extends ResourceEvent {
         this.sender = sender;
     }
 
-    /**
-     * Executed when the event is called, but before it is delivered to the handlers.
-     */
     @Override
     public void onCalled() {
 

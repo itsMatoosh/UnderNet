@@ -2,6 +2,7 @@ package me.matoosh.undernet.event.resource.pull;
 
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.message.ResourceMessage;
+import me.matoosh.undernet.p2p.router.data.message.ResourcePullMessage;
 import me.matoosh.undernet.p2p.router.data.resource.Resource;
 import me.matoosh.undernet.p2p.router.data.resource.ResourceManager;
 
@@ -11,12 +12,14 @@ import me.matoosh.undernet.p2p.router.data.resource.ResourceManager;
  */
 
 public class ResourcePullFinalStopEvent extends ResourcePullReceivedEvent {
-    public ResourcePullFinalStopEvent(Resource resource, ResourceMessage msg) {
-        super(resource, msg);
+
+    public ResourcePullFinalStopEvent(ResourcePullMessage pullMessage) {
+        super(pullMessage);
     }
 
     @Override
     public void onCalled() {
-        ResourceManager.logger.info("Resource: {} will be pulled from {}...", resource.toString(), Node.self);
+        super.onCalled();
+        ResourceManager.logger.info("Resource: {} will be pulled from {}...", pullMessage.resourceId, Node.self);
     }
 }
