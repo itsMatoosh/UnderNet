@@ -1,22 +1,13 @@
 package me.matoosh.undernet.standalone.ui.dialog;
 
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.MouseInfo;
-import java.awt.Point;
+import me.matoosh.undernet.UnderNet;
+import me.matoosh.undernet.p2p.router.data.NetworkID;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-
-import me.matoosh.undernet.UnderNet;
-import me.matoosh.undernet.p2p.router.data.NetworkID;
 
 /**
  * Dialog for pulling resources from the network.
@@ -80,10 +71,10 @@ public class PullResourceDialog extends JDialog {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 NetworkID netId = new NetworkID(networkIdField.getText());
-                if(netId.isValid()) {
+                //if(netId.isValid()) {
                     //Starting the pull.
                     UnderNet.router.resourceManager.pull(netId); //Use inputed network id.
-                }
+                //}
             }
         });
         add(pullButton, constraints3);

@@ -5,6 +5,8 @@ import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
 import me.matoosh.undernet.event.resource.pull.ResourcePullFinalStopEvent;
+import me.matoosh.undernet.event.resource.pull.ResourcePullReceivedEvent;
+import me.matoosh.undernet.event.resource.pull.ResourcePullSentEvent;
 import me.matoosh.undernet.event.resource.push.ResourceFinalStopEvent;
 import me.matoosh.undernet.event.resource.push.ResourcePushReceivedEvent;
 import me.matoosh.undernet.event.resource.push.ResourcePushSentEvent;
@@ -99,6 +101,7 @@ public class ResourceManager extends Manager {
 
         //Creating a new ResourcePullMessage.
         final ResourceMessage pullMessage = new ResourceMessage(new AbstractResource(resourceID));
+        pullMessage.sender = Node.self;
 
         //Log
         logger.info("Pulling resource with id: {}...", pullMessage.resource.networkID);
@@ -142,6 +145,11 @@ public class ResourceManager extends Manager {
      * @param pullMessage
      */
     public void pullFurther(ResourceMessage pullMessage) {
+        if(!pullMessage.resource.networkID.isValid()) {
+            logger.warn("Network id: {} is invalid, the requested resource won't be pulled!", pullMessage.resource.networkID);
+            return;
+        }
+
         //Getting the node closest to the resource.
         Node closest = router.neighborNodesManager.getClosestTo(pullMessage.resource.networkID);
 
@@ -197,6 +205,9 @@ public class ResourceManager extends Manager {
                     public void run() {
                         //Run pull msg received logic.
                         resourceMessage.resource.onPullReceived(resourceMessage, messageReceivedEvent.remoteNode);
+
+                        //Call event.
+                        EventManager.callEvent(new ResourcePushReceivedEvent(resourceMessage.resource, resourceMessage, messageReceivedEvent.remoteNode));
                     }
                 });
             }
@@ -209,8 +220,11 @@ public class ResourceManager extends Manager {
     @Override
     protected void registerEvents() {
         EventManager.registerEvent(ResourcePushReceivedEvent.class);
+        EventManager.registerEvent(ResourcePullReceivedEvent.class);
+        EventManager.registerEvent(ResourcePullSentEvent.class);
         EventManager.registerEvent(ResourcePushSentEvent.class);
         EventManager.registerEvent(ResourceFinalStopEvent.class);
+        EventManager.registerEvent(ResourcePullFinalStopEvent.class);
     }
 
     /**
