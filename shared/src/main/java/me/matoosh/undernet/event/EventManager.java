@@ -69,10 +69,8 @@ public class EventManager {
             return;
         }
         event.onCalled();
-        for (EventHandler handler :
-                handlers)
-        {
-            handler.onEventCalled(event);
+        for (int i = 0; i < handlers.size(); i++) {
+            handlers.get(i).onEventCalled(event);
         }
     }
 }
