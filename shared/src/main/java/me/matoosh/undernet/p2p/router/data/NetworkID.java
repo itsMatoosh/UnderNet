@@ -41,6 +41,18 @@ public class NetworkID implements Serializable {
     }
 
     /**
+     * Checks whether the network id is valid.
+     * @return
+     */
+    public boolean isValid() {
+        if(data.length == 64) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Calculates the distance between this id and an other id.
      * @param other
      * @return

@@ -16,6 +16,7 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 
 import me.matoosh.undernet.UnderNet;
+import me.matoosh.undernet.p2p.router.data.NetworkID;
 
 /**
  * Dialog for pulling resources from the network.
@@ -54,7 +55,7 @@ public class PullResourceDialog extends JDialog {
         constraints1.gridx = 1;
         constraints1.gridy = 0;
         constraints1.gridwidth = 30;
-        JTextField networkIdField = new JTextField();
+        final JTextField networkIdField = new JTextField();
         networkIdField.setPreferredSize(new Dimension(150, 20));
         add(networkIdField, constraints1);
 
@@ -78,9 +79,11 @@ public class PullResourceDialog extends JDialog {
         pullButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                //TODO: Check if valid netid is provided.
-                //Starting the pull.
-                UnderNet.router.resourceManager.pull(null); //TODO: Use inputed network id.
+                NetworkID netId = new NetworkID(networkIdField.getText());
+                if(netId.isValid()) {
+                    //Starting the pull.
+                    UnderNet.router.resourceManager.pull(netId); //Use inputed network id.
+                }
             }
         });
         add(pullButton, constraints3);
