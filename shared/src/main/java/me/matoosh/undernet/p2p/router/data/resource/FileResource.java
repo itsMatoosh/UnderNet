@@ -98,7 +98,7 @@ public class FileResource extends Resource {
      * @param pushTo
      */
     @Override
-    public void onPush(ResourceMessage msg, final Node pushTo) {
+    public void onPushSend(ResourceMessage msg, final Node pushTo) {
         //Preparing a file transfer to the pushTo node.
         UnderNet.router.fileTransferManager.prepareFileTranfer(FileResource.this, pushTo);
     }
@@ -127,7 +127,7 @@ public class FileResource extends Resource {
     }
 
     @Override
-    public void onPull(ResourceMessage msg, Node pullFrom) {
+    public void onPullSend(ResourceMessage msg, Node pullFrom) {
         //File resource won't ever be pulled directly.
     }
 

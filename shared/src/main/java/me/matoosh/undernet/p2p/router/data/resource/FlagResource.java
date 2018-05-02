@@ -41,7 +41,7 @@ public class FlagResource extends Resource {
      * @param pushTo
      */
     @Override
-    public void onPush(ResourceMessage msg, Node pushTo) {
+    public void onPushSend(ResourceMessage msg, Node pushTo) {
         return; //TODO: on push
     }
 
@@ -57,7 +57,7 @@ public class FlagResource extends Resource {
     }
 
     @Override
-    public void onPull(ResourceMessage msg, Node pullFrom) {
+    public void onPullSend(ResourceMessage msg, Node pullFrom) {
 
     }
 

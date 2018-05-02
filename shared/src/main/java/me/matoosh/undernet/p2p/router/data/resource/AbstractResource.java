@@ -31,7 +31,7 @@ public class AbstractResource extends Resource {
     }
 
     @Override
-    public void onPush(ResourceMessage msg, Node pushTo) {
+    public void onPushSend(ResourceMessage msg, Node pushTo) {
         //Won't be used. Can't push an abstract resource.
     }
 
@@ -41,12 +41,13 @@ public class AbstractResource extends Resource {
     }
 
     @Override
-    public void onPull(ResourceMessage msg, Node pullFrom) {
+    public void onPullSend(ResourceMessage msg, Node pullFrom) {
 
     }
 
     @Override
     public void onPullReceived(ResourceMessage msg, Node receivedFrom) {
-
+        System.out.println("Resource pull received.");
+        onPullReady();
     }
 }

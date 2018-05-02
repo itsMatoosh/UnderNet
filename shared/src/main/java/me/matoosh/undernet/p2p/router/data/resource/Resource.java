@@ -31,7 +31,7 @@ public abstract class Resource implements Serializable {
     /**
      * Called before the resource is pushed.
      */
-    public abstract void onPush(ResourceMessage msg, Node pushTo);
+    public abstract void onPushSend(ResourceMessage msg, Node pushTo);
     /**
      * Called after the resource push has been received.
      * @param receivedFrom
@@ -43,13 +43,19 @@ public abstract class Resource implements Serializable {
     public void onPushReady() {
         UnderNet.router.resourceManager.pushForward(new ResourceMessage(this));
     }
+    /**
+     * Called when the resource is ready to be pulled on.
+     */
+    public void onPullReady() {
+        UnderNet.router.resourceManager.pullFurther(new ResourceMessage(this));
+    }
 
     /**
      * Called before the resource is pull from the next closest node.
      * @param msg
      * @param pullFrom
      */
-    public abstract void onPull(ResourceMessage msg, Node pullFrom);
+    public abstract void onPullSend(ResourceMessage msg, Node pullFrom);
     /**
      * Called when a pull request is received.
      * @param msg

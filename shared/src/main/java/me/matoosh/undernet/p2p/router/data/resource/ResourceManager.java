@@ -129,8 +129,8 @@ public class ResourceManager extends Manager {
         } else {
             logger.info("Pushing resource: {}, to node: {}", pushMessage.resource, closest);
 
-            //Calling the onPush method.
-            pushMessage.resource.onPush(pushMessage, closest);
+            //Calling the onPushSend method.
+            pushMessage.resource.onPushSend(pushMessage, closest);
 
             //Sending the push msg.
             closest.send(new NetworkMessage(MsgType.RES_PUSH, pushMessage));
@@ -163,8 +163,8 @@ public class ResourceManager extends Manager {
         } else {
             logger.info("Pulling resource with network id: {} from node: {}", pullMessage.resource.networkID, closest);
 
-            //Calling the onPull method.
-            pullMessage.resource.onPull(pullMessage, closest);
+            //Calling the onPullSend method.
+            pullMessage.resource.onPullSend(pullMessage, closest);
 
             //Sending the pull msg.
             closest.send(new NetworkMessage(MsgType.RES_PULL, pullMessage));
