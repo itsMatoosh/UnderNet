@@ -121,6 +121,15 @@ public class ResourceManager extends Manager {
      * @param pushMessage
      */
     public void pushForward(ResourceMessage pushMessage) {
+        if(!pushMessage.resource.networkID.isValid()) {
+            logger.warn("Network id: {} is invalid, the requested resource won't be pulled!", pushMessage.resource.networkID);
+            return;
+        }
+        if(pushMessage.sender == null) {
+            logger.warn("Pull message sender null!");
+            return;
+        }
+
         //Getting the node closest to the resource.
         Node closest = router.neighborNodesManager.getClosestTo(pushMessage.resource.networkID);
         if(closest == Node.self) {
@@ -149,12 +158,17 @@ public class ResourceManager extends Manager {
             logger.warn("Network id: {} is invalid, the requested resource won't be pulled!", pullMessage.resource.networkID);
             return;
         }
+        if(pullMessage.sender == null) {
+            logger.warn("Pull message sender null!");
+            return;
+        }
 
         //Getting the node closest to the resource.
         Node closest = router.neighborNodesManager.getClosestTo(pullMessage.resource.networkID);
 
         //Save path for this pull to send the resource back after successful pull.
         pullCache.put(pullMessage.resource.networkID, pullMessage.sender.getIdentity().getNetworkId());
+
 
         //Checking for self.
         if(closest == Node.self) {

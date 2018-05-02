@@ -48,6 +48,6 @@ public class AbstractResource extends Resource {
     @Override
     public void onPullReceived(ResourceMessage msg, Node receivedFrom) {
         System.out.println("Resource pull received.");
-        onPullReady();
+        onPullReady(msg);
     }
 }

@@ -110,7 +110,7 @@ public class FileResource extends Resource {
      * @param receivedFrom
      */
     @Override
-    public void onPushReceive(ResourceMessage msg, Node receivedFrom) {
+    public void onPushReceive(final ResourceMessage msg, Node receivedFrom) {
         //Requesting the file trasnfer.
         transfer = UnderNet.router.fileTransferManager.requestFileTransfer(receivedFrom, (FileResource)msg.resource);
         EventManager.registerHandler(new EventHandler() {
@@ -119,7 +119,7 @@ public class FileResource extends Resource {
                 FileTransferFinishedEvent transferFinishedEvent = (FileTransferFinishedEvent)e;
                 if(transferFinishedEvent.transfer == FileResource.this.transfer) {
                     //Transfer of the resource has finished. The resource is ready to push.
-                    onPushReady();
+                    onPushReady(msg);
                 }
             }
         }, FileTransferFinishedEvent.class);

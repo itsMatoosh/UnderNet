@@ -40,14 +40,14 @@ public abstract class Resource implements Serializable {
     /**
      * Called when the resource is ready to be pushed.
      */
-    public void onPushReady() {
-        UnderNet.router.resourceManager.pushForward(new ResourceMessage(this));
+    public void onPushReady(ResourceMessage message) {
+        UnderNet.router.resourceManager.pushForward(message);
     }
     /**
      * Called when the resource is ready to be pulled on.
      */
-    public void onPullReady() {
-        UnderNet.router.resourceManager.pullFurther(new ResourceMessage(this));
+    public void onPullReady(ResourceMessage message) {
+        UnderNet.router.resourceManager.pullFurther(message);
     }
 
     /**
