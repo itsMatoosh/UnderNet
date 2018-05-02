@@ -7,7 +7,7 @@ import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
 import me.matoosh.undernet.event.resource.pull.ResourcePullFinalStopEvent;
 import me.matoosh.undernet.event.resource.pull.ResourcePullReceivedEvent;
 import me.matoosh.undernet.event.resource.pull.ResourcePullSentEvent;
-import me.matoosh.undernet.event.resource.push.ResourceFinalStopEvent;
+import me.matoosh.undernet.event.resource.push.ResourcePushFinalStopEvent;
 import me.matoosh.undernet.event.resource.push.ResourcePushReceivedEvent;
 import me.matoosh.undernet.event.resource.push.ResourcePushSentEvent;
 import me.matoosh.undernet.p2p.Manager;
@@ -18,6 +18,7 @@ import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.message.MsgType;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 import me.matoosh.undernet.p2p.router.data.message.ResourceMessage;
+import me.matoosh.undernet.p2p.router.data.message.ResourcePullMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +46,7 @@ public class ResourceManager extends Manager {
     /**
      * Executor used for managing resource logic.
      */
-    public ExecutorService executor = Executors.newSingleThreadExecutor();
+    public static ExecutorService executor = Executors.newSingleThreadExecutor();
 
     /**
      * The logger of the class.
@@ -75,6 +76,7 @@ public class ResourceManager extends Manager {
 
         //Creating a new ResourceMessage.
         final ResourceMessage pushMessage = new ResourceMessage(resource);
+        pushMessage.sender = Node.self;
 
         //Log
         logger.info("Publishing resource: {}...", resource);
@@ -83,7 +85,7 @@ public class ResourceManager extends Manager {
         executor.submit(new Runnable() {
             @Override
             public void run() {
-                pushForward(pushMessage);
+                pushFurther(pushMessage);
             }
         });
     }
@@ -99,12 +101,11 @@ public class ResourceManager extends Manager {
             return;
         }
 
-        //Creating a new ResourcePullMessage.
-        final ResourceMessage pullMessage = new ResourceMessage(new AbstractResource(resourceID));
+        //Creating a new ResourcePullMessageEvent.
+        final ResourcePullMessage pullMessage = new ResourcePullMessage(resourceID);
         pullMessage.sender = Node.self;
 
-        //Log
-        logger.info("Pulling resource with id: {}...", pullMessage.resource.networkID);
+        logger.info("Pulling resource with id: {}...", pullMessage.resourceId);
 
         //Sending the resource pull content to the closest node.
         executor.submit(new Runnable() {
@@ -120,23 +121,36 @@ public class ResourceManager extends Manager {
      * Calls resource stored event if this node is the resource's destination.
      * @param pushMessage
      */
-    public void pushForward(ResourceMessage pushMessage) {
+    public void pushFurther(final ResourceMessage pushMessage) {
+        if(!pushMessage.resource.networkID.isValid()) {
+            logger.warn("Network id: {} is invalid, the requested resource won't be pulled!", pushMessage.resource.networkID);
+            return;
+        }
+        if(pushMessage.sender == null) {
+            logger.warn("Pull message sender null!");
+            return;
+        }
+
         //Getting the node closest to the resource.
-        Node closest = router.neighborNodesManager.getClosestTo(pushMessage.resource.networkID);
+        final Node closest = router.neighborNodesManager.getClosestTo(pushMessage.resource.networkID);
         if(closest == Node.self) {
+
             //This is the final node of the resource.
-            EventManager.callEvent(new ResourceFinalStopEvent(pushMessage.resource, pushMessage, null));
+            EventManager.callEvent(new ResourcePushFinalStopEvent(pushMessage.resource, pushMessage, null));
         } else {
             logger.info("Pushing resource: {}, to node: {}", pushMessage.resource, closest);
 
-            //Calling the onPush method.
-            pushMessage.resource.onPush(pushMessage, closest);
+            //Calling the onPushSend method.
+            pushMessage.resource.send(closest, new Resource.IResourceActionListener() {
+                @Override
+                public void onFinished(Node other) {
+                    //Sending the push msg.
+                    closest.send(new NetworkMessage(MsgType.RES_PUSH, pushMessage));
 
-            //Sending the push msg.
-            closest.send(new NetworkMessage(MsgType.RES_PUSH, pushMessage));
-
-            //Calling event.
-            EventManager.callEvent(new ResourcePushSentEvent(pushMessage.resource, pushMessage, closest));
+                    //Calling event.
+                    EventManager.callEvent(new ResourcePushSentEvent(pushMessage.resource, pushMessage, closest));
+                }
+            });
         }
     }
 
@@ -144,27 +158,28 @@ public class ResourceManager extends Manager {
      * Passes the pull content of a specific resource to the next closest node.
      * @param pullMessage
      */
-    public void pullFurther(ResourceMessage pullMessage) {
-        if(!pullMessage.resource.networkID.isValid()) {
-            logger.warn("Network id: {} is invalid, the requested resource won't be pulled!", pullMessage.resource.networkID);
+    public void pullFurther(ResourcePullMessage pullMessage) {
+        if(!pullMessage.resourceId.isValid()) {
+            logger.warn("Network id: {} is invalid, the requested resource won't be pulled!", pullMessage.resourceId);
+            return;
+        }
+        if(pullMessage.sender == null) {
+            logger.warn("Resource pull message sender null!");
             return;
         }
 
         //Getting the node closest to the resource.
-        Node closest = router.neighborNodesManager.getClosestTo(pullMessage.resource.networkID);
+        Node closest = router.neighborNodesManager.getClosestTo(pullMessage.resourceId);
 
         //Save path for this pull to send the resource back after successful pull.
-        pullCache.put(pullMessage.resource.networkID, pullMessage.sender.getIdentity().getNetworkId());
+        pullCache.put(pullMessage.resourceId, pullMessage.sender.getIdentity().getNetworkId());
 
         //Checking for self.
         if(closest == Node.self) {
             //This is the final node. This node should have the requested resource.
-            EventManager.callEvent(new ResourcePullFinalStopEvent(pullMessage.resource, pullMessage));
+            EventManager.callEvent(new ResourcePullFinalStopEvent(pullMessage));
         } else {
-            logger.info("Pulling resource with network id: {} from node: {}", pullMessage.resource.networkID, closest);
-
-            //Calling the onPull method.
-            pullMessage.resource.onPull(pullMessage, closest);
+            logger.info("Pulling resource with network id: {} from node: {}", pullMessage.resourceId, closest);
 
             //Sending the pull msg.
             closest.send(new NetworkMessage(MsgType.RES_PULL, pullMessage));
@@ -182,32 +197,39 @@ public class ResourceManager extends Manager {
             //Network message received.
             final ChannelMessageReceivedEvent messageReceivedEvent = (ChannelMessageReceivedEvent)e;
 
-            if(messageReceivedEvent.message.msgType == MsgType.RES_PUSH) { //Push content.
+            if(messageReceivedEvent.message.msgType == MsgType.RES_PUSH) { //Content push.
                 //Deserializing the resource message.
                 final ResourceMessage resourceMessage = (ResourceMessage) messageReceivedEvent.message.content;
 
+                //Handle receive
                 executor.submit(new Runnable() {
                     @Override
                     public void run() {
                         //Run push msg received logic.
-                        resourceMessage.resource.onPushReceive(resourceMessage, messageReceivedEvent.remoteNode);
+                        resourceMessage.resource.receive(resourceMessage.sender, new Resource.IResourceActionListener() {
+                            @Override
+                            public void onFinished(Node other) {
+                                //Call event.
+                                EventManager.callEvent(new ResourcePushReceivedEvent(resourceMessage.resource, resourceMessage, messageReceivedEvent.remoteNode));
 
-                        //Call event.
-                        EventManager.callEvent(new ResourcePushReceivedEvent(resourceMessage.resource, resourceMessage, messageReceivedEvent.remoteNode));
+                                //Push further
+                                pushFurther(resourceMessage);
+                            }
+                        });
                     }
                 });
-            } else if(messageReceivedEvent.message.msgType == MsgType.RES_PULL) { //Pull content.
+            } else if(messageReceivedEvent.message.msgType == MsgType.RES_PULL) { //Pull request.
                 //Deserializing the resource message.
-                final ResourceMessage resourceMessage = (ResourceMessage) messageReceivedEvent.message.content;
+                final ResourcePullMessage resourcePullMessage = (ResourcePullMessage) messageReceivedEvent.message.content;
 
+                //Call event.
+                EventManager.callEvent(new ResourcePullReceivedEvent(resourcePullMessage));
+
+                //Handle pull request.
                 executor.submit(new Runnable() {
                     @Override
                     public void run() {
-                        //Run pull msg received logic.
-                        resourceMessage.resource.onPullReceived(resourceMessage, messageReceivedEvent.remoteNode);
-
-                        //Call event.
-                        EventManager.callEvent(new ResourcePushReceivedEvent(resourceMessage.resource, resourceMessage, messageReceivedEvent.remoteNode));
+                        pullFurther(resourcePullMessage);
                     }
                 });
             }
@@ -223,7 +245,7 @@ public class ResourceManager extends Manager {
         EventManager.registerEvent(ResourcePullReceivedEvent.class);
         EventManager.registerEvent(ResourcePullSentEvent.class);
         EventManager.registerEvent(ResourcePushSentEvent.class);
-        EventManager.registerEvent(ResourceFinalStopEvent.class);
+        EventManager.registerEvent(ResourcePushFinalStopEvent.class);
         EventManager.registerEvent(ResourcePullFinalStopEvent.class);
     }
 

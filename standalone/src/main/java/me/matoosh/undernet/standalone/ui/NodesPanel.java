@@ -209,7 +209,7 @@ class NodesListCellRenderer extends DefaultListCellRenderer
                 if (node.isConnected()) {
                     setBackground(Color.GREEN);
                     for (int i = 0; i < this.nodesPanel.receivedMsgFrom.size(); i++) {
-                        if (this.nodesPanel.receivedMsgFrom.get(i).address.equals(node.address)) {
+                        if (this.nodesPanel.receivedMsgFrom.get(i) != null && this.nodesPanel.receivedMsgFrom.get(i).address.equals(node.address)) {
                             setBackground(Color.CYAN);
                             this.nodesPanel.receivedMsgFrom.remove(node);
                         }

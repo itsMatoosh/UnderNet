@@ -6,6 +6,7 @@ import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.message.ResourceMessage;
 
 import java.io.Serializable;
+import java.util.concurrent.Future;
 
 /**
  * Represents a stored resource.
@@ -29,38 +30,31 @@ public abstract class Resource implements Serializable {
     public abstract byte getResourceType();
 
     /**
-     * Called before the resource is pushed.
+     * Handles the sending of a resource.
      */
-    public abstract void onPush(ResourceMessage msg, Node pushTo);
-    /**
-     * Called after the resource push has been received.
-     * @param receivedFrom
-     */
-    public abstract void onPushReceive(ResourceMessage msg, Node receivedFrom);
-    /**
-     * Called when the resource is ready to be pushed.
-     */
-    public void onPushReady() {
-        UnderNet.router.resourceManager.pushForward(new ResourceMessage(this));
-    }
+    public abstract void send(Node recipient, IResourceActionListener resourceActionListener);
 
     /**
-     * Called before the resource is pull from the next closest node.
-     * @param msg
-     * @param pullFrom
+     * Handles the receiving of a resource.
+     * @param sender
      */
-    public abstract void onPull(ResourceMessage msg, Node pullFrom);
-    /**
-     * Called when a pull request is received.
-     * @param msg
-     * @param receivedFrom
-     */
-    public abstract void onPullReceived(ResourceMessage msg, Node receivedFrom);
+    public abstract void receive(Node sender, IResourceActionListener resourceActionListener);
 
     @Override
     public String toString() {
         return "Resource{" +
                 "networkID=" + networkID +
                 '}';
+    }
+
+    /**
+     * Listens for the finishing of a resource action.
+     */
+    public interface IResourceActionListener {
+        /**
+         * Called when the action is finished.
+         * @param other the node associated with the action.
+         */
+        public void onFinished(Node other);
     }
 }

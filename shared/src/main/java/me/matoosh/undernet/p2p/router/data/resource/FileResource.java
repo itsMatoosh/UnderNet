@@ -12,6 +12,7 @@ import me.matoosh.undernet.p2p.router.data.filetransfer.FileTransfer;
 import me.matoosh.undernet.p2p.router.data.message.ResourceMessage;
 
 import java.io.*;
+import java.util.concurrent.Future;
 
 /**
  * Represents a stored file resource.
@@ -92,48 +93,39 @@ public class FileResource extends Resource {
     }
 
     /**
-     * Called before the resource is pushed.
-     *
-     * @param msg
-     * @param pushTo
+     * Prepares the file transfer for the receiver.
+     * @param recipient
+     * @param resourceActionListener
      */
     @Override
-    public void onPush(ResourceMessage msg, final Node pushTo) {
+    public void send(Node recipient, IResourceActionListener resourceActionListener) {
         //Preparing a file transfer to the pushTo node.
-        UnderNet.router.fileTransferManager.prepareFileTranfer(FileResource.this, pushTo);
+        UnderNet.router.fileTransferManager.prepareFileTranfer(FileResource.this, recipient);
+        resourceActionListener.onFinished(recipient);
     }
 
     /**
-     * Called after the resource push has been received.
-     *
-     * @param msg
-     * @param receivedFrom
+     * Requests and receives the file.
+     * @param sender
+     * @param resourceActionListener
      */
     @Override
-    public void onPushReceive(ResourceMessage msg, Node receivedFrom) {
-        //Requesting the file trasnfer.
-        transfer = UnderNet.router.fileTransferManager.requestFileTransfer(receivedFrom, (FileResource)msg.resource);
+    public void receive(final Node sender, final IResourceActionListener resourceActionListener) {
+        //Requesting the file transfer.
+        transfer = UnderNet.router.fileTransferManager.requestFileTransfer(sender, this);
         EventManager.registerHandler(new EventHandler() {
             @Override
             public void onEventCalled(Event e) {
                 FileTransferFinishedEvent transferFinishedEvent = (FileTransferFinishedEvent)e;
                 if(transferFinishedEvent.transfer == FileResource.this.transfer) {
                     //Transfer of the resource has finished. The resource is ready to push.
-                    onPushReady();
+                    resourceActionListener.onFinished(sender);
+
+                    //Unregisters the current handler.
+                    EventManager.unregisterHandler(this, FileTransferFinishedEvent.class);
                 }
             }
         }, FileTransferFinishedEvent.class);
-
-    }
-
-    @Override
-    public void onPull(ResourceMessage msg, Node pullFrom) {
-        //File resource won't ever be pulled directly.
-    }
-
-    @Override
-    public void onPullReceived(ResourceMessage msg, Node receivedFrom) {
-        //File resource won't ever be pulled directly.
     }
 
     @Override

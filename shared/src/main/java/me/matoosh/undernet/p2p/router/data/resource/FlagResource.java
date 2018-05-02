@@ -34,35 +34,13 @@ public class FlagResource extends Resource {
         return 1;
     }
 
-    /**
-     * Called before the resource is pushed.
-     *
-     * @param msg
-     * @param pushTo
-     */
     @Override
-    public void onPush(ResourceMessage msg, Node pushTo) {
-        return; //TODO: on push
-    }
-
-    /**
-     * Called after the resource push has been received.
-     *
-     * @param msg
-     * @param receivedFrom
-     */
-    @Override
-    public void onPushReceive(ResourceMessage msg, Node receivedFrom) {
-        return; //TODO: On push receive
-    }
-
-    @Override
-    public void onPull(ResourceMessage msg, Node pullFrom) {
+    public void send(Node recipient, IResourceActionListener resourceActionListener) {
 
     }
 
     @Override
-    public void onPullReceived(ResourceMessage msg, Node receivedFrom) {
+    public void receive(Node sender, IResourceActionListener resourceActionListener) {
 
     }
 }
