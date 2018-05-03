@@ -77,7 +77,7 @@ public class FileTransfer {
      */
     private void prepareStreams() {
         //Caching the path of the file.
-        file = new File(UnderNet.fileManager.getContentFolder() + "/" + fileInfo.fileName);
+        file = new File(UnderNet.fileManager.getContentFolder() + "/" + id);
 
         if(fileTransferType == FileTransferType.OUTBOUND) {
             try {
