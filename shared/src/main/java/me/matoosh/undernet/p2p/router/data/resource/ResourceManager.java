@@ -281,14 +281,21 @@ public class ResourceManager extends Manager {
                 //Deserializing the resource message.
                 final ResourceMessage resourceMessage = (ResourceMessage) messageReceivedEvent.message.content;
 
-                //Call event.
-                EventManager.callEvent(new ResourceRetrieveReceivedEvent(resourceMessage.resource, resourceMessage));
-
                 //Handle retrieve request.
                 executor.submit(new Runnable() {
                     @Override
                     public void run() {
-                        retrieveFurther(resourceMessage);
+                    //Run retrieve msg received logic.
+                    resourceMessage.resource.receive(resourceMessage.sender, new Resource.IResourceActionListener() {
+                        @Override
+                        public void onFinished(Node other) {
+                            //Call event.
+                            EventManager.callEvent(new ResourceRetrieveReceivedEvent(resourceMessage.resource, resourceMessage));
+
+                            //Push further
+                            retrieveFurther(resourceMessage);
+                        }
+                    });
                     }
                 });
             }
