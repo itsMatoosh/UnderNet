@@ -1,17 +1,11 @@
 package me.matoosh.undernet.p2p.router.data;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.Random;
-
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
+
+import java.io.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import static me.matoosh.undernet.p2p.router.Router.logger;
 
@@ -29,8 +23,13 @@ public class NetworkID implements Serializable {
     public NetworkID() {
 
     }
+
+    /**
+     * Creates a network id given its text representation.
+     * @param value
+     */
     public NetworkID(String value) {
-        this.data = getHashedDataFromString(value);
+        this.data = getByteValue(value);
     }
     public NetworkID(byte[] id) {
         if(id.length > 65) {
@@ -82,9 +81,6 @@ public class NetworkID implements Serializable {
      * @throws IOException
      */
     private void writeObject(ObjectOutputStream oos) throws IOException {
-        if(data == null) {
-            logger.error("SSSSS");
-        }
         oos.write(data);
     }
 
@@ -102,10 +98,33 @@ public class NetworkID implements Serializable {
 
     @Override
     public String toString() {
-        return "NetworkID{" + new String(data) +
-                '}';
+        return "NetworkID{" + getStringValue(this.data) +
+                    '}';
     }
 
+    /**
+     * Returns the value of the id as a string.
+     * @return
+     */
+    public static String getStringValue(byte[] data) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : data) {
+            sb.append(String.format("%02X", b));
+        }
+        return sb.toString();
+    }
+    /**
+     * Gets data from net id value.
+     */
+    public static byte[] getByteValue(String value) {
+        int length = value.length();
+        byte[] data = new byte[length / 2];
+        for (int i = 0; i < length; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(value.charAt(i), 16) << 4)
+                    + Character.digit(value.charAt(i+1), 16));
+        }
+        return data;
+    }
     /**
      * Gets a SHA-512 hash code from a string.
      * @param str
