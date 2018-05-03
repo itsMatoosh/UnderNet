@@ -5,7 +5,6 @@ import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
 import me.matoosh.undernet.event.ftp.FileTransferErrorEvent;
 import me.matoosh.undernet.event.ftp.FileTransferFinishedEvent;
-import me.matoosh.undernet.event.resource.pull.ResourcePullFinalStopEvent;
 import me.matoosh.undernet.p2p.Manager;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.Router;
@@ -119,7 +118,7 @@ public class FileTransferManager extends Manager {
                 //A file was requested from this node. Checking if the requested transfer has been prepared.
                 for (final FileTransfer transfer :
                         outboundTransfers) {
-                    if (NetworkID.compare(transfer.id.data, requestMsg.transferId.data) == 0) {
+                    if (NetworkID.compare(transfer.id.getData(), requestMsg.transferId.getData()) == 0) {
                         //Checking if the recipient is the same.
                         if (transfer.recipient == messageReceivedEvent.remoteNode) {
                             executor.submit(new Runnable() {
@@ -138,7 +137,7 @@ public class FileTransferManager extends Manager {
                 //A file was requested from this node. Checking if the requested transfer has been prepared.
                 for (final FileTransfer transfer :
                         inboundTransfers) {
-                    if (NetworkID.compare(transfer.id.data, fileChunk.transferId.data) == 0) { //Locating the right file transfer.
+                    if (NetworkID.compare(transfer.id.getData(), fileChunk.transferId.getData()) == 0) { //Locating the right file transfer.
                         //Running chunk received callback.
                         transfer.onChunkReceived(fileChunk);
                         return;
