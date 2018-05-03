@@ -45,7 +45,7 @@ public class ResourceManager extends Manager {
     /**
      * Cache of pulled resource ids and the requesting network ids.
      */
-    public HashMap<NetworkID, Node> pullCache = new HashMap<>();
+    public HashMap<String, Node> pullCache = new HashMap<>();
 
     /**
      * Executor used for managing resource logic.
@@ -173,7 +173,7 @@ public class ResourceManager extends Manager {
         }
 
         //Getting the next cached node to retrieve.
-        final Node nextNode = pullCache.get(retrieveMessage.resource.networkID);
+        final Node nextNode = pullCache.get(retrieveMessage.resource.networkID.getStringValue());
         if(nextNode == null) {
             logger.warn("Can't retrieve resource {} further, no cached next node.", retrieveMessage.resource);
             return;
@@ -217,7 +217,7 @@ public class ResourceManager extends Manager {
         Node closest = router.neighborNodesManager.getClosestTo(pullMessage.resourceId);
 
         //Save path for this pull to send the resource back after successful pull.
-        pullCache.put(pullMessage.resourceId, pullMessage.sender);
+        pullCache.put(pullMessage.resourceId.getStringValue(), pullMessage.sender);
 
         //Checking for self.
         if(closest == Node.self) {
@@ -297,11 +297,14 @@ public class ResourceManager extends Manager {
             ResourcePullFinalStopEvent resourcePullFinalStopEvent = (ResourcePullFinalStopEvent)e;
 
             //Getting the requested file.
-            File requestedResource = new File(UnderNet.fileManager.getContentFolder() + "/" + resourcePullFinalStopEvent.pullMessage.resourceId);
+            File requestedResource = new File(UnderNet.fileManager.getContentFolder() + "/" + resourcePullFinalStopEvent.pullMessage.resourceId.getStringValue());
 
             if(requestedResource.exists()) {
                 //Retrieve the closest file.
-                ResourceMessage resourceMessage = new ResourceMessage(new FileResource(requestedResource));
+                FileResource fileResource = new FileResource(requestedResource);
+                fileResource.networkID = new NetworkID(requestedResource.getName());
+                ResourceMessage resourceMessage = new ResourceMessage(fileResource);
+                resourceMessage.sender = Node.self;
                 retrieveFurther(resourceMessage);
             } else {
                 logger.warn("Resource: {} not available on {}. The pull request will be dropped!", resourcePullFinalStopEvent.pullMessage.resourceId, Node.self);
@@ -331,6 +334,6 @@ public class ResourceManager extends Manager {
     @Override
     protected void registerHandlers() {
         EventManager.registerHandler(this, ChannelMessageReceivedEvent.class);
-        EventManager.registerHandler(this, ResourceRetrieveFinalStopEvent.class);
+        EventManager.registerHandler(this, ResourcePullFinalStopEvent.class);
     }
 }

@@ -40,22 +40,21 @@ public class FileResource extends Resource {
     public FileResource(File file) {
         this.fileInfo = new FileInfo(file);
         this.file = file;
-        calcNetworkId();
-        copyToContent();
     }
 
     /**
-     * Calculates the network id of the resource based on its contents.
+     * Calculates the network id of the resource based on its name.
      */
     @Override
     public void calcNetworkId() {
+        //TODO: use the file content.
         networkID = new NetworkID(NetworkID.getHashedDataFromString(fileInfo.fileName));
     }
 
     /**
-     * Makes sure the file is inside of the content dir.
+     * Copies the file if its not in the content directory.
      */
-    private void copyToContent() {
+    public void copyToContent() {
         if(!file.toString().startsWith(UnderNet.fileManager.getContentFolder().toString())) {
             InputStream is = null;
             OutputStream os = null;
