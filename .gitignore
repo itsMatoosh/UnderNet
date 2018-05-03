@@ -37,3 +37,4 @@ standalone/standalone.yaml
 standalone/cache/entry.nodes
 standalone/cache/me.identity
 standalone/content
+standalone/debug.log

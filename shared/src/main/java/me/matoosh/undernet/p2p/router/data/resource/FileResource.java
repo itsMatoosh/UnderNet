@@ -9,10 +9,8 @@ import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.filetransfer.FileInfo;
 import me.matoosh.undernet.p2p.router.data.filetransfer.FileTransfer;
-import me.matoosh.undernet.p2p.router.data.message.ResourceMessage;
 
 import java.io.*;
-import java.util.concurrent.Future;
 
 /**
  * Represents a stored file resource.
@@ -42,28 +40,27 @@ public class FileResource extends Resource {
     public FileResource(File file) {
         this.fileInfo = new FileInfo(file);
         this.file = file;
-        calcNetworkId();
-        copyToContent();
     }
 
     /**
-     * Calculates the network id of the resource based on its contents.
+     * Calculates the network id of the resource based on its name.
      */
     @Override
     public void calcNetworkId() {
+        //TODO: use the file content.
         networkID = new NetworkID(NetworkID.getHashedDataFromString(fileInfo.fileName));
     }
 
     /**
-     * Makes sure the file is inside of the content dir.
+     * Copies the file if its not in the content directory.
      */
-    private void copyToContent() {
+    public void copyToContent() {
         if(!file.toString().startsWith(UnderNet.fileManager.getContentFolder().toString())) {
             InputStream is = null;
             OutputStream os = null;
             try {
                 is = new FileInputStream(file);
-                os = new FileOutputStream(UnderNet.fileManager.getContentFolder() + "/" + file.getName());
+                os = new FileOutputStream(UnderNet.fileManager.getContentFolder() + "/" + this.networkID.getStringValue());
                 byte[] buffer = new byte[1024];
                 int length;
                 while ((length = is.read(buffer)) > 0) {

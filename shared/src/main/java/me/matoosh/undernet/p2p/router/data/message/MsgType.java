@@ -11,8 +11,9 @@ public enum MsgType {
     NODE_INFO((short)1), //Contains the node information about the sender.
     RES_PUSH((short)2), //Contains information on the resource that needs to be pushed to the receiver.
     RES_PULL((short)3), //Contains information on the resource that needs to be pulled to the sender.
-    FILE_REQ((short)4), //Requests a file from a neighboring node.
-    FILE_CHUNK((short)5), //A chunk of a file.
+    RES_RETRIEVE((short)4), //Contains information on the retrieved resrouce that needs to be pushed to the sender.
+    FILE_REQ((short)5), //Requests a file from a neighboring node.
+    FILE_CHUNK((short)6), //A chunk of a file.
     UNKNOWN((short)-1);
 
     public short id;
