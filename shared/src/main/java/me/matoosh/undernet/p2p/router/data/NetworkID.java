@@ -18,12 +18,9 @@ public class NetworkID implements Serializable {
     /**
      * The data of the network id.
      */
-    public byte[] data;
+    private byte[] data;
 
-    public NetworkID() {
-
-    }
-
+    public NetworkID() { }
     /**
      * Creates a network id given its text representation.
      * @param value
@@ -31,6 +28,10 @@ public class NetworkID implements Serializable {
     public NetworkID(String value) {
         this.data = getByteValue(value);
     }
+    /**
+     * Creates a network id given its data.
+     * @param id
+     */
     public NetworkID(byte[] id) {
         if(id.length > 65) {
             logger.error("Network id has too many bytes.");
@@ -103,7 +104,7 @@ public class NetworkID implements Serializable {
     }
 
     /**
-     * Returns the value of the id as a string.
+     * Returns the value of the given id as a string.
      * @return
      */
     public static String getStringValue(byte[] data) {
@@ -113,6 +114,29 @@ public class NetworkID implements Serializable {
         }
         return sb.toString();
     }
+
+    /**
+     * Returns the value of the id as a string.
+     * @return
+     */
+    public String getStringValue() {
+        return getStringValue(this.data);
+    }
+    /**
+     * Gets the network id data.
+     * @return
+     */
+    public byte[] getData() {
+        return this.data;
+    }
+    /**
+     * Sets the network id data.
+     * @param data
+     */
+    public void setData(byte[] data) {
+        this.data = data;
+    }
+
     /**
      * Gets data from net id value.
      */

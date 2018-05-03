@@ -9,10 +9,8 @@ import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.filetransfer.FileInfo;
 import me.matoosh.undernet.p2p.router.data.filetransfer.FileTransfer;
-import me.matoosh.undernet.p2p.router.data.message.ResourceMessage;
 
 import java.io.*;
-import java.util.concurrent.Future;
 
 /**
  * Represents a stored file resource.
@@ -63,7 +61,7 @@ public class FileResource extends Resource {
             OutputStream os = null;
             try {
                 is = new FileInputStream(file);
-                os = new FileOutputStream(UnderNet.fileManager.getContentFolder() + "/" + file.getName());
+                os = new FileOutputStream(UnderNet.fileManager.getContentFolder() + "/" + this.networkID.getStringValue());
                 byte[] buffer = new byte[1024];
                 int length;
                 while ((length = is.read(buffer)) > 0) {

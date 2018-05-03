@@ -77,7 +77,7 @@ public class FileTransfer {
      */
     private void prepareStreams() {
         //Caching the path of the file.
-        file = new File(UnderNet.fileManager.getContentFolder() + "/" + id);
+        file = new File(UnderNet.fileManager.getContentFolder() + "/" + id.getStringValue());
 
         if(fileTransferType == FileTransferType.OUTBOUND) {
             try {
@@ -125,7 +125,7 @@ public class FileTransfer {
                             byte[] data = new byte[read];
                             System.arraycopy(buffer, 0, data, 0, read);
                             sendChunk(data);
-                            logger.debug("Chunk sent " + totalRead + "/" + fileInfo.fileLength);
+                            logger.debug("Chunk sent {}/{}", totalRead, fileInfo.fileLength);
                         }
                     } catch (IOException e) {
                         FileTransferManager.logger.error("Error reading " + BUFFER_SIZE + " chunk from file: " + file, e);
