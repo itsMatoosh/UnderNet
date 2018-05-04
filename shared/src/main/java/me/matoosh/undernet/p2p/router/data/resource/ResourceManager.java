@@ -207,11 +207,19 @@ public class ResourceManager extends Manager {
             return;
         }
 
-        //Getting the node closest to the resource.
-        Node closest = router.neighborNodesManager.getClosestTo(pullMessage.resourceId);
-
         //Save path for this pull to send the resource back after successful pull.
         pullCache.put(pullMessage.resourceId.getStringValue(), pullMessage.sender);
+
+        //Checking if the resource is available on self.
+        File localRes = getLocalResourceFile(pullMessage.resourceId);
+        if(localRes.exists()) {
+            //This is the final node. This node should have the requested resource.
+            EventManager.callEvent(new ResourcePullFinalStopEvent(pullMessage));
+            return;
+        }
+
+        //Getting the node closest to the resource.
+        Node closest = router.neighborNodesManager.getClosestTo(pullMessage.resourceId);
 
         //Checking for self.
         if(closest == Node.self) {
@@ -298,7 +306,7 @@ public class ResourceManager extends Manager {
             ResourcePullFinalStopEvent resourcePullFinalStopEvent = (ResourcePullFinalStopEvent)e;
 
             //Getting the requested file.
-            File requestedResource = new File(UnderNet.fileManager.getContentFolder() + "/" + resourcePullFinalStopEvent.pullMessage.resourceId.getStringValue());
+            File requestedResource = getLocalResourceFile(resourcePullFinalStopEvent.pullMessage.resourceId);
 
             if(requestedResource.exists()) {
                 //Retrieve the closest file.
@@ -311,6 +319,15 @@ public class ResourceManager extends Manager {
                 logger.warn("Resource: {} not available on {}. The pull request will be dropped!", resourcePullFinalStopEvent.pullMessage.resourceId, Node.self);
             }
         }
+    }
+
+    /**
+     * Returns path to a local resource.
+     * @param resource
+     * @return
+     */
+    private File getLocalResourceFile(NetworkID resource) {
+        return new File(UnderNet.fileManager.getContentFolder() + "/" + resource.getStringValue());
     }
 
     /**
