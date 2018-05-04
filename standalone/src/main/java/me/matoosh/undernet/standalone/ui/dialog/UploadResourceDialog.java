@@ -20,9 +20,12 @@ public class UploadResourceDialog extends JDialog {
      */
     private File fileChooseResult;
 
+    private JFrame frame;
+
     public UploadResourceDialog(JFrame parent) {
         //Setting the title of the dialog.
         super(parent, "Publish Resource", true);
+        this.frame = parent;
 
         //Setting the content.
         setLayout(new GridBagLayout());
@@ -71,6 +74,9 @@ public class UploadResourceDialog extends JDialog {
                     fileResource.copyToContent();
                     UnderNet.router.resourceManager.publish(fileResource);
                     UploadResourceDialog.this.dispose();
+
+                    //Showing the published network id.
+                    JOptionPane.showMessageDialog(UploadResourceDialog.this.frame, String.format("Publishing %s, \nNetwork id: %s", fileChooseResult, fileResource.networkID));
                 }
             }
         });
