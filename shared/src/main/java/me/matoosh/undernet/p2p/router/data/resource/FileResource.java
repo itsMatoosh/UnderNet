@@ -38,8 +38,8 @@ public class FileResource extends Resource {
      * @param file
      */
     public FileResource(File file) {
-        this.fileInfo = new FileInfo(file);
         this.file = file;
+        this.fileInfo = new FileInfo(this.file);
     }
 
     /**
@@ -48,7 +48,7 @@ public class FileResource extends Resource {
     @Override
     public void calcNetworkId() {
         //TODO: use the file content.
-        networkID = new NetworkID(NetworkID.getHashedDataFromString(fileInfo.fileName));
+        this.networkID = new NetworkID(NetworkID.getHashedDataFromString(fileInfo.fileName));
     }
 
     /**
@@ -77,6 +77,10 @@ public class FileResource extends Resource {
                 }
             }
         }
+
+        //Updating the path.
+        this.file = new File(UnderNet.fileManager.getContentFolder() + "/" + this.networkID.getStringValue());
+        this.fileInfo = new FileInfo(this.file);
     }
 
     /**

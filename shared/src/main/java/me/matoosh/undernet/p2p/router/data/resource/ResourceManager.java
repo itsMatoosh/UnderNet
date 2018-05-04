@@ -10,8 +10,8 @@ import me.matoosh.undernet.event.resource.pull.ResourcePullSentEvent;
 import me.matoosh.undernet.event.resource.push.ResourcePushFinalStopEvent;
 import me.matoosh.undernet.event.resource.push.ResourcePushReceivedEvent;
 import me.matoosh.undernet.event.resource.push.ResourcePushSentEvent;
-import me.matoosh.undernet.event.resource.retrieve.ResourceRetrieveReceivedEvent;
 import me.matoosh.undernet.event.resource.retrieve.ResourceRetrieveFinalStopEvent;
+import me.matoosh.undernet.event.resource.retrieve.ResourceRetrieveReceivedEvent;
 import me.matoosh.undernet.event.resource.retrieve.ResourceRetrieveSentEvent;
 import me.matoosh.undernet.p2p.Manager;
 import me.matoosh.undernet.p2p.node.Node;
@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,11 +36,6 @@ import java.util.concurrent.Executors;
  */
 
 public class ResourceManager extends Manager {
-    /**
-     * List of the stored resources.
-     */
-    public ArrayList<Resource> resourcesStored;
-
     /**
      * Cache of pulled resource ids and the requesting network ids.
      */
