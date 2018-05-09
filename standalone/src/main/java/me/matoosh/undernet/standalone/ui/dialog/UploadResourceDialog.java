@@ -5,6 +5,8 @@ import me.matoosh.undernet.p2p.router.data.resource.FileResource;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -75,8 +77,13 @@ public class UploadResourceDialog extends JDialog {
                     UnderNet.router.resourceManager.publish(fileResource);
                     UploadResourceDialog.this.dispose();
 
+                    //Copying the network to clipboard.
+                    StringSelection stringSelection = new StringSelection(fileResource.networkID.getStringValue());
+                    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                    clipboard.setContents(stringSelection, null);
+
                     //Showing the published network id.
-                    JOptionPane.showMessageDialog(UploadResourceDialog.this.frame, String.format("Publishing %s, \nNetwork id: %s", fileChooseResult, fileResource.networkID));
+                    JOptionPane.showMessageDialog(UploadResourceDialog.this.frame, String.format("Publishing %s, \nNetwork id: %s \nThe network id has been copied to your clipboard.", fileChooseResult, fileResource.networkID));
                 }
             }
         });

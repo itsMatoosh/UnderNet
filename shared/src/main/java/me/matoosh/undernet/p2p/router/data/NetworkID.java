@@ -176,22 +176,48 @@ public class NetworkID implements Serializable {
     public static int compare(byte[] a, byte[] b) {
         int diff = 0; //How many bytes are different between these arrays.
 
-        int i = 0;
-        for (byte ba : a) {
-            if (ba>b[i]){
-                diff++;
-            } else if(ba<b[i]) {
-                diff--;
-            }
-            i++;
+        //Checking length.
+        if(a.length != b.length) {
+            return 1;
         }
 
-        if(diff > 0) {
-            return 1;
-        } else if(diff < 0) {
-            return -1;
+        //Checking bytes.
+        for (int i = 0; i < a.length; i++) {
+            if(b[i] < a[i]) {
+                diff--;
+            } else if(b[i] > a[i]) {
+                diff++;
+            }
+        }
+
+        return diff;
+    }
+
+    /**
+     * Checks whether the given network id is equal to this one.
+     * @param obj
+     * @return
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if(obj.getClass() == NetworkID.class) {
+            NetworkID other = (NetworkID)obj;
+
+            //Checking length.
+            if(this.getData().length != other.getData().length) {
+                return false;
+            }
+
+            //Checking bytes.
+            for (int i = 0; i < this.getData().length; i++) {
+                if(this.getData()[i] != other.getData()[i]) {
+                    return false;
+                }
+            }
+
+            return true;
         } else {
-            return 0;
+            return false;
         }
     }
 }

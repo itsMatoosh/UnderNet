@@ -60,7 +60,7 @@ public class FileResource extends Resource {
             OutputStream os = null;
             try {
                 is = new FileInputStream(file);
-                os = new FileOutputStream(UnderNet.fileManager.getContentFolder() + "/" + this.networkID.getStringValue());
+                os = new FileOutputStream(UnderNet.fileManager.getContentFolder() + "/" + this.fileInfo.fileName);
                 byte[] buffer = new byte[1024];
                 int length;
                 while ((length = is.read(buffer)) > 0) {

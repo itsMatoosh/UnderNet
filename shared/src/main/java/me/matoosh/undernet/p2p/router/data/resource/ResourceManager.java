@@ -298,12 +298,21 @@ public class ResourceManager extends Manager {
             ResourcePullFinalStopEvent resourcePullFinalStopEvent = (ResourcePullFinalStopEvent)e;
 
             //Getting the requested file.
-            File requestedResource = new File(UnderNet.fileManager.getContentFolder() + "/" + resourcePullFinalStopEvent.pullMessage.resourceId.getStringValue());
+            File requestedResource = null;
+            for (File file :
+                    UnderNet.fileManager.getContentFolder().listFiles()) {
+                NetworkID fileNetId = new NetworkID(NetworkID.getHashedDataFromString(file.getName()));
+                if (file != null && fileNetId.equals(resourcePullFinalStopEvent.pullMessage.resourceId)) {
+                    requestedResource = file;
+                    logger.info("File: {}, id: {}", file, fileNetId);
+                    break;
+                }
+            }
 
-            if(requestedResource.exists()) {
+            if(requestedResource != null && requestedResource.exists()) {
                 //Retrieve the closest file.
                 FileResource fileResource = new FileResource(requestedResource);
-                fileResource.networkID = new NetworkID(requestedResource.getName());
+                fileResource.calcNetworkId();
                 ResourceMessage resourceMessage = new ResourceMessage(fileResource);
                 resourceMessage.sender = Node.self;
                 retrieveFurther(resourceMessage);

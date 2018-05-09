@@ -1,13 +1,21 @@
 package me.matoosh.undernet.standalone.ui.dialog;
 
 import me.matoosh.undernet.UnderNet;
+import me.matoosh.undernet.event.Event;
+import me.matoosh.undernet.event.EventHandler;
+import me.matoosh.undernet.event.EventManager;
+import me.matoosh.undernet.event.resource.retrieve.ResourceRetrieveFinalStopEvent;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
+import me.matoosh.undernet.p2p.router.data.resource.FileResource;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * Dialog for pulling resources from the network.
@@ -57,8 +65,15 @@ public class PullResourceDialog extends JDialog {
         fileChooser.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                //JFileChooser fileChooser1 = new JFileChooser();
-                //fileChooser1.
+                //Button clicked.
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                fileChooser.setDialogTitle("Choose the save directory");
+                int result = fileChooser.showOpenDialog(PullResourceDialog.this);
+                if(result == JFileChooser.APPROVE_OPTION) {
+                    resourceSaveDir = fileChooser.getSelectedFile();
+                }
             }
         });
         add(fileChooser, constraints2);
@@ -70,11 +85,41 @@ public class PullResourceDialog extends JDialog {
         pullButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                NetworkID netId = new NetworkID(networkIdField.getText());
-                //if(netId.isValid()) {
+                final NetworkID netId = new NetworkID(networkIdField.getText());
+                if(netId.isValid()) {
                     //Starting the pull.
-                    UnderNet.router.resourceManager.pull(netId); //Use inputed network id.
-                //}
+                    UnderNet.router.resourceManager.pull(netId); //Use inputted network id.
+
+                    //Registering the pull event.
+                    EventManager.registerHandler(new EventHandler() {
+                        @Override
+                        public void onEventCalled(Event e) {
+                            ResourceRetrieveFinalStopEvent finalStopEvent = (ResourceRetrieveFinalStopEvent)e;
+
+                            if(finalStopEvent.resource.networkID.equals(netId) && finalStopEvent.resource.getResourceType() == 0) {
+                                FileResource fileResource = (FileResource)finalStopEvent.resource;
+
+                                //Copying the pulled file to the save dir.
+                                if(resourceSaveDir.isFile()) {
+                                    resourceSaveDir = resourceSaveDir.getParentFile();
+                                }
+
+                                try {
+                                    Files.copy(Paths.get(fileResource.fileInfo.toString()), Paths.get(resourceSaveDir.toString(), fileResource.fileInfo.fileName));
+                                } catch (IOException e1) {
+                                    e1.printStackTrace();
+                                }
+                            }
+
+                            //Unregistering the handler.
+                            EventManager.unregisterHandler(this, ResourceRetrieveFinalStopEvent.class);
+                        }
+                    }, ResourceRetrieveFinalStopEvent.class);
+
+                    PullResourceDialog.this.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(PullResourceDialog.this, "The Network ID you specified is invalid!", "Invalid Network ID", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
         add(pullButton, constraints3);
