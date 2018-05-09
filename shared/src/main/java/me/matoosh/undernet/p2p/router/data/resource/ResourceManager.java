@@ -306,7 +306,6 @@ public class ResourceManager extends Manager {
             ResourcePullFinalStopEvent resourcePullFinalStopEvent = (ResourcePullFinalStopEvent)e;
 
             //Getting the requested file.
-<<<<<<< HEAD
             File requestedResource = null;
             for (File file :
                     UnderNet.fileManager.getContentFolder().listFiles()) {
@@ -317,9 +316,6 @@ public class ResourceManager extends Manager {
                     break;
                 }
             }
-=======
-            File requestedResource = getLocalResourceFile(resourcePullFinalStopEvent.pullMessage.resourceId);
->>>>>>> 6485d193ac29c6c383ffee1c6c0ccab636925672
 
             if(requestedResource != null && requestedResource.exists()) {
                 //Retrieve the closest file.
