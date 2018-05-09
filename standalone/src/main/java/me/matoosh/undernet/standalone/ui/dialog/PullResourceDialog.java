@@ -7,6 +7,7 @@ import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.resource.retrieve.ResourceRetrieveFinalStopEvent;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.resource.FileResource;
+import me.matoosh.undernet.standalone.ui.AppFrame;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,12 +24,6 @@ import java.nio.file.Paths;
  */
 
 public class PullResourceDialog extends JDialog {
-
-    /**
-     * Directory in which the resource will be saved.
-     */
-    public File resourceSaveDir;
-
     public PullResourceDialog(JFrame parent) {
         //Setting the title of the dialog.
         super(parent, "Pull Resource", true);
@@ -62,6 +57,7 @@ public class PullResourceDialog extends JDialog {
         constraints2.gridx = 0;
         constraints2.gridy = 1;
         JButton fileChooser = new JButton("Save to...");
+        final File[] saveFile = {null};
         fileChooser.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -72,7 +68,7 @@ public class PullResourceDialog extends JDialog {
                 fileChooser.setDialogTitle("Choose the save directory");
                 int result = fileChooser.showOpenDialog(PullResourceDialog.this);
                 if(result == JFileChooser.APPROVE_OPTION) {
-                    resourceSaveDir = fileChooser.getSelectedFile();
+                    saveFile[0] = fileChooser.getSelectedFile();
                 }
             }
         });
@@ -99,16 +95,24 @@ public class PullResourceDialog extends JDialog {
                             if(finalStopEvent.resource.networkID.equals(netId) && finalStopEvent.resource.getResourceType() == 0) {
                                 FileResource fileResource = (FileResource)finalStopEvent.resource;
 
-                                //Copying the pulled file to the save dir.
-                                if(resourceSaveDir.isFile()) {
-                                    resourceSaveDir = resourceSaveDir.getParentFile();
-                                }
+                                //Copying the received file to dest.
+                                if(saveFile[0] != null) {
+                                    try {
+                                        Files.copy(Paths.get(UnderNet.fileManager.getContentFolder().toString() + "/" + fileResource.fileInfo.fileName), Paths.get(saveFile[0].getAbsolutePath() + "/" + fileResource.fileInfo.fileName));
+                                    } catch (IOException e1) {
+                                        e1.printStackTrace();
+                                    }
 
-                                try {
-                                    Files.copy(Paths.get(fileResource.fileInfo.toString()), Paths.get(resourceSaveDir.toString(), fileResource.fileInfo.fileName));
-                                } catch (IOException e1) {
-                                    e1.printStackTrace();
+                                    //File dialog.
+                                    JOptionPane.showMessageDialog(null, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.fileInfo.fileName, finalStopEvent.resource.networkID.getStringValue(), saveFile[0]));
+                                } else {
+                                    //File dialog.
+                                    JOptionPane.showMessageDialog(null, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.fileInfo.fileName, finalStopEvent.resource.networkID.getStringValue(), UnderNet.fileManager.getContentFolder()));
                                 }
+                            } else {
+                                //Dialog
+                                ResourceRetrieveFinalStopEvent resourceRetrieveFinalStopEvent = (ResourceRetrieveFinalStopEvent)e;
+                                JOptionPane.showMessageDialog(AppFrame.contentPanel, String.format("Retrieved resource! \nNetwork id: %s", resourceRetrieveFinalStopEvent.resource.networkID));
                             }
 
                             //Unregistering the handler.

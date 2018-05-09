@@ -5,7 +5,6 @@ import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.client.ClientExceptionEvent;
-import me.matoosh.undernet.event.resource.retrieve.ResourceRetrieveFinalStopEvent;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
 import me.matoosh.undernet.event.server.ServerExceptionEvent;
 import me.matoosh.undernet.standalone.UnderNetStandalone;
@@ -244,16 +243,6 @@ public class AppFrame extends JFrame {
                 JOptionPane.showMessageDialog(null, ((ClientExceptionEvent)e).exception.getMessage() + "\nThe router will stop.", "Error with server", JOptionPane.ERROR_MESSAGE);
             }
         }, ServerExceptionEvent.class);
-
-        //Resource retrieve dialog.
-        EventManager.registerHandler(new EventHandler() {
-            @Override
-            public void onEventCalled(Event e) {
-                ResourceRetrieveFinalStopEvent resourceRetrieveFinalStopEvent = (ResourceRetrieveFinalStopEvent)e;
-                //Showing the published network id.
-                JOptionPane.showMessageDialog(AppFrame.this, String.format("Retrieved resource %s, \nNetwork id: %s", resourceRetrieveFinalStopEvent.resource, resourceRetrieveFinalStopEvent.resource.networkID));
-            }
-        }, ResourceRetrieveFinalStopEvent.class);
 
         add(connectButton, new GridBagConstraints(0, 1, 3, 1, 1, 0.05, GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
     }

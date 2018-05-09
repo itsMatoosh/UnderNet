@@ -83,7 +83,7 @@ public class UploadResourceDialog extends JDialog {
                     clipboard.setContents(stringSelection, null);
 
                     //Showing the published network id.
-                    JOptionPane.showMessageDialog(UploadResourceDialog.this.frame, String.format("Publishing %s, \nNetwork id: %s \nThe network id has been copied to your clipboard.", fileChooseResult, fileResource.networkID));
+                    JOptionPane.showMessageDialog(UploadResourceDialog.this.frame, String.format("Publishing %s, \nNetwork id: %s \nThe network id has been copied to your clipboard.", fileChooseResult, fileResource.networkID.getStringValue()));
                 }
             }
         });
