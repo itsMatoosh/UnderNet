@@ -81,7 +81,7 @@ public class PullResourceDialog extends JDialog {
         pullButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                final NetworkID netId = new NetworkID(networkIdField.getText());
+                final NetworkID netId = new NetworkID(networkIdField.getText().replaceAll("\\s+",""));
                 if(netId.isValid()) {
                     //Starting the pull.
                     UnderNet.router.resourceManager.pull(netId); //Use inputted network id.
@@ -104,15 +104,15 @@ public class PullResourceDialog extends JDialog {
                                     }
 
                                     //File dialog.
-                                    JOptionPane.showMessageDialog(null, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.fileInfo.fileName, finalStopEvent.resource.networkID.getStringValue(), saveFile[0]));
+                                    JOptionPane.showMessageDialog(PullResourceDialog.this, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.fileInfo.fileName, finalStopEvent.resource.networkID.getStringValue(), saveFile[0]),"File Retrieved!",  JOptionPane.INFORMATION_MESSAGE);
                                 } else {
                                     //File dialog.
-                                    JOptionPane.showMessageDialog(null, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.fileInfo.fileName, finalStopEvent.resource.networkID.getStringValue(), UnderNet.fileManager.getContentFolder()));
+                                    JOptionPane.showMessageDialog(PullResourceDialog.this, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.fileInfo.fileName, finalStopEvent.resource.networkID.getStringValue(), UnderNet.fileManager.getContentFolder()), "File Retrieved!", JOptionPane.INFORMATION_MESSAGE);
                                 }
                             } else {
                                 //Dialog
                                 ResourceRetrieveFinalStopEvent resourceRetrieveFinalStopEvent = (ResourceRetrieveFinalStopEvent)e;
-                                JOptionPane.showMessageDialog(AppFrame.contentPanel, String.format("Retrieved resource! \nNetwork id: %s", resourceRetrieveFinalStopEvent.resource.networkID));
+                                JOptionPane.showMessageDialog(AppFrame.contentPanel, String.format("Retrieved resource! \nNetwork id: %s", resourceRetrieveFinalStopEvent.resource.networkID), "Resource Retrieved!", JOptionPane.INFORMATION_MESSAGE);
                             }
 
                             //Unregistering the handler.

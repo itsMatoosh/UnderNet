@@ -1,11 +1,11 @@
 package me.matoosh.undernet.standalone.resource;
 
+import me.matoosh.undernet.file.FileManager;
+import me.matoosh.undernet.standalone.UnderNetStandalone;
+
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import me.matoosh.undernet.file.FileManager;
-import me.matoosh.undernet.standalone.UnderNetStandalone;
 
 /**
  * Manages the resources within the JAR.
@@ -20,7 +20,7 @@ public class ResourceManager {
      * @return The path to the exported resource
      * @throws Exception
      */
-    static public String ExportResource(String resourceName, FileManager fileManager) throws Exception {
+    static public String exportResource(String resourceName, FileManager fileManager) throws Exception {
         InputStream stream = null;
         OutputStream resStreamOut = null;
         try {

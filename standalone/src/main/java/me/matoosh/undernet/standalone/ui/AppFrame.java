@@ -7,15 +7,20 @@ import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.client.ClientExceptionEvent;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
 import me.matoosh.undernet.event.server.ServerExceptionEvent;
+import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.standalone.UnderNetStandalone;
-import me.matoosh.undernet.standalone.ui.dialog.ChangeIdentityDialog;
+import me.matoosh.undernet.standalone.identity.NetworkIdentityTools;
 import me.matoosh.undernet.standalone.ui.dialog.PullResourceDialog;
 import me.matoosh.undernet.standalone.ui.dialog.UploadResourceDialog;
+import org.apache.commons.io.FilenameUtils;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 /**
  * The main frame of the app.
@@ -57,6 +62,10 @@ public class AppFrame extends JFrame {
      * The change identity menu item.
      */
     private JMenuItem identityChangeItem;
+    /**
+     * The generate identity menu item.
+     */
+    private JMenuItem identityNewItem;
 
     /**
      * The resource menu of the frame.
@@ -123,11 +132,64 @@ public class AppFrame extends JFrame {
         identityChangeItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                JDialog identityChangeDialog = new ChangeIdentityDialog(UnderNetStandalone.mainAppFrame);
-                identityChangeDialog.setVisible(true);
+                //Opening file open dialog.
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setDialogTitle("Choose the identity to use");
+                fileChooser.setDialogType(JFileChooser.OPEN_DIALOG);
+                FileFilter filter = new FileNameExtensionFilter("Identity Files", "id");
+                fileChooser.setFileFilter(filter);
+                fileChooser.addChoosableFileFilter(filter);
+                fileChooser.setCurrentDirectory(UnderNet.fileManager.getAppFolder());
+                if(fileChooser.showSaveDialog(AppFrame.this) == JFileChooser.APPROVE_OPTION) {
+                    //Reading the identity file.
+                    NetworkIdentity identity = NetworkIdentityTools.readIdentityFromFile(fileChooser.getSelectedFile());
+
+                    if(identity == null) {
+                        //Incorrect file.
+                        JOptionPane.showMessageDialog(AppFrame.this, String.format("Couldn't read the identity file %s", fileChooser.getSelectedFile()),"Can't read identity!", JOptionPane.ERROR_MESSAGE);
+
+                        return;
+                    }
+
+                    //User chose the save option.
+                    NetworkIdentityTools.writeIdentityToFile(identity, fileChooser.getSelectedFile());
+
+                    //Setting the new id.
+                    UnderNetStandalone.setNetworkIdentity(identity, fileChooser.getSelectedFile());
+                }
             }
         });
         identityMenu.add(identityChangeItem);
+        identityNewItem = new JMenuItem("New identity");
+        identityNewItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+                //Generating the new identity.
+                NetworkIdentity newIdentity = new NetworkIdentity();
+
+                //Opening file save dialog.
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setDialogTitle("Save the new identity");
+                fileChooser.setDialogType(JFileChooser.SAVE_DIALOG);
+                FileFilter filter = new FileNameExtensionFilter("Identity Files", "id");
+                fileChooser.setFileFilter(filter);
+                fileChooser.addChoosableFileFilter(filter);
+                fileChooser.setCurrentDirectory(UnderNet.fileManager.getAppFolder());
+                if(fileChooser.showSaveDialog(AppFrame.this) == JFileChooser.APPROVE_OPTION) {
+                    //User chose the save option.
+                    File file = fileChooser.getSelectedFile();
+                    if (!FilenameUtils.getExtension(file.getName()).equalsIgnoreCase("id")) {
+                        file = new File(file.getParentFile(), FilenameUtils.getBaseName(file.getName())+".id"); //Remove the extension (if any) and replace it with ".id"
+                    }
+
+                    NetworkIdentityTools.writeIdentityToFile(newIdentity, file);
+
+                    //Setting the new id.
+                    UnderNetStandalone.setNetworkIdentity(newIdentity, file);
+                }
+            }
+        });
+        identityMenu.add(identityNewItem);
 
         //Resource menu
         resourceMenu = new JMenu("Resource");
@@ -234,13 +296,13 @@ public class AppFrame extends JFrame {
         EventManager.registerHandler(new EventHandler() {
             @Override
             public void onEventCalled(Event e) {
-                JOptionPane.showMessageDialog(null, ((ClientExceptionEvent)e).exception.getMessage() + "\nThe router will stop.", "Error with client", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(AppFrame.this, ((ClientExceptionEvent)e).exception.getMessage() + "\nThe router will stop.", "Error with client", JOptionPane.ERROR_MESSAGE);
             }
         }, ClientExceptionEvent.class);
         EventManager.registerHandler(new EventHandler() {
             @Override
             public void onEventCalled(Event e) {
-                JOptionPane.showMessageDialog(null, ((ClientExceptionEvent)e).exception.getMessage() + "\nThe router will stop.", "Error with server", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(AppFrame.this, ((ClientExceptionEvent)e).exception.getMessage() + "\nThe router will stop.", "Error with server", JOptionPane.ERROR_MESSAGE);
             }
         }, ServerExceptionEvent.class);
 

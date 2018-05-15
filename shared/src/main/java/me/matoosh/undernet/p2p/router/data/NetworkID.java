@@ -1,11 +1,18 @@
 package me.matoosh.undernet.p2p.router.data;
 
 import me.matoosh.undernet.UnderNet;
-import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
+import uk.org.bobulous.java.crypto.keccak.KeccakSponge;
 
-import java.io.*;
-import java.security.MessageDigest;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.nio.charset.Charset;
+import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 
 import static me.matoosh.undernet.p2p.router.Router.logger;
 
@@ -16,9 +23,19 @@ import static me.matoosh.undernet.p2p.router.Router.logger;
 
 public class NetworkID implements Serializable {
     /**
+     * The length of a network id.
+     */
+    public static int networkIdLength = 100;
+
+    /**
      * The data of the network id.
      */
     private byte[] data;
+
+    /**
+     * The public key associated with this network id.
+     */
+    private PublicKey publicKey;
 
     public NetworkID() { }
     /**
@@ -33,11 +50,7 @@ public class NetworkID implements Serializable {
      * @param id
      */
     public NetworkID(byte[] id) {
-        if(id.length > 65) {
-            logger.error("Network id has too many bytes.");
-            return;
-        }
-        this.data = id;
+        setData(id);
     }
 
     /**
@@ -45,9 +58,10 @@ public class NetworkID implements Serializable {
      * @return
      */
     public boolean isValid() {
-        if(data.length == 64) {
+        if(data.length == networkIdLength) {
             return true;
         } else {
+            logger.error("Network ID is not " + networkIdLength + " bytes long! Current number of bytes: " + data.length);
             return false;
         }
     }
@@ -58,7 +72,7 @@ public class NetworkID implements Serializable {
      * @return
      */
     public byte[] distanceTo(NetworkID other) {
-        byte[] output = new byte[64];
+        byte[] output = new byte[networkIdLength];
         int i = 0;
         for(byte b : other.data) {
           output[i] = (byte)(b ^ this.data[i++]);
@@ -71,7 +85,7 @@ public class NetworkID implements Serializable {
      * @return
      */
     public static NetworkID random() {
-        byte[] data = new byte[64];
+        byte[] data = new byte[networkIdLength];
         UnderNet.secureRandom.nextBytes(data);
         return new NetworkID(data);
     }
@@ -93,7 +107,7 @@ public class NetworkID implements Serializable {
      */
     private void readObject(ObjectInputStream ois)
             throws ClassNotFoundException, IOException {
-        data = new byte[64];
+        data = new byte[networkIdLength];
         ois.read(data);
     }
 
@@ -108,11 +122,7 @@ public class NetworkID implements Serializable {
      * @return
      */
     public static String getStringValue(byte[] data) {
-        StringBuilder sb = new StringBuilder();
-        for (byte b : data) {
-            sb.append(String.format("%02X", b));
-        }
-        return sb.toString();
+        return new sun.misc.BASE64Encoder().encode(data);
     }
 
     /**
@@ -130,10 +140,32 @@ public class NetworkID implements Serializable {
         return this.data;
     }
     /**
+     * Gets the public key associated with the network id.
+     * @return
+     */
+    public PublicKey getPublicKey() {
+        if(this.publicKey != null) {
+            return this.publicKey;
+        } else {
+            try {
+                this.publicKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(this.getData()));
+            } catch (InvalidKeySpecException e) {
+                e.printStackTrace();
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            }
+            return this.publicKey;
+        }
+    }
+    /**
      * Sets the network id data.
      * @param data
      */
     public void setData(byte[] data) {
+        if(data.length != networkIdLength) {
+            logger.error("Network ID is not " + networkIdLength + " bytes long! Current number of bytes: " + data.length);
+            return;
+        }
         this.data = data;
     }
 
@@ -141,30 +173,38 @@ public class NetworkID implements Serializable {
      * Gets data from net id value.
      */
     public static byte[] getByteValue(String value) {
-        int length = value.length();
-        byte[] data = new byte[length / 2];
-        for (int i = 0; i < length; i += 2) {
-            data[i / 2] = (byte) ((Character.digit(value.charAt(i), 16) << 4)
-                    + Character.digit(value.charAt(i+1), 16));
-        }
-        return data;
-    }
-    /**
-     * Gets a SHA-512 hash code from a string.
-     * @param str
-     * @return
-     * @throws NoSuchAlgorithmException
-     */
-    public static byte[] getHashedDataFromString(String str) {
-        MessageDigest md = null;
         try {
-            md = MessageDigest.getInstance("SHA-512");
-        } catch (NoSuchAlgorithmException e) {
-            NetworkMessage.logger.error("Couldn't encrypt string with SHA-512, the algorithm is missing!", e);
+            return new sun.misc.BASE64Decoder().decodeBuffer(value);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        md.update(str.getBytes());
+        return null;
+    }
 
-        return md.digest();
+    /**
+     * Generates a NetworkID from a public key.
+     * @param publicKey
+     * @return
+     */
+    public static NetworkID generateFromPublicKey(PublicKey publicKey) {
+        if(publicKey.getEncoded().length != networkIdLength) {
+            logger.warn("Cannot generate network id from {}, length mismatch!", publicKey);
+            return null;
+        }
+
+        //Extract data from the public key.
+        return new NetworkID(publicKey.getEncoded());
+    }
+
+    /**
+     * Generates a NetworkID from a string through Keccak.
+     * @param string
+     * @return
+     */
+    public static NetworkID generateFromString(String string) {
+        KeccakSponge spongeFunction = new KeccakSponge(40, 160, "", 800);
+
+        return new NetworkID(spongeFunction.apply(5, string.getBytes(Charset.forName("UTF-8"))));
     }
 
     /**

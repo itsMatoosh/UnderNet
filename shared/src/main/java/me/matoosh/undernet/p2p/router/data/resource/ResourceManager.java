@@ -309,7 +309,7 @@ public class ResourceManager extends Manager {
             File requestedResource = null;
             for (File file :
                     UnderNet.fileManager.getContentFolder().listFiles()) {
-                NetworkID fileNetId = new NetworkID(NetworkID.getHashedDataFromString(file.getName()));
+                NetworkID fileNetId = NetworkID.generateFromString(file.getName());
                 if (file != null && fileNetId.equals(resourcePullFinalStopEvent.pullMessage.resourceId)) {
                     requestedResource = file;
                     logger.info("File: {}, id: {}", file, fileNetId);

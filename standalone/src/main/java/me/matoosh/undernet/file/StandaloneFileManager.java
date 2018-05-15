@@ -15,7 +15,7 @@ public class StandaloneFileManager extends FileManager {
      */
     @Override
     public File getAppFolder() {
-        return new File(".");
+        return new File(System.getProperty("user.dir"));
     }
 
     /**

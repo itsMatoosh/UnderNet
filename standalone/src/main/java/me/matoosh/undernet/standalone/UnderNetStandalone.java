@@ -1,5 +1,15 @@
 package me.matoosh.undernet.standalone;
 
+import com.esotericsoftware.yamlbeans.YamlException;
+import com.esotericsoftware.yamlbeans.YamlReader;
+import com.esotericsoftware.yamlbeans.YamlWriter;
+import me.matoosh.undernet.UnderNet;
+import me.matoosh.undernet.file.StandaloneFileManager;
+import me.matoosh.undernet.identity.NetworkIdentity;
+import me.matoosh.undernet.standalone.config.StandaloneConfig;
+import me.matoosh.undernet.standalone.config.StandaloneConfigManager;
+import me.matoosh.undernet.standalone.identity.NetworkIdentityTools;
+import me.matoosh.undernet.standalone.ui.AppFrame;
 import org.cfg4j.provider.ConfigurationProvider;
 import org.cfg4j.provider.ConfigurationProviderBuilder;
 import org.cfg4j.source.ConfigurationSource;
@@ -10,25 +20,13 @@ import org.cfg4j.source.files.FilesConfigurationSource;
 import org.cfg4j.source.reload.ReloadStrategy;
 import org.cfg4j.source.reload.strategy.PeriodicalReloadStrategy;
 
-import java.awt.EventQueue;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.awt.*;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import me.matoosh.undernet.UnderNet;
-import me.matoosh.undernet.file.StandaloneFileManager;
-import me.matoosh.undernet.identity.NetworkIdentity;
-import me.matoosh.undernet.p2p.router.data.NetworkID;
-import me.matoosh.undernet.standalone.config.StandaloneConfigManager;
-import me.matoosh.undernet.standalone.ui.AppFrame;
 
 /**
  * A graphical wrapper for the desktop platforms.
@@ -47,6 +45,11 @@ public class UnderNetStandalone {
     public static NetworkIdentity networkIdentity;
 
     /**
+     * The current config of the application.
+     */
+    public static StandaloneConfig standaloneConfig;
+
+    /**
      * Local temp file mgr.
      */
     private static StandaloneFileManager tmpFileMgr;
@@ -63,11 +66,17 @@ public class UnderNetStandalone {
                 mainAppFrame.setVisible(true);
 
                 //Creating network identity.
-                NetworkIdentity identity = readNetworkIdentityCache();
-                if(identity == null) {
-                    identity = new NetworkIdentity();
+                if(standaloneConfig.identity() == null || standaloneConfig.identity().isEmpty() || standaloneConfig.identity().equals("empty")) {
+                    UnderNetStandalone.setNetworkIdentity(null, null);
+                } else {
+                    File currentIdentityFile = new File(standaloneConfig.identity());
+                    if(currentIdentityFile != null && currentIdentityFile.exists()) {
+                        NetworkIdentity identity = NetworkIdentityTools.readIdentityFromFile(currentIdentityFile);
+                        UnderNetStandalone.setNetworkIdentity(identity, currentIdentityFile);
+                    } else {
+                        UnderNetStandalone.setNetworkIdentity(null, null);
+                    }
                 }
-                UnderNetStandalone.setNetworkIdentity(identity);
             }
         });
     }
@@ -88,88 +97,73 @@ public class UnderNetStandalone {
         ConfigFilesProvider configFilesProvider = new ConfigFilesProvider() {
             @Override
             public Iterable<Path> getConfigFiles() {
-                return Arrays.asList(Paths.get("network.yaml")/*, Paths.get("standalone.yaml")*/);
+                return Arrays.asList(Paths.get("network.yaml"), Paths.get("standalone.yaml"));
             }
         };
 
-        // Use local files as configuration store
+        //Use local files as configuration store
         ConfigurationSource source = new FilesConfigurationSource(configFilesProvider);
 
-        // Select path to use
+        //Select path to use
         Environment environment = new ImmutableEnvironment(".");
 
-        // (optional) Reload configuration every 5 seconds
+        //Reload configuration every 5 seconds
         ReloadStrategy reloadStrategy = new PeriodicalReloadStrategy(5, TimeUnit.SECONDS);
 
-        // Create provider
+        //Create provider
         ConfigurationProvider configProvider = new ConfigurationProviderBuilder()
                 .withConfigurationSource(source)
                 .withEnvironment(environment)
                 .withReloadStrategy(reloadStrategy)
                 .build();
 
+
+        //Getting standalone config.
+        standaloneConfig = configProvider.bind("standalone", StandaloneConfig.class);
+
         //Setting up UnderNet.
         UnderNet.setup(new StandaloneFileManager(), configProvider);
     }
 
     /**
-     * Reads the cached network identity data.
-     */
-    private static NetworkIdentity readNetworkIdentityCache() {
-        //Checking if the cache exists.
-        if(!new File(UnderNetStandalone.tmpFileMgr.getCacheFolder() + "/me.identity").exists()) {
-            return null;
-        }
-
-        //Reading the cache.
-        try {
-            FileInputStream fis = new FileInputStream(UnderNetStandalone.tmpFileMgr.getCacheFolder() + "/me.identity");
-            ObjectInputStream ois = new ObjectInputStream(fis);
-            NetworkIdentity identity = (NetworkIdentity) ois.readObject();
-            ois.close();
-            return identity;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    /**
-     * Writes the current network identity data to cache.
-     */
-    private static void writeNetworkIdentityCache() {
-        //Checking if the file exists.
-        File f = new File(UnderNetStandalone.tmpFileMgr.getCacheFolder() + "/me.identity");
-        if(f.exists()) {
-            f.delete();
-        }
-
-        //Writing cache.
-        try {
-            FileOutputStream fos = new FileOutputStream(UnderNetStandalone.tmpFileMgr.getCacheFolder() + "/me.identity");
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(networkIdentity);
-            oos.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    /**
      * Sets the active network identity.
      * @param identity
      */
-    public static void setNetworkIdentity(NetworkIdentity identity) {
-        if(identity.getNetworkId() == null) {
-            identity.setNetworkId(NetworkID.random());
+    public static void setNetworkIdentity(NetworkIdentity identity, File identityFile) {
+        if(identity == null || identityFile == null) {
+            identity = new NetworkIdentity();
+            identityFile = new File(UnderNet.fileManager.getAppFolder() + "/random.id");
+            NetworkIdentityTools.writeIdentityToFile(identity, identityFile);
         }
+
         UnderNetStandalone.networkIdentity = identity;
-        mainAppFrame.setTitle("UnderNet - " + UnderNetStandalone.networkIdentity.getUsername());
-        writeNetworkIdentityCache();
+        mainAppFrame.setTitle("UnderNet - " + UnderNetStandalone.networkIdentity.getNetworkId().getStringValue());
+
+        //Save the changed identity.
+        try {
+            File standaloneConfig = new File(UnderNet.fileManager.getAppFolder() + "/standalone.yaml");
+
+            //Deserialize
+            YamlReader reader = new YamlReader(new FileReader(standaloneConfig));
+            Object object = reader.read();
+            Map map = (Map) object;
+            Map standalone = (Map) map.get("standalone");
+            standalone.put("identity", identityFile.getAbsolutePath());
+
+            standaloneConfig.delete();
+            standaloneConfig.createNewFile();
+
+            //Serialize
+            YamlWriter writer = new YamlWriter(new FileWriter(standaloneConfig));
+            writer.write(map);
+            writer.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (YamlException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 }

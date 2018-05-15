@@ -1,9 +1,9 @@
 package me.matoosh.undernet.identity;
 
-import java.io.Serializable;
-import java.util.Random;
-
 import me.matoosh.undernet.p2p.router.data.NetworkID;
+
+import java.io.Serializable;
+import java.security.*;
 
 /**
  * Represents the network identity used to connect.
@@ -12,19 +12,28 @@ import me.matoosh.undernet.p2p.router.data.NetworkID;
 
 public class NetworkIdentity implements Serializable {
     /**
-     * The username.
+     * The public key.
      */
-    private String username;
+    private PublicKey publicKey;
+    /**
+     * The private key.
+     */
+    private PrivateKey privateKey;
     /**
      * The network id.
      */
     private NetworkID networkID;
 
     /**
-     * Default to anon identity.
+     * Default to random identity.
      */
     public NetworkIdentity() {
-        setUsername(null);
+        try {
+            generateKeys();
+            networkID = NetworkID.generateFromPublicKey(this.publicKey);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -52,31 +61,36 @@ public class NetworkIdentity implements Serializable {
     public NetworkID getNetworkId() {
         return networkID;
     }
+
     /**
-     * Sets the username.
-     * @param username
+     * Generates the public and private keypair for the identity.
      */
-    public void setUsername(String username) {
-        if(username == null || username.isEmpty()) {
-            this.username = "Anon-" + new Random().nextInt(9) + "" + new Random().nextInt(9) + "" + new Random().nextInt(9);
-            return;
-        }
-        this.username = username;
+    public void generateKeys() throws NoSuchAlgorithmException {
+        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+        keyGen.initialize(NetworkID.networkIdLength*8 - 30*8);
+        KeyPair generatedKeyPair = keyGen.genKeyPair();
+        this.publicKey = generatedKeyPair.getPublic();
+        this.privateKey = generatedKeyPair.getPrivate();
     }
 
     /**
-     * Gets the username.
+     * Gets the public key.
      * @return
      */
-    public String getUsername() {
-        return this.username;
+    public PublicKey getPublicKey() {
+        return this.publicKey;
     }
+    /**
+     * Gets the private key.
+     * @return
+     */
+    public PrivateKey getPrivateKey() { return this.privateKey; }
 
     @Override
     public String toString() {
         return "NetworkIdentity{" +
-                "username='" + username + '\'' +
-                ", networkID=" + networkID +
+                "publicKey='" + getPublicKey() + '\'' +
+                ", networkID=" + getNetworkId() +
                 '}';
     }
 }

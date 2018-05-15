@@ -1,9 +1,9 @@
 package me.matoosh.undernet.standalone.config;
 
-import java.io.File;
-
 import me.matoosh.undernet.file.FileManager;
 import me.matoosh.undernet.standalone.resource.ResourceManager;
+
+import java.io.File;
 
 /**
  * Manages the config files.
@@ -51,7 +51,7 @@ public class StandaloneConfigManager {
     private static void createNetworkConfig() {
         //Exporting the default config resource.
         try {
-            ResourceManager.ExportResource("/network.yaml", tmpFileMgr);
+            ResourceManager.exportResource("/network.yaml", tmpFileMgr);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -63,7 +63,7 @@ public class StandaloneConfigManager {
     private static void createStandaloneConfig() {
         //Exporting the default config resource.
         try {
-            ResourceManager.ExportResource("/standalone.yaml", tmpFileMgr);
+            ResourceManager.exportResource("/standalone.yaml", tmpFileMgr);
         } catch (Exception e) {
             e.printStackTrace();
         }

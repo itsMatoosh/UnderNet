@@ -47,8 +47,7 @@ public class FileResource extends Resource {
      */
     @Override
     public void calcNetworkId() {
-        //TODO: use the file content.
-        this.networkID = new NetworkID(NetworkID.getHashedDataFromString(fileInfo.fileName));
+        this.networkID = NetworkID.generateFromString(fileInfo.fileName);
     }
 
     /**
