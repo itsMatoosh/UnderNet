@@ -72,11 +72,10 @@ public class NeighborNodesManager extends Manager {
                 NodeInfoMessage message = (NodeInfoMessage)messageReceivedEvent.message.content;
                 //TODO: Check the generated id with the database and update.
                 logger.info("Received node info for {}: {}", messageReceivedEvent.remoteNode, message.networkID);
-                NetworkIdentity networkIdentity = new NetworkIdentity();
-                networkIdentity.setNetworkId(message.networkID);
+                NetworkIdentity networkIdentity = new NetworkIdentity(message.networkID);
                 messageReceivedEvent.remoteNode.setIdentity(networkIdentity);
 
-                EventManager.callEvent(new ConnectionEstablishedEvent(messageReceivedEvent.channel, messageReceivedEvent.isServer));
+                EventManager.callEvent(new ConnectionEstablishedEvent(messageReceivedEvent.remoteNode, messageReceivedEvent.isServer));
             }
         }
     }
@@ -99,7 +98,9 @@ public class NeighborNodesManager extends Manager {
     public Node getClosestTo(NetworkID id) {
         Node closest = Node.self;
         byte[] closestDist = Node.self.getIdentity().getNetworkId().distanceTo(id);
-        for (Node n : router.connectedNodes) {
+        for (int i = 0; i < router.connectedNodes.size(); i++) {
+            Node n = router.connectedNodes.get(i);
+            if(n == null) continue;
             byte[] distance = n.getIdentity().getNetworkId().distanceTo(id);
 
             if(NetworkID.compare(closestDist, distance) < 0) {

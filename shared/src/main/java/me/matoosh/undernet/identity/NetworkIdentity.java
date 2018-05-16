@@ -4,6 +4,8 @@ import me.matoosh.undernet.p2p.router.data.NetworkID;
 
 import java.io.Serializable;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 
 /**
  * Represents the network identity used to connect.
@@ -32,6 +34,22 @@ public class NetworkIdentity implements Serializable {
             generateKeys();
             networkID = NetworkID.generateFromPublicKey(this.publicKey);
         } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Network id already specified.
+     * @param networkID
+     */
+    public NetworkIdentity(NetworkID networkID) {
+        try {
+            setNetworkId(networkID);
+            this.publicKey =
+                    KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(this.networkID.getData()));
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (InvalidKeySpecException e) {
             e.printStackTrace();
         }
     }

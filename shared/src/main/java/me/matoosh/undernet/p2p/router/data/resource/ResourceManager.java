@@ -369,8 +369,7 @@ public class ResourceManager extends Manager {
 
             if(connectionEvent.other == null) return;
             if(connectionEvent.other == Node.self) return;
-            if(connectionEvent.other.address == null) return;
-            if(connectionEvent.other.address == Node.self.address) return;
+            if(connectionEvent.other.address.equals(Node.self.address)) return;
 
             //Push each available resource.
             for (FileResource file :
