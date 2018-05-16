@@ -55,7 +55,7 @@ public class FileResource extends Resource {
     /**
      * Copies the file if its not in the content directory.
      */
-    public void copyToContent() {
+    public boolean copyToContent() {
         if(this.networkID == null) {
             calcNetworkId();
         }
@@ -72,12 +72,14 @@ public class FileResource extends Resource {
                 }
             } catch (IOException e) {
                 ResourceManager.logger.error("An error occured copying file: " + file.toString() + " to the content directory!", e);
+                return false;
             } finally {
                 try {
                     is.close();
                     os.close();
                 } catch (IOException e) {
                     ResourceManager.logger.error("An error occured while closing the copy streams for file: " + file.toString() + "!", e);
+                    return false''
                 }
             }
         }
@@ -85,6 +87,8 @@ public class FileResource extends Resource {
         //Updating the path.
         this.file = new File(UnderNet.fileManager.getContentFolder() + "/" + this.fileInfo.fileName);
         this.fileInfo = new FileInfo(this.file);
+
+        return true;
     }
 
     /**

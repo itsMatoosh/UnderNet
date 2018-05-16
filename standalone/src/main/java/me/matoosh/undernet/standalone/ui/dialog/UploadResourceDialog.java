@@ -10,6 +10,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.net.URLDecoder;
 
 /**
  * Dialog for uploading resources to the network.
@@ -72,7 +73,11 @@ public class UploadResourceDialog extends JDialog {
                 if(fileChooseResult != null) {
                     //Publishing resource on UnderNet.
                     FileResource fileResource = new FileResource(fileChooseResult);
-                    fileResource.copyToContent();
+                    if(!fileResource.copyToContent()) {
+                        JOptionPane.showMessageDialog(UploadResourceDialog.this.frame, String.format("There was a problem accessing file: \n%s.", fileChooseResult), "Can't publish resource!", JOptionPane.ERROR_MESSAGE);
+                        UploadResourceDialog.this.dispose();
+                        return;
+                    }
                     UnderNet.router.resourceManager.publish(fileResource);
                     UploadResourceDialog.this.dispose();
 
