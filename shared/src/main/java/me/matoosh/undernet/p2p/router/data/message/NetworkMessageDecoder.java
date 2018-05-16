@@ -59,11 +59,11 @@ public class NetworkMessageDecoder extends ByteToMessageDecoder {
             cachedMessage.data = ByteBuffer.wrap(new byte[dataLenght - Short.MIN_VALUE]);
         }
         //Reading the data of the cached message.
-        while(dataWriteIndex < cachedMessage.data.capacity() && in.readableBytes() > 0) {
+        while(cachedMessage != null && dataWriteIndex < cachedMessage.data.capacity() && in.readableBytes() > 0) {
             cachedMessage.data.put(dataWriteIndex, in.readByte());
             dataWriteIndex++;
         }
-        
+
         //Checking if all the data has been received.
         if(dataWriteIndex >= cachedMessage.data.capacity()) {
             //Message data received. Outputting the constructed message.
