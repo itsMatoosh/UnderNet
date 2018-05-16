@@ -65,7 +65,7 @@ public class NetworkMessageDecoder extends ByteToMessageDecoder {
         }
 
         //Checking if all the data has been received.
-        if(dataWriteIndex >= cachedMessage.data.capacity()) {
+        if(cachedMessage != null && dataWriteIndex >= cachedMessage.data.capacity()) {
             //Message data received. Outputting the constructed message.
             cachedMessage.deserialize();
             out.add(cachedMessage);
