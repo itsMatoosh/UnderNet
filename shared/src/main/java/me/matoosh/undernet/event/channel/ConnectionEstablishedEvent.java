@@ -1,28 +1,17 @@
 package me.matoosh.undernet.event.channel;
 
 import io.netty.channel.Channel;
-import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.client.Client;
 import me.matoosh.undernet.p2p.router.server.Server;
 
-/**
- * Called when a connection has been established.
- * Created by Mateusz Rębacz on 27.06.2017.
- */
-
-public class ChannelCreatedEvent extends ChannelEvent {
-    /**
-     * The node the connection is made to.
-     */
-    public Node other;
-
+public class ConnectionEstablishedEvent extends ChannelCreatedEvent {
     /**
      * Creates a new channel event, given the channel.
      *
      * @param c
      * @param isServer
      */
-    public ChannelCreatedEvent(Channel c, boolean isServer) {
+    public ConnectionEstablishedEvent(Channel c, boolean isServer) {
         super(c, isServer);
     }
 
@@ -32,9 +21,9 @@ public class ChannelCreatedEvent extends ChannelEvent {
     @Override
     public void onCalled() {
         if(isServer) {
-            Server.logger.info("Channel has been created to: {}", channel.remoteAddress());
+            Server.logger.info("Connection has been established with: {}", channel.remoteAddress());
         } else {
-            Client.logger.info("Channel has been created to: {}", channel.remoteAddress());
+            Client.logger.info("Connection has been established with: {}", channel.remoteAddress());
         }
     }
 }

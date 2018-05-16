@@ -3,6 +3,7 @@ package me.matoosh.undernet.p2p.node;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
+import me.matoosh.undernet.event.channel.ConnectionEstablishedEvent;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
 import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.p2p.Manager;
@@ -39,7 +40,7 @@ public class NeighborNodesManager extends Manager {
      */
     @Override
     protected void registerEvents() {
-
+        EventManager.registerEvent(ConnectionEstablishedEvent.class);
     }
 
     /**
@@ -65,7 +66,7 @@ public class NeighborNodesManager extends Manager {
             ChannelCreatedEvent channelCreatedEvent = (ChannelCreatedEvent)e;
             sendNodeInfo(Node.self, channelCreatedEvent.remoteNode);
 
-        } else if(e instanceof  ChannelMessageReceivedEvent) {
+        } else if(e instanceof ChannelMessageReceivedEvent) {
             ChannelMessageReceivedEvent messageReceivedEvent = (ChannelMessageReceivedEvent)e;
             if(messageReceivedEvent.message.msgType == MsgType.NODE_INFO) {
                 NodeInfoMessage message = (NodeInfoMessage)messageReceivedEvent.message.content;
@@ -74,6 +75,8 @@ public class NeighborNodesManager extends Manager {
                 NetworkIdentity networkIdentity = new NetworkIdentity();
                 networkIdentity.setNetworkId(message.networkID);
                 messageReceivedEvent.remoteNode.setIdentity(networkIdentity);
+
+                EventManager.callEvent(new ConnectionEstablishedEvent(messageReceivedEvent.channel, messageReceivedEvent.isServer));
             }
         }
     }
