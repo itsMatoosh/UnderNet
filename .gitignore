@@ -38,3 +38,7 @@ standalone/cache/entry.nodes
 standalone/cache/me.identity
 standalone/content
 standalone/debug.log
+standalone/random.id
+*.id
+*.resources
+.idea/modules.xml
