@@ -367,6 +367,8 @@ public class ResourceManager extends Manager {
         } else if(e instanceof ChannelCreatedEvent) { //Redistribute the currently available resources when a new node connects.
             ChannelCreatedEvent connectionEvent = (ChannelCreatedEvent) e;
 
+            if(connectionEvent.other == Node.self) return;
+
             //Push each available resource.
             for (FileResource file :
                     getStoredFileResources()) {
@@ -406,6 +408,7 @@ public class ResourceManager extends Manager {
         EventManager.registerEvent(ResourcePushFinalStopEvent.class);
         EventManager.registerEvent(ResourcePullFinalStopEvent.class);
         EventManager.registerEvent(ResourceRetrieveFinalStopEvent.class);
+        EventManager.registerEvent(ChannelCreatedEvent.class);
     }
 
     /**
