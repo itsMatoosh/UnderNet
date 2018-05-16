@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -36,6 +37,10 @@ import java.util.concurrent.Executors;
  */
 
 public class ResourceManager extends Manager {
+    /**
+     * The currently active flag resources.
+     */
+    public ArrayList<FlagResource> flagResources = new ArrayList<>();
     /**
      * Cache of pulled resource ids and the requesting network ids.
      */
@@ -62,6 +67,7 @@ public class ResourceManager extends Manager {
 
     /**
      * Publishes a resource on the network.
+     * Updates the resource if already published and the node is owner.
      * This sends the resource to its closest node.
      * @param resource
      */
@@ -72,6 +78,9 @@ public class ResourceManager extends Manager {
             return;
         }
 
+        //Calculating the network id.
+        resource.calcNetworkId();
+
         //Creating a new ResourceMessage.
         final ResourceMessage pushMessage = new ResourceMessage(resource);
         pushMessage.sender = Node.self;
@@ -80,12 +89,7 @@ public class ResourceManager extends Manager {
         logger.info("Publishing resource: {}...", resource);
 
         //Sending the content to the neighbor closest to it.
-        executor.submit(new Runnable() {
-            @Override
-            public void run() {
-                pushFurther(pushMessage);
-            }
-        });
+        executor.submit(() -> pushFurther(pushMessage));
     }
 
     /**
@@ -106,16 +110,26 @@ public class ResourceManager extends Manager {
         logger.info("Pulling resource with id: {}...", pullMessage.resourceId);
 
         //Sending the resource pull content to the closest node.
-        executor.submit(new Runnable() {
-            @Override
-            public void run() {
-                pullFurther(pullMessage);
-            }
-        });
+        executor.submit(() -> pullFurther(pullMessage));
+    }
+    /**
+     * Requests to remove a resource with specific network id.
+     * @param resourceID
+     */
+    public void remove(NetworkID resourceID) {
+        //Making sure we're connected to the network.
+        if(UnderNet.router.status != InterfaceStatus.STARTED) {
+            logger.warn("Cannot remove a resource without connection to the network.");
+            return;
+        }
+
+        logger.info("Sending resource {} remove request...", resourceID);
+
+        publish(new RemoveFileResourceFlag(resourceID));
     }
 
     /**
-     * Forwards a pullMessage to the next appropriate node.
+     * Forwards a push message to the next appropriate node.
      * Calls resource stored event if this node is the resource's destination.
      * @param pushMessage
      */
@@ -125,29 +139,27 @@ public class ResourceManager extends Manager {
             return;
         }
         if(pushMessage.sender == null) {
-            logger.warn("Pull message sender null!");
+            logger.warn("Push message sender null!");
             return;
         }
 
         //Getting the node closest to the resource.
         final Node closest = router.neighborNodesManager.getClosestTo(pushMessage.resource.networkID);
         if(closest == Node.self) {
-
+            //Calling event.
+            EventManager.callEvent(new ResourcePushSentEvent(pushMessage.resource, pushMessage, closest));
             //This is the final node of the resource.
             EventManager.callEvent(new ResourcePushFinalStopEvent(pushMessage.resource, pushMessage, null));
         } else {
             logger.info("Pushing resource: {}, to node: {}", pushMessage.resource, closest);
 
             //Calling the send method.
-            pushMessage.resource.send(closest, new Resource.IResourceActionListener() {
-                @Override
-                public void onFinished(Node other) {
+            pushMessage.resource.send(closest, (other) -> {
                     //Sending the push msg.
                     closest.send(new NetworkMessage(MsgType.RES_PUSH, pushMessage));
 
                     //Calling event.
                     EventManager.callEvent(new ResourcePushSentEvent(pushMessage.resource, pushMessage, closest));
-                }
             });
         }
     }
@@ -174,21 +186,21 @@ public class ResourceManager extends Manager {
         }
 
         if(nextNode == Node.self) {
+            //Calling event.
+            EventManager.callEvent(new ResourceRetrieveSentEvent(retrieveMessage.resource, retrieveMessage));
+
             //This is the final node of the resource.
             EventManager.callEvent(new ResourceRetrieveFinalStopEvent(retrieveMessage.resource, retrieveMessage));
         } else {
             logger.info("Pushing retrieved resource: {}, to node: {}", retrieveMessage.resource, nextNode);
 
             //Calling the send method.
-            retrieveMessage.resource.send(nextNode, new Resource.IResourceActionListener() {
-                @Override
-                public void onFinished(Node other) {
-                    //Sending the push msg.
-                    nextNode.send(new NetworkMessage(MsgType.RES_RETRIEVE, retrieveMessage));
+            retrieveMessage.resource.send(nextNode, (other) -> {
+                //Sending the push msg.
+                nextNode.send(new NetworkMessage(MsgType.RES_RETRIEVE, retrieveMessage));
 
-                    //Calling event.
-                    EventManager.callEvent(new ResourceRetrieveSentEvent(retrieveMessage.resource, retrieveMessage));
-                }
+                //Calling event.
+                EventManager.callEvent(new ResourceRetrieveSentEvent(retrieveMessage.resource, retrieveMessage));
             });
         }
     }
@@ -213,6 +225,9 @@ public class ResourceManager extends Manager {
         //Checking if the resource is available on self.
         File localRes = getLocalResourceFile(pullMessage.resourceId);
         if(localRes.exists()) {
+            //Calling event.
+            EventManager.callEvent(new ResourcePullSentEvent(pullMessage));
+
             //This is the final node. This node should have the requested resource.
             EventManager.callEvent(new ResourcePullFinalStopEvent(pullMessage));
             return;
@@ -223,6 +238,9 @@ public class ResourceManager extends Manager {
 
         //Checking for self.
         if(closest == Node.self) {
+            //Calling event.
+            EventManager.callEvent(new ResourcePullSentEvent(pullMessage));
+
             //This is the final node. This node should have the requested resource.
             EventManager.callEvent(new ResourcePullFinalStopEvent(pullMessage));
         } else {
@@ -230,7 +248,25 @@ public class ResourceManager extends Manager {
 
             //Sending the pull msg.
             closest.send(new NetworkMessage(MsgType.RES_PULL, pullMessage));
+
+            //Calling event.
+            EventManager.callEvent(new ResourcePullSentEvent(pullMessage));
         }
+    }
+
+    /**
+     * Gets the file resources stored in the content folder.
+     * @return
+     */
+    public ArrayList<FileResource> getStoredFileResources() {
+        ArrayList<FileResource> resources = new ArrayList<>();
+        for (File file :
+                UnderNet.fileManager.getContentFolder().listFiles()) {
+            FileResource res = new FileResource(file);
+            res.calcNetworkId();
+            resources.add(res);
+        }
+        return resources;
     }
 
     /**

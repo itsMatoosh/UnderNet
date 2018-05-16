@@ -47,13 +47,18 @@ public class FileResource extends Resource {
      */
     @Override
     public void calcNetworkId() {
-        this.networkID = NetworkID.generateFromString(fileInfo.fileName);
+        if(this.networkID == null) {
+            this.networkID = NetworkID.generateFromString(fileInfo.fileName);
+        }
     }
 
     /**
      * Copies the file if its not in the content directory.
      */
     public void copyToContent() {
+        if(this.networkID == null) {
+            calcNetworkId();
+        }
         if(!file.toString().startsWith(UnderNet.fileManager.getContentFolder().toString())) {
             InputStream is = null;
             OutputStream os = null;
@@ -78,7 +83,7 @@ public class FileResource extends Resource {
         }
 
         //Updating the path.
-        this.file = new File(UnderNet.fileManager.getContentFolder() + "/" + this.networkID.getStringValue());
+        this.file = new File(UnderNet.fileManager.getContentFolder() + "/" + this.fileInfo.fileName);
         this.fileInfo = new FileInfo(this.file);
     }
 
@@ -88,8 +93,8 @@ public class FileResource extends Resource {
      * @return
      */
     @Override
-    public byte getResourceType() {
-        return 0;
+    public ResourceType getResourceType() {
+        return ResourceType.FILE;
     }
 
     /**
@@ -134,5 +139,29 @@ public class FileResource extends Resource {
                 "networkID=" + networkID +
                 ", fileInfo=" + fileInfo +
                 '}';
+    }
+
+    /**
+     * Checks whether the file is within the content folder.
+     * @return
+     */
+    @Override
+    public boolean isLocal() {
+        if(this.file == null) {
+            this.file = new File(UnderNet.fileManager.getContentFolder() + "/" + this.fileInfo.fileName);
+        }
+        if(this.file != null && this.file.exists()) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Returns the name of the file.
+     * @return
+     */
+    @Override
+    public String getDisplayName() {
+        return fileInfo.fileName;
     }
 }

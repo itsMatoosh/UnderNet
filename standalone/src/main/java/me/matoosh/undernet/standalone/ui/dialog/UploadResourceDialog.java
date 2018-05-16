@@ -72,7 +72,6 @@ public class UploadResourceDialog extends JDialog {
                 if(fileChooseResult != null) {
                     //Publishing resource on UnderNet.
                     FileResource fileResource = new FileResource(fileChooseResult);
-                    fileResource.calcNetworkId();
                     fileResource.copyToContent();
                     UnderNet.router.resourceManager.publish(fileResource);
                     UploadResourceDialog.this.dispose();

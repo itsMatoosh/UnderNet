@@ -1,20 +1,16 @@
-package me.matoosh.undernet.standalone.identity;
-
-import me.matoosh.undernet.identity.NetworkIdentity;
+package me.matoosh.undernet.standalone.serialization;
 
 import java.io.*;
 
 /**
- * Tools for managing network identities.
+ * Toolkit for serializing objects.
  */
-public class NetworkIdentityTools {
-
+public class SerializationTools {
     /**
      * Writes the specified identity info to the specified path.
-     * @param identity
      * @param saveFile
      */
-    public static void writeIdentityToFile(NetworkIdentity identity, File saveFile) {
+    public static void writeObjectToFile(Object obj, File saveFile) {
         //Checking if the file exists.
         if(saveFile.exists()) {
             saveFile.delete();
@@ -24,7 +20,7 @@ public class NetworkIdentityTools {
         try {
             FileOutputStream fos = new FileOutputStream(saveFile);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(identity);
+            oos.writeObject(obj);
             oos.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -37,7 +33,7 @@ public class NetworkIdentityTools {
      * Reads identity info from the specified file.
      * @param file
      */
-    public static NetworkIdentity readIdentityFromFile(File file) {
+    public static Object readObjectFromFile(File file) {
         //Checking if the cache exists.
         if(!file.exists()) {
             return null;
@@ -47,9 +43,9 @@ public class NetworkIdentityTools {
         try {
             FileInputStream fis = new FileInputStream(file);
             ObjectInputStream ois = new ObjectInputStream(fis);
-            NetworkIdentity identity = (NetworkIdentity) ois.readObject();
+            Object object = ois.readObject();
             ois.close();
-            return identity;
+            return object;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

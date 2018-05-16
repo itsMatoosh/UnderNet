@@ -9,7 +9,7 @@ import me.matoosh.undernet.event.router.RouterStatusEvent;
 import me.matoosh.undernet.event.server.ServerExceptionEvent;
 import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.standalone.UnderNetStandalone;
-import me.matoosh.undernet.standalone.identity.NetworkIdentityTools;
+import me.matoosh.undernet.standalone.serialization.SerializationTools;
 import me.matoosh.undernet.standalone.ui.dialog.PullResourceDialog;
 import me.matoosh.undernet.standalone.ui.dialog.UploadResourceDialog;
 import org.apache.commons.io.FilenameUtils;
@@ -39,7 +39,7 @@ public class AppFrame extends JFrame {
     /**
      * The list of communities.
      */
-    public SectionsPanel sectionsPanel;
+    public ResourcesPanel resourcesPanel;
 
     /**
      * The menu bar of the frame.
@@ -142,7 +142,7 @@ public class AppFrame extends JFrame {
                 fileChooser.setCurrentDirectory(UnderNet.fileManager.getAppFolder());
                 if(fileChooser.showSaveDialog(AppFrame.this) == JFileChooser.APPROVE_OPTION) {
                     //Reading the identity file.
-                    NetworkIdentity identity = NetworkIdentityTools.readIdentityFromFile(fileChooser.getSelectedFile());
+                    NetworkIdentity identity = (NetworkIdentity)SerializationTools.readObjectFromFile(fileChooser.getSelectedFile());
 
                     if(identity == null) {
                         //Incorrect file.
@@ -152,7 +152,7 @@ public class AppFrame extends JFrame {
                     }
 
                     //User chose the save option.
-                    NetworkIdentityTools.writeIdentityToFile(identity, fileChooser.getSelectedFile());
+                    SerializationTools.writeObjectToFile(identity, fileChooser.getSelectedFile());
 
                     //Setting the new id.
                     UnderNetStandalone.setNetworkIdentity(identity, fileChooser.getSelectedFile());
@@ -182,7 +182,7 @@ public class AppFrame extends JFrame {
                         file = new File(file.getParentFile(), FilenameUtils.getBaseName(file.getName())+".id"); //Remove the extension (if any) and replace it with ".id"
                     }
 
-                    NetworkIdentityTools.writeIdentityToFile(newIdentity, file);
+                    SerializationTools.writeObjectToFile(newIdentity, file);
 
                     //Setting the new id.
                     UnderNetStandalone.setNetworkIdentity(newIdentity, file);
@@ -227,9 +227,9 @@ public class AppFrame extends JFrame {
         contentPanel.setBorder(BorderFactory.createLineBorder(Color.red));
         nodesPanel = new NodesPanel();
         nodesPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-        sectionsPanel = new SectionsPanel();
-        sectionsPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-        add(sectionsPanel, new GridBagConstraints(0, 0, 1, 1, 0.125, 1, GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+        resourcesPanel = new ResourcesPanel();
+        resourcesPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+        add(resourcesPanel, new GridBagConstraints(0, 0, 1, 1, 0.125, 1, GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
         add(contentPanel, new GridBagConstraints(1, 0, 1, 1, 0.75, 1, GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
         add(nodesPanel, new GridBagConstraints(2, 0, 1, 1, 0.125, 1, GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
 

@@ -1,6 +1,7 @@
 package me.matoosh.undernet.p2p.router.data;
 
 import me.matoosh.undernet.UnderNet;
+import uk.org.bobulous.java.crypto.keccak.FIPS202;
 import uk.org.bobulous.java.crypto.keccak.KeccakSponge;
 
 import java.io.IOException;
@@ -25,7 +26,7 @@ public class NetworkID implements Serializable {
     /**
      * The length of a network id.
      */
-    public static int networkIdLength = 100;
+    public static int networkIdLength = 128;
 
     /**
      * The data of the network id.
@@ -202,9 +203,9 @@ public class NetworkID implements Serializable {
      * @return
      */
     public static NetworkID generateFromString(String string) {
-        KeccakSponge spongeFunction = new KeccakSponge(40, 160, "", 800);
+        KeccakSponge spongeFunction = FIPS202.ExtendableOutputFunction.SHAKE256.withOutputLength(networkIdLength*8);
 
-        return new NetworkID(spongeFunction.apply(5, string.getBytes(Charset.forName("UTF-8"))));
+        return new NetworkID(spongeFunction.apply(string.getBytes(Charset.forName("UTF-8"))));
     }
 
     /**

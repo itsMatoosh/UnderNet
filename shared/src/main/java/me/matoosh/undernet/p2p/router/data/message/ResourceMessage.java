@@ -1,6 +1,5 @@
 package me.matoosh.undernet.p2p.router.data.message;
 
-import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.resource.Resource;
 
 /**
@@ -25,6 +24,6 @@ public class ResourceMessage extends MsgBase {
      */
     public ResourceMessage(Resource resource) {
         this.resource = resource;
-        this.resourceType = resource.getResourceType();
+        this.resourceType = resource.getResourceType().getValue();
     }
 }

@@ -8,7 +8,7 @@ import me.matoosh.undernet.file.StandaloneFileManager;
 import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.standalone.config.StandaloneConfig;
 import me.matoosh.undernet.standalone.config.StandaloneConfigManager;
-import me.matoosh.undernet.standalone.identity.NetworkIdentityTools;
+import me.matoosh.undernet.standalone.serialization.SerializationTools;
 import me.matoosh.undernet.standalone.ui.AppFrame;
 import org.cfg4j.provider.ConfigurationProvider;
 import org.cfg4j.provider.ConfigurationProviderBuilder;
@@ -71,7 +71,7 @@ public class UnderNetStandalone {
                 } else {
                     File currentIdentityFile = new File(standaloneConfig.identity());
                     if(currentIdentityFile != null && currentIdentityFile.exists()) {
-                        NetworkIdentity identity = NetworkIdentityTools.readIdentityFromFile(currentIdentityFile);
+                        NetworkIdentity identity = (NetworkIdentity)SerializationTools.readObjectFromFile(currentIdentityFile);
                         UnderNetStandalone.setNetworkIdentity(identity, currentIdentityFile);
                     } else {
                         UnderNetStandalone.setNetworkIdentity(null, null);
@@ -133,7 +133,7 @@ public class UnderNetStandalone {
         if(identity == null || identityFile == null) {
             identity = new NetworkIdentity();
             identityFile = new File(UnderNet.fileManager.getAppFolder() + "/random.id");
-            NetworkIdentityTools.writeIdentityToFile(identity, identityFile);
+            SerializationTools.writeObjectToFile(identity, identityFile);
         }
 
         UnderNetStandalone.networkIdentity = identity;

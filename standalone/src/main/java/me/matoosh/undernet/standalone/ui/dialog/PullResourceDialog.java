@@ -7,7 +7,7 @@ import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.resource.retrieve.ResourceRetrieveFinalStopEvent;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.resource.FileResource;
-import me.matoosh.undernet.standalone.ui.AppFrame;
+import me.matoosh.undernet.p2p.router.data.resource.ResourceType;
 
 import javax.swing.*;
 import java.awt.*;
@@ -92,7 +92,7 @@ public class PullResourceDialog extends JDialog {
                         public void onEventCalled(Event e) {
                             ResourceRetrieveFinalStopEvent finalStopEvent = (ResourceRetrieveFinalStopEvent)e;
 
-                            if(finalStopEvent.resource.networkID.equals(netId) && finalStopEvent.resource.getResourceType() == 0) {
+                            if(finalStopEvent.resource.networkID.equals(netId) && finalStopEvent.resource.getResourceType() == ResourceType.FILE) {
                                 FileResource fileResource = (FileResource)finalStopEvent.resource;
 
                                 //Copying the received file to dest.
@@ -109,10 +109,6 @@ public class PullResourceDialog extends JDialog {
                                     //File dialog.
                                     JOptionPane.showMessageDialog(PullResourceDialog.this, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.fileInfo.fileName, finalStopEvent.resource.networkID.getStringValue(), UnderNet.fileManager.getContentFolder()), "File Retrieved!", JOptionPane.INFORMATION_MESSAGE);
                                 }
-                            } else {
-                                //Dialog
-                                ResourceRetrieveFinalStopEvent resourceRetrieveFinalStopEvent = (ResourceRetrieveFinalStopEvent)e;
-                                JOptionPane.showMessageDialog(AppFrame.contentPanel, String.format("Retrieved resource! \nNetwork id: %s", resourceRetrieveFinalStopEvent.resource.networkID), "Resource Retrieved!", JOptionPane.INFORMATION_MESSAGE);
                             }
 
                             //Unregistering the handler.
