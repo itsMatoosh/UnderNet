@@ -166,7 +166,6 @@ public class Client {
      * Registers the client handlers.
      */
     private void registerEvents() {
-        EventManager.registerEvent(ClientConnectionEvent.class);
         EventManager.registerEvent(ClientStatusEvent.class);
         EventManager.registerEvent(ClientExceptionEvent.class);
     }
