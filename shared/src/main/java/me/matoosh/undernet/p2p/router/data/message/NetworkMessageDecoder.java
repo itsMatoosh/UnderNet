@@ -23,10 +23,6 @@ public class NetworkMessageDecoder extends ByteToMessageDecoder {
      * The current data write index.
      */
     private int dataWriteIndex = 0;
-    /**
-     * Number of bytes to discard.
-     */
-    private int bytesToDiscard = 0;
 
     /**
      * The logger of the class.
@@ -53,39 +49,21 @@ public class NetworkMessageDecoder extends ByteToMessageDecoder {
             byte checksum = in.readByte();
             short dataLenght = in.readShort();
 
-            //Checking the message expiration.
-            //if(System.currentTimeMillis() < expiration) {
-                //Creating the cached message.
-                cachedMessage = new NetworkMessage();
+            //Creating the cached message.
+            cachedMessage = new NetworkMessage();
 
-                cachedMessage.msgType = MsgType.getById(msgId);
-                cachedMessage.expiration = expiration;
-                cachedMessage.checksum = checksum;
-                cachedMessage.dataLength = dataLenght;
-                cachedMessage.data = ByteBuffer.wrap(new byte[dataLenght - Short.MIN_VALUE]);
-            /*} else {
-                //Discarding the bytes.
-                logger.warn("Received an expired message with id: " + msgId + ", discarding...");
-                bytesToDiscard = dataLenght;
-            }*/
+            cachedMessage.msgType = MsgType.getById(msgId);
+            cachedMessage.expiration = expiration;
+            cachedMessage.checksum = checksum;
+            cachedMessage.dataLength = dataLenght;
+            cachedMessage.data = ByteBuffer.wrap(new byte[dataLenght - Short.MIN_VALUE]);
         }
         //Reading the data of the cached message.
-        while((dataWriteIndex < cachedMessage.data.capacity() || bytesToDiscard > 0) && in.readableBytes() > 0) {
-            if(bytesToDiscard > 0) {
-                bytesToDiscard -= in.readableBytes();
-                in.release();
-                if(bytesToDiscard <= 0) {
-                    //All necessary bytes discarded.
-                    bytesToDiscard = 0;
-                    cachedMessage = null;
-                    dataWriteIndex = 0;
-                    return;
-                }
-            } else {
-                cachedMessage.data.put(dataWriteIndex, in.readByte());
-                dataWriteIndex++;
-            }
+        while(dataWriteIndex < cachedMessage.data.capacity() && in.readableBytes() > 0) {
+            cachedMessage.data.put(dataWriteIndex, in.readByte());
+            dataWriteIndex++;
         }
+        
         //Checking if all the data has been received.
         if(dataWriteIndex >= cachedMessage.data.capacity()) {
             //Message data received. Outputting the constructed message.
