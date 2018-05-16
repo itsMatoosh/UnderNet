@@ -79,7 +79,7 @@ public class FileResource extends Resource {
                     os.close();
                 } catch (IOException e) {
                     ResourceManager.logger.error("An error occured while closing the copy streams for file: " + file.toString() + "!", e);
-                    return false''
+                    return false;
                 }
             }
         }
