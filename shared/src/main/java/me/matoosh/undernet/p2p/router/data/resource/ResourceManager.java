@@ -3,6 +3,7 @@ package me.matoosh.undernet.p2p.router.data.resource;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventManager;
+import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
 import me.matoosh.undernet.event.resource.pull.ResourcePullFinalStopEvent;
 import me.matoosh.undernet.event.resource.pull.ResourcePullReceivedEvent;
@@ -362,6 +363,22 @@ public class ResourceManager extends Manager {
                 retrieveFurther(resourceMessage);
             } else {
                 logger.warn("Resource: {} not available on {}. The pull request will be dropped!", resourcePullFinalStopEvent.pullMessage.resourceId, Node.self);
+            }
+        } else if(e instanceof ChannelCreatedEvent) { //Redistribute the currently available resources when a new node connects.
+            ChannelCreatedEvent connectionEvent = (ChannelCreatedEvent) e;
+
+            //Push each available resource.
+            for (FileResource file :
+                    getStoredFileResources()) {
+                ResourceMessage rm = new ResourceMessage(file);
+                rm.sender = Node.self;
+                pushFurther(rm);
+            }
+            for (FlagResource flag :
+                    flagResources) {
+                ResourceMessage rm = new ResourceMessage(flag);
+                rm.sender = Node.self;
+                pushFurther(rm);
             }
         }
     }

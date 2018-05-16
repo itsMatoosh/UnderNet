@@ -12,7 +12,6 @@ import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import me.matoosh.undernet.event.EventManager;
-import me.matoosh.undernet.event.client.ClientConnectionEvent;
 import me.matoosh.undernet.event.client.ClientExceptionEvent;
 import me.matoosh.undernet.event.client.ClientStatusEvent;
 import me.matoosh.undernet.p2p.cache.EntryNodeCache;
