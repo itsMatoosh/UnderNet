@@ -73,11 +73,11 @@ public class FileTransfer {
         prepareStreams();
     }
     /**
-     * Prepares the file streams for this trasfer.
+     * Prepares the file streams for this transfer.
      */
     private void prepareStreams() {
         //Caching the path of the file.
-        file = new File(UnderNet.fileManager.getContentFolder() + "/" + id.getStringValue());
+        file = new File(UnderNet.fileManager.getContentFolder() + "/" + this.fileInfo.fileName);
 
         if(fileTransferType == FileTransferType.OUTBOUND) {
             try {
