@@ -11,7 +11,6 @@ import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 import me.matoosh.undernet.p2p.router.data.resource.FileResource;
 
 import java.io.*;
-import java.util.concurrent.Callable;
 
 import static me.matoosh.undernet.p2p.router.Router.logger;
 
@@ -77,7 +76,7 @@ public class FileTransfer {
      */
     private void prepareStreams() {
         //Caching the path of the file.
-        file = new File(UnderNet.fileManager.getContentFolder() + "/" + this.fileInfo.fileName);
+        this.file = new File(UnderNet.fileManager.getContentFolder() + "/" + this.fileInfo.fileName);
 
         if(fileTransferType == FileTransferType.OUTBOUND) {
             try {
@@ -111,32 +110,32 @@ public class FileTransfer {
     public void startSending() {
         if(fileTransferType.equals(FileTransferType.OUTBOUND)) {
             //File sending logic.
-            UnderNet.router.fileTransferManager.executor.submit(new Callable() {
-                @Override
-                public Object call() throws Exception {
-                    int totalRead = 0; //Amount of bytes read from the send stream.
-                    try {
-                        //The send buffer.
-                        byte[] buffer = new byte[BUFFER_SIZE];
-                        int read = 0;
-                        while ((read = inputStream.read(buffer)) > 0) {
-                            totalRead += read;
+            UnderNet.router.fileTransferManager.executor.submit(() -> {
+                int totalRead = 0; //Amount of bytes read from the send stream.
+                try {
+                    //The send buffer.
+                    byte[] buffer = new byte[BUFFER_SIZE];
+                    int read = 0;
+                    while ((read = inputStream.read(buffer)) > 0) {
+                        totalRead += read;
 
-                            byte[] data = new byte[read];
-                            System.arraycopy(buffer, 0, data, 0, read);
-                            sendChunk(data);
-                            logger.debug("Chunk sent {}/{}", totalRead, fileInfo.fileLength);
-                        }
-                    } catch (IOException e) {
-                        FileTransferManager.logger.error("Error reading " + BUFFER_SIZE + " chunk from file: " + file, e);
-                        EventManager.callEvent(new FileTransferErrorEvent(FileTransfer.this, e));
+                        byte[] data = new byte[read];
+                        System.arraycopy(buffer, 0, data, 0, read);
+                        sendChunk(data);
+                        logger.debug("Chunk sent {}/{}", totalRead, fileInfo.fileLength);
                     }
-                    finally {
-                        //File sent or error.
-                        EventManager.callEvent(new FileTransferFinishedEvent(FileTransfer.this));
-                    }
-                    return null;
+                } catch (IOException e) {
+                    FileTransferManager.logger.error("Error reading " + BUFFER_SIZE + " chunk from file: " + file, e);
+                    EventManager.callEvent(new FileTransferErrorEvent(FileTransfer.this, e));
                 }
+                finally {
+                    //Closing stream.
+                    FileTransfer.this.outputStream.close();
+
+                    //File sent or error.
+                    EventManager.callEvent(new FileTransferFinishedEvent(FileTransfer.this));
+                }
+                return null;
             });
         }
 
@@ -161,8 +160,11 @@ public class FileTransfer {
             try {
                 outputStream.write(chunk.data);
                 written += chunk.data.length;
-                logger.debug("File chunk received for: " + id + " " + written + "/" + fileInfo.fileLength);
+                logger.debug("File chunk received for: {} | {}/{}", id, written, fileInfo.fileLength);
                 if(written >= fileInfo.fileLength) {
+                    //Closing the input stream.
+                    this.inputStream.close();
+
                     //File fully received.
                     EventManager.callEvent(new FileTransferFinishedEvent(this));
                 }
