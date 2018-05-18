@@ -14,7 +14,12 @@ public abstract class Resource implements Serializable {
     /**
      * The network id of this resource.
      */
-    public NetworkID networkID;
+    private NetworkID networkID;
+
+    /**
+     * The owner of the resource.
+     */
+    private NetworkID owner;
 
     /**
      * Calculates the network id of the resource based on its contents.
@@ -55,6 +60,38 @@ public abstract class Resource implements Serializable {
      * @return
      */
     public abstract String getDisplayName();
+
+    /**
+     * Sets the network id.
+     * @param id
+     */
+    public void setNetworkID(NetworkID id) {
+        if(id.isValid()) {
+            this.networkID = id;
+        } else {
+            ResourceManager.logger.info("Can't set resource id to: {}, invalid ID", id);
+        }
+    }
+    /**
+     * Gets the network id.
+     * @return
+     */
+    public NetworkID getNetworkID() {
+        return this.networkID;
+    }
+    /**
+     * Sets the owner.
+     * @param owner
+     */
+    public void setOwner(NetworkID owner) {
+        this.owner = owner;
+    }
+    /**
+     * Gets the owner.
+     */
+    public NetworkID getOwner() {
+        return this.owner;
+    }
 
     /**
      * Listens for the finishing of a resource action.

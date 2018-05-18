@@ -60,7 +60,7 @@ public class ResourcesPanel extends JPanel {
 
                         if(resource.isLocal()) return; //Already pulled
                         //Pulling the resource.
-                        UnderNet.router.resourceManager.pull(resource.networkID);
+                        UnderNet.router.resourceManager.pull(resource.getNetworkID());
                     }
                 }
             }
@@ -102,7 +102,7 @@ public class ResourcesPanel extends JPanel {
     }
     private void addCachedResource(Resource resource) {
         for (int i = 0; i < resourceCache.size(); i++) {
-            if(resource.networkID.equals(resourceCache.get(i).networkID)) {
+            if(resource.getNetworkID().equals(resourceCache.get(i).getNetworkID())) {
                 return;
             }
         }
@@ -117,7 +117,11 @@ public class ResourcesPanel extends JPanel {
         saveResourceCache();
     }
     private void loadResourceCache() {
-        this.resourceCache = (ArrayList<Resource>) SerializationTools.readObjectFromFile(new File(UnderNet.fileManager.getCacheFolder() + "/owned.resources"));
+        File resourcesFile = new File(UnderNet.fileManager.getCacheFolder() + "/owned.resources");
+        this.resourceCache = (ArrayList<Resource>) SerializationTools.readObjectFromFile(resourcesFile);
+        if(this.resourceCache == null && resourcesFile.exists()) {
+            resourcesFile.delete();
+        }
     }
     private void saveResourceCache() {
         SerializationTools.writeObjectToFile(resourceCache, new File(UnderNet.fileManager.getCacheFolder() + "/owned.resources"));

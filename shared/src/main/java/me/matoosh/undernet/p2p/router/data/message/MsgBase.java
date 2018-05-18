@@ -1,17 +1,29 @@
 package me.matoosh.undernet.p2p.router.data.message;
 
-import me.matoosh.undernet.p2p.node.Node;
-
 import java.io.Serializable;
 
 /**
- * Base of a content.
+ * Base of message content.
  * Created by Mateusz Rębacz on 26.09.2017.
  */
 
 public abstract class MsgBase implements Serializable {
     /**
-     * The sender of the content.
+     * The network message object that carries this content.
      */
-    public Node sender;
+    public NetworkMessage networkMessage;
+
+    /**
+     * Gets the type of the message.
+     * @return
+     */
+    public abstract MsgType getType();
+
+    /**
+     * Instantiates deserialized message content.
+     * @param networkMessage the network message carrying this content.
+     */
+    public MsgBase(NetworkMessage networkMessage) {
+        this.networkMessage = networkMessage;
+    }
 }

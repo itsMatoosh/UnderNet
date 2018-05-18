@@ -64,7 +64,7 @@ public class FileTransfer {
     private int written = 0;
 
     public FileTransfer(FileResource resource, Node remoteNode, FileTransferType fileTransferType) {
-        this.id = resource.networkID;
+        this.id = resource.getNetworkID();
         this.fileInfo = resource.fileInfo;
         this.recipient = remoteNode;
         this.fileTransferType = fileTransferType;

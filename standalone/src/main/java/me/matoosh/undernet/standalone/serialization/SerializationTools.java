@@ -7,7 +7,7 @@ import java.io.*;
  */
 public class SerializationTools {
     /**
-     * Writes the specified identity info to the specified path.
+     * Writes the specified object to the specified path.
      * @param saveFile
      */
     public static void writeObjectToFile(Object obj, File saveFile) {
@@ -30,7 +30,7 @@ public class SerializationTools {
     }
 
     /**
-     * Reads identity info from the specified file.
+     * Reads object from the specified file.
      * @param file
      */
     public static Object readObjectFromFile(File file) {
@@ -46,13 +46,7 @@ public class SerializationTools {
             Object object = ois.readObject();
             ois.close();
             return object;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+        } catch (FileNotFoundException e) {} catch (IOException e) {} catch (ClassNotFoundException e) {}
         return null;
     }
 }

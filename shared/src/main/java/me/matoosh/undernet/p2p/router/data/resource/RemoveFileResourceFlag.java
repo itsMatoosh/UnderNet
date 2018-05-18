@@ -41,7 +41,7 @@ public class RemoveFileResourceFlag extends FlagResource {
     public void receive(Node sender, IResourceActionListener resourceActionListener) {
         //Removing the resource from [self]
         for (FileResource file : UnderNet.router.resourceManager.getStoredFileResources()) {
-            if(file.networkID.equals(this.toRemove)) {
+            if(file.getNetworkID().equals(this.toRemove)) {
                 new File(UnderNet.fileManager.getContentFolder() + "/" + file.fileInfo.fileName).delete();
             }
         }

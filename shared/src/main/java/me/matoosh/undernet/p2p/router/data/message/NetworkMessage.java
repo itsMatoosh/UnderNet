@@ -1,5 +1,6 @@
 package me.matoosh.undernet.p2p.router.data.message;
 
+import me.matoosh.undernet.p2p.router.data.NetworkID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,30 +8,32 @@ import java.io.*;
 import java.nio.ByteBuffer;
 
 /**
- * A content that can be serialized and deserialized using the NetworkMessageSerializer.
+ * Network Message is the base for all the network communication.
+ * The message will be passed on by the intermediate nodes
  * Created by Mateusz Rębacz on 29.04.2017.
  */
 
 public class NetworkMessage {
     /**
+     * The destination that the message will be forwarded to.
+     */
+    private NetworkID destination;
+    /**
      * Unique id of the content.
      */
-    public MsgType msgType;
+    private MsgType msgType;
     /**
-     * The content.
+     * The content of the message.
+     * Known only by the destination node.
      */
-    public MsgBase content;
+    private MsgBase content;
 
     /**
-     * The expiration time of the content.
-     */
-    public long expiration;
-    /**
-     * Ensures data integrity on the receivers side.
+     * Checksum of the decrypted content.
      */
     public byte checksum;
     /**
-     * The lenght of the sent data.
+     * The lenght of the message content data.
      */
     public short dataLength;
 
@@ -40,8 +43,7 @@ public class NetworkMessage {
     public static Logger logger = LoggerFactory.getLogger(NetworkMessage.class);
 
     /**
-     * The data transported by the content.
-     * Can be up to 64 fragments (64KB)
+     * The raw data transported by the content.
      */
     public ByteBuffer data;
 
@@ -73,7 +75,7 @@ public class NetworkMessage {
      * Serializes the content's content.
      */
     public void serialize() {
-        logger.info("Serializing message {}", msgType);
+        logger.info("Serializing and encrypting message {}", msgType);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutput out = null;
         try {
@@ -85,7 +87,6 @@ public class NetworkMessage {
             //Setting the msg info.
             this.dataLength = (short)(Short.MIN_VALUE + this.data.array().length);
             this.checksum = calcChecksum();
-            this.expiration = 0;
         } catch (IOException e) {
             logger.error("Error while serializing a network message: " + this.toString(), e);
         } finally {

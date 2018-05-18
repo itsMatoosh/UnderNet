@@ -79,6 +79,9 @@ public class ResourceManager extends Manager {
             return;
         }
 
+        //Setting the owner.
+        resource.setOwner(Node.self.getIdentity().getNetworkId());
+
         //Calculating the network id.
         resource.calcNetworkId();
 
@@ -135,8 +138,8 @@ public class ResourceManager extends Manager {
      * @param pushMessage
      */
     public void pushFurther(final ResourceMessage pushMessage) {
-        if(!pushMessage.resource.networkID.isValid()) {
-            logger.warn("Network id: {} is invalid, the requested resource won't be pulled!", pushMessage.resource.networkID);
+        if(!pushMessage.resource.getNetworkID().isValid()) {
+            logger.warn("Network id: {} is invalid, the requested resource won't be pulled!", pushMessage.resource.getNetworkID());
             return;
         }
         if(pushMessage.sender == null) {
@@ -145,7 +148,7 @@ public class ResourceManager extends Manager {
         }
 
         //Getting the node closest to the resource.
-        final Node closest = router.neighborNodesManager.getClosestTo(pushMessage.resource.networkID);
+        final Node closest = router.neighborNodesManager.getClosestTo(pushMessage.resource.getNetworkID());
         if(closest == Node.self) {
             //Calling event.
             EventManager.callEvent(new ResourcePushSentEvent(pushMessage.resource, pushMessage, closest));
@@ -170,8 +173,8 @@ public class ResourceManager extends Manager {
      * @param retrieveMessage
      */
     public void retrieveFurther(final ResourceMessage retrieveMessage) {
-        if(!retrieveMessage.resource.networkID.isValid()) {
-            logger.warn("Network id: {} is invalid, the requested resource won't be pulled!", retrieveMessage.resource.networkID);
+        if(!retrieveMessage.resource.getNetworkID().isValid()) {
+            logger.warn("Network id: {} is invalid, the requested resource won't be pulled!", retrieveMessage.resource.getNetworkID());
             return;
         }
         if(retrieveMessage.sender == null) {
@@ -180,7 +183,7 @@ public class ResourceManager extends Manager {
         }
 
         //Getting the next cached node to retrieve.
-        final Node nextNode = pullCache.get(retrieveMessage.resource.networkID.getStringValue());
+        final Node nextNode = pullCache.get(retrieveMessage.resource.getNetworkID().getStringValue());
         if(nextNode == null) {
             logger.warn("Can't retrieve resource {} further, no cached next node.", retrieveMessage.resource);
             return;
@@ -263,6 +266,8 @@ public class ResourceManager extends Manager {
         ArrayList<FileResource> resources = new ArrayList<>();
         for (File file :
                 UnderNet.fileManager.getContentFolder().listFiles()) {
+            if(file.isHidden()) continue;
+            if(!file.canRead()) continue;
             FileResource res = new FileResource(file);
             res.calcNetworkId();
             resources.add(res);

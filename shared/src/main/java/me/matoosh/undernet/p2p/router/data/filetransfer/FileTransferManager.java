@@ -70,14 +70,14 @@ public class FileTransferManager extends Manager {
      * @param resource
      */
     public FileTransfer requestFileTransfer(Node receivedFrom, FileResource resource) {
-        logger.info("Requesting the transfer {} from {}", resource.networkID, receivedFrom);
+        logger.info("Requesting the transfer {} from {}", resource.getNetworkID(), receivedFrom);
 
         //Caching a new transfer instance.
         FileTransfer transfer = new FileTransfer(resource, receivedFrom, FileTransferType.INBOUND);
         inboundTransfers.add(transfer);
 
         //Sending a new FileRequest message.
-        receivedFrom.send(new NetworkMessage(MsgType.FILE_REQ, new FileTransferRequestMessage(resource.networkID)));
+        receivedFrom.send(new NetworkMessage(MsgType.FILE_REQ, new FileTransferRequestMessage(resource.getNetworkID())));
         return transfer;
     }
 

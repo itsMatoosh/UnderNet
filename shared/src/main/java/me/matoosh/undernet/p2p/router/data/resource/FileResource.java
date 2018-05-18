@@ -47,8 +47,8 @@ public class FileResource extends Resource {
      */
     @Override
     public void calcNetworkId() {
-        if(this.networkID == null) {
-            this.networkID = NetworkID.generateFromString(fileInfo.fileName);
+        if(this.getNetworkID() == null) {
+            this.setNetworkID(NetworkID.generateFromString(fileInfo.fileName));
         }
     }
 
@@ -56,10 +56,15 @@ public class FileResource extends Resource {
      * Copies the file if its not in the content directory.
      */
     public boolean copyToContent() {
-        if(this.networkID == null) {
+        if(this.getNetworkID() == null) {
             calcNetworkId();
         }
         if(!file.toString().startsWith(UnderNet.fileManager.getContentFolder().toString())) {
+            if(!file.exists()) return false;
+            if(!file.canRead()) return false;
+            if(file.isHidden()) return false;
+            if(file.isDirectory()) return false;
+
             InputStream is = null;
             OutputStream os = null;
             try {
@@ -140,7 +145,7 @@ public class FileResource extends Resource {
     @Override
     public String toString() {
         return "FileResource{" +
-                "networkID=" + networkID +
+                "networkID=" + this.getNetworkID() +
                 ", fileInfo=" + fileInfo +
                 '}';
     }

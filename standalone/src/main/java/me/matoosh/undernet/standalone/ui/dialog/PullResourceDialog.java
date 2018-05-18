@@ -92,7 +92,7 @@ public class PullResourceDialog extends JDialog {
                         public void onEventCalled(Event e) {
                             ResourceRetrieveFinalStopEvent finalStopEvent = (ResourceRetrieveFinalStopEvent)e;
 
-                            if(finalStopEvent.resource.networkID.equals(netId) && finalStopEvent.resource.getResourceType() == ResourceType.FILE) {
+                            if(finalStopEvent.resource.getNetworkID().equals(netId) && finalStopEvent.resource.getResourceType() == ResourceType.FILE) {
                                 FileResource fileResource = (FileResource)finalStopEvent.resource;
 
                                 //Copying the received file to dest.
@@ -104,10 +104,10 @@ public class PullResourceDialog extends JDialog {
                                     }
 
                                     //File dialog.
-                                    JOptionPane.showMessageDialog(PullResourceDialog.this, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.fileInfo.fileName, finalStopEvent.resource.networkID.getStringValue(), saveFile[0]),"File Retrieved!",  JOptionPane.INFORMATION_MESSAGE);
+                                    JOptionPane.showMessageDialog(PullResourceDialog.this, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.fileInfo.fileName, finalStopEvent.resource.getNetworkID().getStringValue(), saveFile[0]),"File Retrieved!",  JOptionPane.INFORMATION_MESSAGE);
                                 } else {
                                     //File dialog.
-                                    JOptionPane.showMessageDialog(PullResourceDialog.this, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.fileInfo.fileName, finalStopEvent.resource.networkID.getStringValue(), UnderNet.fileManager.getContentFolder()), "File Retrieved!", JOptionPane.INFORMATION_MESSAGE);
+                                    JOptionPane.showMessageDialog(PullResourceDialog.this, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.fileInfo.fileName, finalStopEvent.resource.getNetworkID().getStringValue(), UnderNet.fileManager.getContentFolder()), "File Retrieved!", JOptionPane.INFORMATION_MESSAGE);
                                 }
                             }
 

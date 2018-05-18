@@ -10,7 +10,6 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.net.URLDecoder;
 
 /**
  * Dialog for uploading resources to the network.
@@ -82,12 +81,12 @@ public class UploadResourceDialog extends JDialog {
                     UploadResourceDialog.this.dispose();
 
                     //Copying the network to clipboard.
-                    StringSelection stringSelection = new StringSelection(fileResource.networkID.getStringValue());
+                    StringSelection stringSelection = new StringSelection(fileResource.getNetworkID().getStringValue());
                     Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
                     clipboard.setContents(stringSelection, null);
 
                     //Showing the published network id.
-                    JOptionPane.showMessageDialog(UploadResourceDialog.this.frame, String.format("Publishing %s, \nNetwork id: %s \nThe network id has been copied to your clipboard.", fileChooseResult, fileResource.networkID.getStringValue()), "Publishing resource", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(UploadResourceDialog.this.frame, String.format("Publishing %s, \nNetwork id: %s \nThe network id has been copied to your clipboard.", fileChooseResult, fileResource.getNetworkID().getStringValue()), "Publishing resource", JOptionPane.INFORMATION_MESSAGE);
                 }
             }
         });
