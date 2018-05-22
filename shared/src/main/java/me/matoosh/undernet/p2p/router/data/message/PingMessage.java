@@ -12,4 +12,9 @@ public class PingMessage extends MsgBase {
     public PingMessage(boolean pong) {
         this.pong = pong;
     }
+
+    @Override
+    public MsgType getType() {
+        return MsgType.NODE_PING;
+    }
 }

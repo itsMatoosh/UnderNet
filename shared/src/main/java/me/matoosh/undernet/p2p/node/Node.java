@@ -4,6 +4,7 @@ import io.netty.channel.Channel;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.p2p.router.Router;
+import me.matoosh.undernet.p2p.router.data.message.MsgBase;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,13 +90,13 @@ public class Node implements Serializable {
     }
 
     /**
-     * Sends a NetworkMessage to the node.
+     * Sends a raw NetworkMessage to the node.
      * @param msg
      */
-    public void send(NetworkMessage msg) {
-        logger.info("Sending a message to: {} of type: {}", address, msg.msgType);
+    public void sendRaw(NetworkMessage msg) {
+        logger.info("Sending a message to: {}", address);
         if(channel == null) {
-            logger.error("Long distance messages have not been implemented yet :(", new Exception());
+            logger.error("Node {} is not a neighboring node, can't send the message!", new Exception());
         } else {
             try {
                 channel.writeAndFlush(msg).sync();
@@ -103,6 +104,14 @@ public class Node implements Serializable {
                 logger.error("Sending a message to: " + address + " has been interrupted!", e);
             }
         }
+    }
+
+    /**
+     * Sends a message to the node.
+     * @param content
+     */
+    public void send(MsgBase content) {
+        router.networkMessageManager.sendMessage(content, this.identity.getNetworkId());
     }
 
     /**

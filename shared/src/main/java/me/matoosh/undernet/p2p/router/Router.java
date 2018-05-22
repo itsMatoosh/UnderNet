@@ -21,6 +21,7 @@ import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.client.Client;
 import me.matoosh.undernet.p2p.router.client.ClientNetworkMessageHandler;
 import me.matoosh.undernet.p2p.router.data.filetransfer.FileTransferManager;
+import me.matoosh.undernet.p2p.router.data.message.NetworkMessageManager;
 import me.matoosh.undernet.p2p.router.data.resource.ResourceManager;
 import me.matoosh.undernet.p2p.router.server.Server;
 import org.slf4j.Logger;
@@ -64,6 +65,10 @@ public class Router extends EventHandler {
      * The file transfer manager.
      */
     public FileTransferManager fileTransferManager;
+    /**
+     * The network message manager.
+     */
+    public NetworkMessageManager networkMessageManager;
 
     /**
      * The number of reconnect attempts, the router attempted.
@@ -122,6 +127,10 @@ public class Router extends EventHandler {
         //Instantiating the file transfer manager.
         fileTransferManager = new FileTransferManager(this);
         fileTransferManager.setup();
+
+        //Instantiating the network message manager.
+        networkMessageManager = new NetworkMessageManager(this);
+        networkMessageManager.setup();
     }
     /**
      * Starts the router.
@@ -148,18 +157,10 @@ public class Router extends EventHandler {
         EventManager.callEvent(new RouterStatusEvent(this, InterfaceStatus.STARTING));
 
         //Starting the client. Using a separate thread for blocking api.
-        new Thread(new Runnable() {
-            public void run() {
-                client.start();
-            }
-        }).start();
+        new Thread(() -> client.start()).start();
         
         //Starting the server. Using a separate thread for blocking api.
-        new Thread(new Runnable() {
-            public void run() {
-                server.start();
-            }
-        }).start();
+        new Thread(() -> server.start()).start();
     }
 
     /**

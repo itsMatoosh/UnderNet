@@ -23,22 +23,21 @@ public class NetworkMessageEncoder extends MessageToByteEncoder<NetworkMessage> 
      */
     @Override
     protected void encode(ChannelHandlerContext ctx, NetworkMessage msg, ByteBuf out) throws Exception {
-        //Serailizing the message.
-        msg.serialize();
+        //Setting message details.
+        msg.updateDetails();
 
         //Allocating the buffer.
-        logger.info("Constructing a message of type: {}, allocating {} bytes", msg.msgType, (15 + msg.data.array().length));
-        out.alloc().buffer(15 + msg.data.capacity());
+        logger.info("Constructing a network message, allocating {} bytes", msg.getTotalLength());
+        out.alloc().buffer(msg.getTotalLength());
 
-        //Setting the msg expiration.
-        msg.expiration = System.currentTimeMillis() + 1000;
+        //Writing the header.
+        out.writeBytes(msg.getOrigin().getData());
+        out.writeBytes(msg.getDestination().getData());
+        out.writeBytes(msg.getChecksum());
+        out.writeShort(msg.getContentLength());
+        out.writeByte(msg.getDirection().value);
 
-        //Writing the buffer.
-        out.writeShort(msg.msgType.id);
-        out.writeLong(msg.expiration);
-        out.writeByte(msg.checksum);
-        out.writeShort(msg.dataLength);
-        //DATA
+        //Writing the content.
         out.writeBytes(msg.data);
     }
 }

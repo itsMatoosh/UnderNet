@@ -16,5 +16,6 @@ subprojects {
         compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
         compile group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
         compile group: "org.cfg4j", name:"cfg4j-core", version: "4.4.1"
+        compile group: 'commons-codec', name: 'commons-codec', version: '1.4'
     }
 }

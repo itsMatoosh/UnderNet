@@ -5,6 +5,7 @@ import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
 import me.matoosh.undernet.event.channel.ConnectionEstablishedEvent;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
+import me.matoosh.undernet.event.channel.message.MessageReceivedEvent;
 import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.p2p.Manager;
 import me.matoosh.undernet.p2p.router.Router;
@@ -66,16 +67,15 @@ public class NeighborNodesManager extends Manager {
             ChannelCreatedEvent channelCreatedEvent = (ChannelCreatedEvent)e;
             sendNodeInfo(Node.self, channelCreatedEvent.remoteNode);
 
-        } else if(e instanceof ChannelMessageReceivedEvent) {
-            ChannelMessageReceivedEvent messageReceivedEvent = (ChannelMessageReceivedEvent)e;
-            if(messageReceivedEvent.message.msgType == MsgType.NODE_INFO) {
-                NodeInfoMessage message = (NodeInfoMessage)messageReceivedEvent.message.content;
-                //TODO: Check the generated id with the database and update.
-                logger.info("Received node info for {}: {}", messageReceivedEvent.remoteNode, message.networkID);
+        } else if(e instanceof MessageReceivedEvent) {
+            MessageReceivedEvent messageReceivedEvent = (MessageReceivedEvent) e;
+            if(messageReceivedEvent.networkMessage.content.getType() == MsgType.NODE_INFO) {
+                NodeInfoMessage message = (NodeInfoMessage)messageReceivedEvent.networkMessage.content;
+                logger.info("Received node info for {}", message.networkID);
                 NetworkIdentity networkIdentity = new NetworkIdentity(message.networkID);
-                messageReceivedEvent.remoteNode.setIdentity(networkIdentity);
+                messageReceivedEvent.forwarder.setIdentity(networkIdentity);
 
-                EventManager.callEvent(new ConnectionEstablishedEvent(messageReceivedEvent.remoteNode, messageReceivedEvent.isServer));
+                EventManager.callEvent(new ConnectionEstablishedEvent(messageReceivedEvent.forwarder));
             }
         }
     }
@@ -87,7 +87,7 @@ public class NeighborNodesManager extends Manager {
      */
     public void sendNodeInfo(Node infoFrom, Node infoTo) {
         logger.info("Sending {} node info to: {}", infoFrom, infoTo.toString());
-        infoTo.send(new NetworkMessage(MsgType.NODE_INFO, new NodeInfoMessage(infoFrom)));
+        infoTo.sendRaw(new NetworkMessage(Node.self.getIdentity().getNetworkId(), infoTo.getIdentity().getNetworkId(), new NodeInfoMessage(infoFrom.getIdentity().getNetworkId()), NetworkMessage.MessageDirection.TO_DESTINATION));
     }
 
     /**

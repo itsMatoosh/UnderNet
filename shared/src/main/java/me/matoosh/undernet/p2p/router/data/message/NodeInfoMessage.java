@@ -1,6 +1,5 @@
 package me.matoosh.undernet.p2p.router.data.message;
 
-import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
 
 /**
@@ -9,16 +8,21 @@ import me.matoosh.undernet.p2p.router.data.NetworkID;
  */
 
 public class NodeInfoMessage extends MsgBase {
+
     /**
-     * The netID.
+     * The network id of the node.
      */
     public NetworkID networkID;
+
     /**
-     * Constructs the info content using the node id.
-     * @param node
+     * Constructs the node info message.
      */
-    public NodeInfoMessage (Node node) {
-        this.networkID = node.getIdentity().getNetworkId();
+    public NodeInfoMessage (NetworkID id) {
+        this.networkID = id;
     }
-    public NodeInfoMessage(){}
+
+    @Override
+    public MsgType getType() {
+        return MsgType.NODE_INFO;
+    }
 }

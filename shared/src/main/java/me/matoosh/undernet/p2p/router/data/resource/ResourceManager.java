@@ -85,15 +85,15 @@ public class ResourceManager extends Manager {
         //Calculating the network id.
         resource.calcNetworkId();
 
-        //Creating a new ResourceMessage.
-        final ResourceMessage pushMessage = new ResourceMessage(resource);
-        pushMessage.sender = Node.self;
-
         //Log
         logger.info("Publishing resource: {}...", resource);
 
-        //Sending the content to the neighbor closest to it.
-        executor.submit(() -> pushFurther(pushMessage));
+        //Sending the resource.
+        executor.submit(() -> {
+            resource.send(router.neighborNodesManager.getClosestTo(resource.getNetworkID()), (other) -> {
+
+            });
+        });
     }
 
     /**

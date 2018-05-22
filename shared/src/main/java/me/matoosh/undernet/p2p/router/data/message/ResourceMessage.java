@@ -11,7 +11,7 @@ public class ResourceMessage extends MsgBase {
     /**
      * The resource to be pushed.
      */
-    public Resource resource;
+    public byte[] resource;
     /**
      * The type of the resource.
      */
@@ -23,7 +23,12 @@ public class ResourceMessage extends MsgBase {
      * @param resource
      */
     public ResourceMessage(Resource resource) {
-        this.resource = resource;
+        this.resource = resource.send();
         this.resourceType = resource.getResourceType().getValue();
+    }
+
+    @Override
+    public MsgType getType() {
+        return MsgType.RES_PUSH;
     }
 }

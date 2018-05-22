@@ -24,9 +24,9 @@ import static me.matoosh.undernet.p2p.router.Router.logger;
 
 public class NetworkID implements Serializable {
     /**
-     * The length of a network id.
+     * The length of a network id in bytes.
      */
-    public static int networkIdLength = 128;
+    public static final int NETWORK_ID_LENGTH = 64;
 
     /**
      * The data of the network id.
@@ -59,10 +59,10 @@ public class NetworkID implements Serializable {
      * @return
      */
     public boolean isValid() {
-        if(data.length == networkIdLength) {
+        if(data.length == NETWORK_ID_LENGTH) {
             return true;
         } else {
-            logger.error("Network ID is not " + networkIdLength + " bytes long! Current number of bytes: " + data.length);
+            logger.error("Network ID is not " + NETWORK_ID_LENGTH + " bytes long! Current number of bytes: " + data.length);
             return false;
         }
     }
@@ -73,7 +73,7 @@ public class NetworkID implements Serializable {
      * @return
      */
     public byte[] distanceTo(NetworkID other) {
-        byte[] output = new byte[networkIdLength];
+        byte[] output = new byte[NETWORK_ID_LENGTH];
         int i = 0;
         for(byte b : other.data) {
           output[i] = (byte)(b ^ this.data[i++]);
@@ -86,7 +86,7 @@ public class NetworkID implements Serializable {
      * @return
      */
     public static NetworkID random() {
-        byte[] data = new byte[networkIdLength];
+        byte[] data = new byte[NETWORK_ID_LENGTH];
         UnderNet.secureRandom.nextBytes(data);
         return new NetworkID(data);
     }
@@ -108,7 +108,7 @@ public class NetworkID implements Serializable {
      */
     private void readObject(ObjectInputStream ois)
             throws ClassNotFoundException, IOException {
-        data = new byte[networkIdLength];
+        data = new byte[NETWORK_ID_LENGTH];
         ois.read(data);
     }
 
@@ -163,8 +163,8 @@ public class NetworkID implements Serializable {
      * @param data
      */
     public void setData(byte[] data) {
-        if(data.length != networkIdLength) {
-            logger.error("Network ID is not " + networkIdLength + " bytes long! Current number of bytes: " + data.length);
+        if(data.length != NETWORK_ID_LENGTH) {
+            logger.error("Network ID is not " + NETWORK_ID_LENGTH + " bytes long! Current number of bytes: " + data.length);
             return;
         }
         this.data = data;
@@ -188,7 +188,7 @@ public class NetworkID implements Serializable {
      * @return
      */
     public static NetworkID generateFromPublicKey(PublicKey publicKey) {
-        if(publicKey.getEncoded().length != networkIdLength) {
+        if(publicKey.getEncoded().length != NETWORK_ID_LENGTH) {
             logger.warn("Cannot generate network id from {}, length mismatch!", publicKey);
             return null;
         }
@@ -203,7 +203,7 @@ public class NetworkID implements Serializable {
      * @return
      */
     public static NetworkID generateFromString(String string) {
-        KeccakSponge spongeFunction = FIPS202.ExtendableOutputFunction.SHAKE256.withOutputLength(networkIdLength*8);
+        KeccakSponge spongeFunction = FIPS202.ExtendableOutputFunction.SHAKE256.withOutputLength(NETWORK_ID_LENGTH *8);
 
         return new NetworkID(spongeFunction.apply(string.getBytes(Charset.forName("UTF-8"))));
     }

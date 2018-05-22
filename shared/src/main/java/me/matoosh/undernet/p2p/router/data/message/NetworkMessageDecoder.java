@@ -3,6 +3,7 @@ package me.matoosh.undernet.p2p.router.data.message;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import me.matoosh.undernet.p2p.router.data.NetworkID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,20 +43,16 @@ public class NetworkMessageDecoder extends ByteToMessageDecoder {
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
         //Caching the message header if not yet cached.
-        if(in.readableBytes() >= 15 && cachedMessage == null) {
+        if(in.readableBytes() >= NetworkMessage.NETWORK_MESSAGE_HEADER_LENGTH && cachedMessage == null) {
             //Decoding the message header.
-            short msgId = in.readShort();
-            long expiration = in.readLong();
-            byte checksum = in.readByte();
+            NetworkID msgOrigin = new NetworkID(in.readBytes(NetworkID.NETWORK_ID_LENGTH).array());
+            NetworkID msgDestination = new NetworkID(in.readBytes(NetworkID.NETWORK_ID_LENGTH).array());
+            byte[] checksum = in.readBytes(16).array();
             short dataLenght = in.readShort();
+            byte direction = in.readByte();
 
             //Creating the cached message.
-            cachedMessage = new NetworkMessage();
-
-            cachedMessage.msgType = MsgType.getById(msgId);
-            cachedMessage.expiration = expiration;
-            cachedMessage.checksum = checksum;
-            cachedMessage.dataLength = dataLenght;
+            cachedMessage = new NetworkMessage(msgOrigin, msgDestination, checksum, direction);
             cachedMessage.data = ByteBuffer.wrap(new byte[dataLenght - Short.MIN_VALUE]);
         }
         //Reading the data of the cached message.
@@ -67,7 +64,6 @@ public class NetworkMessageDecoder extends ByteToMessageDecoder {
         //Checking if all the data has been received.
         if(cachedMessage != null && dataWriteIndex >= cachedMessage.data.capacity()) {
             //Message data received. Outputting the constructed message.
-            cachedMessage.deserialize();
             out.add(cachedMessage);
 
             //Resetting vars.

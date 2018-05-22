@@ -3,7 +3,9 @@ package me.matoosh.undernet.p2p.router;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
+import me.matoosh.undernet.event.channel.message.MessageReceivedEvent;
 import me.matoosh.undernet.p2p.Manager;
+import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.message.MsgType;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 import me.matoosh.undernet.p2p.router.data.message.PingMessage;
@@ -52,10 +54,10 @@ public class NetworkDatabase extends Manager {
     @Override
     public void onEventCalled(Event e) {
         //Message received event.
-        if(e instanceof ChannelMessageReceivedEvent) {
+        if(e instanceof MessageReceivedEvent) {
             //Checking message type.
             ChannelMessageReceivedEvent messageEvent = (ChannelMessageReceivedEvent)e;
-            if(messageEvent.message.msgType == MsgType.NODE_PING) {
+            if(messageEvent.message.content.getType() == MsgType.NODE_PING) {
                 PingMessage pingMessage = (PingMessage)messageEvent.message.content;
 
                 //Sending a ping message back.
@@ -63,8 +65,8 @@ public class NetworkDatabase extends Manager {
                     return;
                 }
                 logger.info("Ping!");
-                NetworkMessage msg = new NetworkMessage(MsgType.NODE_PING, new PingMessage(true));
-                messageEvent.remoteNode.send(msg);
+                NetworkMessage msg = new NetworkMessage(Node.self.getIdentity().getNetworkId(), messageEvent.remoteNode.getIdentity().getNetworkId(), new PingMessage(true), NetworkMessage.MessageDirection.TO_DESTINATION);
+                messageEvent.remoteNode.sendRaw(msg);
             }
         }
     }

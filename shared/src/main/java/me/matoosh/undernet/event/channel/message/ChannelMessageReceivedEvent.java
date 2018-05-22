@@ -6,7 +6,7 @@ import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 import me.matoosh.undernet.p2p.router.server.Server;
 
 /**
- * Called when a content is received on connection.
+ * Called when a raw message is received on connection.
  * Created by Mateusz Rębacz on 30.08.2017.
  */
 
@@ -29,9 +29,9 @@ public class ChannelMessageReceivedEvent extends ChannelMessageEvent {
     @Override
     public void onCalled() {
         if(isServer) {
-            Server.logger.info("A network message of type: {} received from: {}", message.msgType, channel.remoteAddress());
+            Server.logger.info("A raw network message to: {}, received from: {}", message.getDestination(), channel.remoteAddress());
         } else {
-            Client.logger.info("A network message of type: {} received from: {}", message.msgType, channel.remoteAddress());
+            Client.logger.info("A raw network message to: {}, received from: {}", message.getDestination(), channel.remoteAddress());
         }
     }
 }

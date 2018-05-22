@@ -85,7 +85,7 @@ public class NetworkIdentity implements Serializable {
      */
     public void generateKeys() throws NoSuchAlgorithmException {
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-        keyGen.initialize(NetworkID.networkIdLength*8 - 30*8);
+        keyGen.initialize(NetworkID.NETWORK_ID_LENGTH *8 - 30*8);
         KeyPair generatedKeyPair = keyGen.genKeyPair();
         this.publicKey = generatedKeyPair.getPublic();
         this.privateKey = generatedKeyPair.getPrivate();

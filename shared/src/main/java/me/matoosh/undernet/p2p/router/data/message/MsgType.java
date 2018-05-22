@@ -7,13 +7,15 @@ package me.matoosh.undernet.p2p.router.data.message;
  */
 
 public enum MsgType {
-    NODE_PING((short)0), //Message to ping a neighboring node.
-    NODE_INFO((short)1), //Contains the node information about the sender.
-    RES_PUSH((short)2), //Contains information on the resource that needs to be pushed to the receiver.
-    RES_PULL((short)3), //Contains information on the resource that needs to be pulled to the sender.
-    RES_RETRIEVE((short)4), //Contains information on the retrieved resrouce that needs to be pushed to the sender.
-    FILE_REQ((short)5), //Requests a file from a neighboring node.
-    FILE_CHUNK((short)6), //A chunk of a file.
+    TUNNEL_ESTABLISH_REQUEST((short)0), //Request to establish a message tunnel.
+
+    NODE_PING((short)1), //Message to ping a neighboring node.
+    NODE_INFO((short)2), //Contains the node information about the sender.
+    RES_PUSH((short)3), //Contains information on the resource that needs to be pushed to the receiver.
+    RES_PULL((short)4), //Contains information on the resource that needs to be pulled to the sender.
+    RES_RETRIEVE((short)5), //Contains information on the retrieved resrouce that needs to be pushed to the sender.
+    FILE_REQ((short)6), //Requests a file from a neighboring node.
+    FILE_CHUNK((short)7), //A chunk of a file.
     UNKNOWN((short)-1);
 
     public short id;
@@ -22,6 +24,11 @@ public enum MsgType {
         this.id = id;
     }
 
+    /**
+     * Gets a message type given its id.
+     * @param id
+     * @return
+     */
     public static MsgType getById(short id) {
         for(MsgType e : values()) {
             if(e.id == id) return e;

@@ -18,12 +18,4 @@ public abstract class MsgBase implements Serializable {
      * @return
      */
     public abstract MsgType getType();
-
-    /**
-     * Instantiates deserialized message content.
-     * @param networkMessage the network message carrying this content.
-     */
-    public MsgBase(NetworkMessage networkMessage) {
-        this.networkMessage = networkMessage;
-    }
 }

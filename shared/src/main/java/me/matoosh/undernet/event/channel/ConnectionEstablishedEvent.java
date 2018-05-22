@@ -2,8 +2,7 @@ package me.matoosh.undernet.event.channel;
 
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.p2p.node.Node;
-import me.matoosh.undernet.p2p.router.client.Client;
-import me.matoosh.undernet.p2p.router.server.Server;
+import me.matoosh.undernet.p2p.router.Router;
 
 public class ConnectionEstablishedEvent extends Event {
     /**
@@ -12,19 +11,12 @@ public class ConnectionEstablishedEvent extends Event {
     public Node other;
 
     /**
-     * Whether we are connected as server or client.
-     */
-    public boolean isServer;
-
-    /**
      * Creates a new channel event, given the channel.
      *
      * @param node
-     * @param isServer
      */
-    public ConnectionEstablishedEvent(Node node, boolean isServer) {
+    public ConnectionEstablishedEvent(Node node) {
         this.other = node;
-        this.isServer = isServer;
     }
 
     /**
@@ -32,10 +24,6 @@ public class ConnectionEstablishedEvent extends Event {
      */
     @Override
     public void onCalled() {
-        if(isServer) {
-            Server.logger.info("Connection has been established with: {}", other);
-        } else {
-            Client.logger.info("Connection has been established with: {}", other);
-        }
+        Router.logger.info("Connection has been established with: {}", other);
     }
 }
