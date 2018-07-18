@@ -20,13 +20,15 @@ import me.matoosh.undernet.p2p.node.NeighborNodesManager;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.client.Client;
 import me.matoosh.undernet.p2p.router.client.ClientNetworkMessageHandler;
-import me.matoosh.undernet.p2p.router.data.filetransfer.FileTransferManager;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessageManager;
+import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnelManager;
 import me.matoosh.undernet.p2p.router.data.resource.ResourceManager;
 import me.matoosh.undernet.p2p.router.server.Server;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.security.Security;
 import java.util.ArrayList;
 
 /**
@@ -62,13 +64,13 @@ public class Router extends EventHandler {
      */
     public ResourceManager resourceManager;
     /**
-     * The file transfer manager.
-     */
-    public FileTransferManager fileTransferManager;
-    /**
      * The network message manager.
      */
     public NetworkMessageManager networkMessageManager;
+    /**
+     * The message tunnel manager.
+     */
+    public MessageTunnelManager messageTunnelManager;
 
     /**
      * The number of reconnect attempts, the router attempted.
@@ -104,6 +106,9 @@ public class Router extends EventHandler {
         //Registering handlers.
         registerHandlers();
 
+        //Setting up security policies.
+        setupSecurity();
+
         //Creating server.
         server = new Server(this);
         server.setup();
@@ -124,14 +129,24 @@ public class Router extends EventHandler {
         resourceManager = new ResourceManager(this);
         resourceManager.setup();
 
-        //Instantiating the file transfer manager.
-        fileTransferManager = new FileTransferManager(this);
-        fileTransferManager.setup();
-
         //Instantiating the network message manager.
         networkMessageManager = new NetworkMessageManager(this);
         networkMessageManager.setup();
+
+        //Instantiating the message tunnel manager.
+        messageTunnelManager = new MessageTunnelManager(this);
+        messageTunnelManager.setup();
     }
+
+    /**
+     * Sets up security policies.
+     */
+    private void setupSecurity() {
+        Security.setProperty("crypto.policy", "unlimited");
+        Security.addProvider(new BouncyCastleProvider());
+        Security.removeProvider("SunJSSE");
+    }
+
     /**
      * Starts the router.
      * Starts the server listening process and establishes client connections.

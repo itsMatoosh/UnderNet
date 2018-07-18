@@ -1,6 +1,8 @@
 package me.matoosh.undernet.p2p.router.data;
 
 import me.matoosh.undernet.UnderNet;
+import me.matoosh.undernet.p2p.crypto.KeyTools;
+import me.matoosh.undernet.p2p.router.data.message.MsgBase;
 import uk.org.bobulous.java.crypto.keccak.FIPS202;
 import uk.org.bobulous.java.crypto.keccak.KeccakSponge;
 
@@ -9,11 +11,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.charset.Charset;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
+import java.security.interfaces.ECPublicKey;
 
 import static me.matoosh.undernet.p2p.router.Router.logger;
 
@@ -26,17 +24,12 @@ public class NetworkID implements Serializable {
     /**
      * The length of a network id in bytes.
      */
-    public static final int NETWORK_ID_LENGTH = 64;
+    public static final int NETWORK_ID_LENGTH = 65;
 
     /**
      * The data of the network id.
      */
     private byte[] data;
-
-    /**
-     * The public key associated with this network id.
-     */
-    private PublicKey publicKey;
 
     public NetworkID() { }
     /**
@@ -82,16 +75,6 @@ public class NetworkID implements Serializable {
     }
 
     /**
-     * Returns a random network id.
-     * @return
-     */
-    public static NetworkID random() {
-        byte[] data = new byte[NETWORK_ID_LENGTH];
-        UnderNet.secureRandom.nextBytes(data);
-        return new NetworkID(data);
-    }
-
-    /**
      * Serialization
      * @param oos
      * @throws IOException
@@ -114,7 +97,7 @@ public class NetworkID implements Serializable {
 
     @Override
     public String toString() {
-        return "NetworkID{" + getStringValue(this.data) +
+        return "NID:{" + getStringValue(this.data) +
                     '}';
     }
 
@@ -144,18 +127,12 @@ public class NetworkID implements Serializable {
      * Gets the public key associated with the network id.
      * @return
      */
-    public PublicKey getPublicKey() {
-        if(this.publicKey != null) {
-            return this.publicKey;
-        } else {
-            try {
-                this.publicKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(this.getData()));
-            } catch (InvalidKeySpecException e) {
-                e.printStackTrace();
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            }
-            return this.publicKey;
+    public ECPublicKey getPublicKey() {
+        try {
+            return KeyTools.fromUncompressedPoint(this.data);
+        } catch (Exception e) {
+            logger.error("Couldn't convert NetworkID: {} into a EC public key!", getStringValue(), e);
+            return null;
         }
     }
     /**
@@ -187,14 +164,15 @@ public class NetworkID implements Serializable {
      * @param publicKey
      * @return
      */
-    public static NetworkID generateFromPublicKey(PublicKey publicKey) {
-        if(publicKey.getEncoded().length != NETWORK_ID_LENGTH) {
-            logger.warn("Cannot generate network id from {}, length mismatch!", publicKey);
+    public static NetworkID generateFromPublicKey(ECPublicKey publicKey) {
+        byte[] encoded = KeyTools.toUncompressedPoint(publicKey);
+        if(encoded.length != NETWORK_ID_LENGTH) {
+            logger.warn("Cannot generate network id from {}, length mismatch! Key length: {}, expected: {}", publicKey, encoded.length, NETWORK_ID_LENGTH);
             return null;
         }
 
         //Extract data from the public key.
-        return new NetworkID(publicKey.getEncoded());
+        return new NetworkID(encoded);
     }
 
     /**
@@ -203,7 +181,7 @@ public class NetworkID implements Serializable {
      * @return
      */
     public static NetworkID generateFromString(String string) {
-        KeccakSponge spongeFunction = FIPS202.ExtendableOutputFunction.SHAKE256.withOutputLength(NETWORK_ID_LENGTH *8);
+        KeccakSponge spongeFunction = FIPS202.ExtendableOutputFunction.SHAKE256.withOutputLength(NETWORK_ID_LENGTH * 8);
 
         return new NetworkID(spongeFunction.apply(string.getBytes(Charset.forName("UTF-8"))));
     }
@@ -260,5 +238,21 @@ public class NetworkID implements Serializable {
         } else {
             return false;
         }
+    }
+
+    /**
+     * Sends a message to the network id destination
+     * @param content
+     */
+    public void sendMessage(MsgBase content) {
+        UnderNet.router.networkMessageManager.sendMessage(content, this);
+    }
+
+    /**
+     * Sends a response to the network id destination.
+     * @param content
+     */
+    public void sendResponse(MsgBase content) {
+        UnderNet.router.networkMessageManager.sendResponse(content, this);
     }
 }

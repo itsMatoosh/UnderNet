@@ -1,6 +1,7 @@
 package me.matoosh.undernet.p2p.router.client;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -117,10 +118,11 @@ public class Client {
 
         //Starting the client.
         Bootstrap clientBootstrap = new Bootstrap();
-        clientBootstrap.group(workerEventLoopGroup); //Assigning the channel to the client event loop group.
-        clientBootstrap.channel(NioSocketChannel.class); //Using the non blocking io.
-        clientBootstrap.option(ChannelOption.SO_KEEPALIVE, true); //Making sure the connection is sending the keep alive signal.
-        clientBootstrap.handler(new ClientChannelInitializer(this));
+        clientBootstrap.group(workerEventLoopGroup) //Assigning the channel to the client event loop group.
+        .channel(NioSocketChannel.class) //Using the non blocking io.
+        .option(ChannelOption.SO_KEEPALIVE, true) //Making sure the connection is sending the keep alive signal.
+        .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT) //Using the default pooled allocator.
+        .handler(new ClientChannelInitializer(this));
 
         //Connecting
         ChannelFuture future = clientBootstrap.connect(node.address); //Connecting to the node.

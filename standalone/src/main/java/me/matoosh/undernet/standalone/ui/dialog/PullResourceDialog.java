@@ -4,10 +4,11 @@ import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
-import me.matoosh.undernet.event.resource.retrieve.ResourceRetrieveFinalStopEvent;
+import me.matoosh.undernet.event.resource.transfer.ResourceTransferFinishedEvent;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.resource.FileResource;
 import me.matoosh.undernet.p2p.router.data.resource.ResourceType;
+import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferType;
 
 import javax.swing.*;
 import java.awt.*;
@@ -90,31 +91,32 @@ public class PullResourceDialog extends JDialog {
                     EventManager.registerHandler(new EventHandler() {
                         @Override
                         public void onEventCalled(Event e) {
-                            ResourceRetrieveFinalStopEvent finalStopEvent = (ResourceRetrieveFinalStopEvent)e;
+                            ResourceTransferFinishedEvent transferFinishedEvent = (ResourceTransferFinishedEvent) e;
 
-                            if(finalStopEvent.resource.getNetworkID().equals(netId) && finalStopEvent.resource.getResourceType() == ResourceType.FILE) {
-                                FileResource fileResource = (FileResource)finalStopEvent.resource;
+                            if(transferFinishedEvent.transferHandler.transferType == ResourceTransferType.INBOUND && transferFinishedEvent.transferHandler.resource.getNetworkID().equals(netId) && transferFinishedEvent.transferHandler.resource.getInfo().resourceType == ResourceType.FILE) {
+                                FileResource fileResource = (FileResource)transferFinishedEvent.transferHandler.resource;
 
                                 //Copying the received file to dest.
                                 if(saveFile[0] != null) {
                                     try {
-                                        Files.copy(Paths.get(UnderNet.fileManager.getContentFolder().toString() + "/" + fileResource.fileInfo.fileName), Paths.get(saveFile[0].getAbsolutePath() + "/" + fileResource.fileInfo.fileName));
+                                        Files.copy(Paths.get(fileResource.file.getAbsolutePath()), Paths.get(saveFile[0].getAbsolutePath() + "/" + fileResource.file.getName()));
                                     } catch (IOException e1) {
                                         e1.printStackTrace();
                                     }
 
+
                                     //File dialog.
-                                    JOptionPane.showMessageDialog(PullResourceDialog.this, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.fileInfo.fileName, finalStopEvent.resource.getNetworkID().getStringValue(), saveFile[0]),"File Retrieved!",  JOptionPane.INFORMATION_MESSAGE);
+                                    EventQueue.invokeLater(()->JOptionPane.showMessageDialog(PullResourceDialog.this, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.file.getName(), fileResource.getNetworkID().getStringValue(), saveFile[0]),"File Retrieved!",  JOptionPane.INFORMATION_MESSAGE));
                                 } else {
                                     //File dialog.
-                                    JOptionPane.showMessageDialog(PullResourceDialog.this, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.fileInfo.fileName, finalStopEvent.resource.getNetworkID().getStringValue(), UnderNet.fileManager.getContentFolder()), "File Retrieved!", JOptionPane.INFORMATION_MESSAGE);
+                                    EventQueue.invokeLater(()->JOptionPane.showMessageDialog(PullResourceDialog.this, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.file.getName(), fileResource.getNetworkID().getStringValue(), UnderNet.fileManager.getContentFolder()), "File Retrieved!", JOptionPane.INFORMATION_MESSAGE));
                                 }
                             }
 
                             //Unregistering the handler.
-                            EventManager.unregisterHandler(this, ResourceRetrieveFinalStopEvent.class);
+                            EventManager.unregisterHandler(this, ResourceTransferFinishedEvent.class);
                         }
-                    }, ResourceRetrieveFinalStopEvent.class);
+                    }, ResourceTransferFinishedEvent.class);
 
                     PullResourceDialog.this.dispose();
                 } else {

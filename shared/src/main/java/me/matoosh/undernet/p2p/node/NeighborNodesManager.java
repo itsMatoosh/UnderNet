@@ -5,7 +5,6 @@ import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
 import me.matoosh.undernet.event.channel.ConnectionEstablishedEvent;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
-import me.matoosh.undernet.event.channel.message.MessageReceivedEvent;
 import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.p2p.Manager;
 import me.matoosh.undernet.p2p.router.Router;
@@ -65,29 +64,37 @@ public class NeighborNodesManager extends Manager {
         if(e instanceof ChannelCreatedEvent) {
             //Sending node info to the connected node.
             ChannelCreatedEvent channelCreatedEvent = (ChannelCreatedEvent)e;
-            sendNodeInfo(Node.self, channelCreatedEvent.remoteNode);
+            sendSelfNodeInfo(channelCreatedEvent.remoteNode);
+        } else if(e instanceof ChannelMessageReceivedEvent) {
+            ChannelMessageReceivedEvent messageReceivedEvent = (ChannelMessageReceivedEvent)e;
 
-        } else if(e instanceof MessageReceivedEvent) {
-            MessageReceivedEvent messageReceivedEvent = (MessageReceivedEvent) e;
-            if(messageReceivedEvent.networkMessage.content.getType() == MsgType.NODE_INFO) {
-                NodeInfoMessage message = (NodeInfoMessage)messageReceivedEvent.networkMessage.content;
-                logger.info("Received node info for {}", message.networkID);
-                NetworkIdentity networkIdentity = new NetworkIdentity(message.networkID);
-                messageReceivedEvent.forwarder.setIdentity(networkIdentity);
+            if(messageReceivedEvent.remoteNode.getIdentity() == null) {
+                if (messageReceivedEvent.message.verify()) {
+                    messageReceivedEvent.message.deserialize();
+                    if(messageReceivedEvent.message.content.getType() == MsgType.NODE_INFO) {
+                        NodeInfoMessage nodeInfoMessage = (NodeInfoMessage)messageReceivedEvent.message.content;
 
-                EventManager.callEvent(new ConnectionEstablishedEvent(messageReceivedEvent.forwarder));
+                        logger.info("Received node info for {}", nodeInfoMessage.networkMessage.getOrigin());
+                        NetworkIdentity networkIdentity = new NetworkIdentity(nodeInfoMessage.networkMessage.getOrigin());
+                        messageReceivedEvent.remoteNode.setIdentity(networkIdentity);
+
+                        EventManager.callEvent(new ConnectionEstablishedEvent(messageReceivedEvent.remoteNode));
+                    }
+                }
             }
         }
     }
 
     /**
      * Sends a node info message about infoFrom, to infoTo.
-     * @param infoFrom
      * @param infoTo
      */
-    public void sendNodeInfo(Node infoFrom, Node infoTo) {
-        logger.info("Sending {} node info to: {}", infoFrom, infoTo.toString());
-        infoTo.sendRaw(new NetworkMessage(Node.self.getIdentity().getNetworkId(), infoTo.getIdentity().getNetworkId(), new NodeInfoMessage(infoFrom.getIdentity().getNetworkId()), NetworkMessage.MessageDirection.TO_DESTINATION));
+    public void sendSelfNodeInfo(Node infoTo) {
+        logger.info("Sending [self] - {} node info to: {}", Node.self.getIdentity().getNetworkId().getStringValue(), infoTo.toString());
+        NetworkMessage message = new NetworkMessage(Node.self.getIdentity().getNetworkId(), Node.self.getIdentity().getNetworkId(), new NodeInfoMessage(), NetworkMessage.MessageDirection.TO_DESTINATION);
+        message.serialize();
+        message.sign();
+        infoTo.sendRaw(message);
     }
 
     /**
@@ -101,6 +108,9 @@ public class NeighborNodesManager extends Manager {
         for (int i = 0; i < router.connectedNodes.size(); i++) {
             Node n = router.connectedNodes.get(i);
             if(n == null) continue;
+            if(n.getIdentity() == null) {
+                continue;
+            }
             byte[] distance = n.getIdentity().getNetworkId().distanceTo(id);
 
             if(NetworkID.compare(closestDist, distance) < 0) {

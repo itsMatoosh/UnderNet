@@ -1,11 +1,14 @@
 package me.matoosh.undernet.identity;
 
+import me.matoosh.undernet.p2p.crypto.KeyTools;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.security.*;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
+import java.security.KeyPair;
+import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.ECPublicKey;
 
 /**
  * Represents the network identity used to connect.
@@ -13,14 +16,20 @@ import java.security.spec.X509EncodedKeySpec;
  */
 
 public class NetworkIdentity implements Serializable {
+
+    /**
+     * The logger of the class.
+     */
+    public static Logger logger = LoggerFactory.getLogger(NetworkIdentity.class);
+
     /**
      * The public key.
      */
-    private PublicKey publicKey;
+    private ECPublicKey publicKey;
     /**
      * The private key.
      */
-    private PrivateKey privateKey;
+    private ECPrivateKey privateKey;
     /**
      * The network id.
      */
@@ -30,12 +39,8 @@ public class NetworkIdentity implements Serializable {
      * Default to random identity.
      */
     public NetworkIdentity() {
-        try {
-            generateKeys();
-            networkID = NetworkID.generateFromPublicKey(this.publicKey);
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
+        generateKeys();
+        networkID = NetworkID.generateFromPublicKey(this.publicKey);
     }
 
     /**
@@ -43,15 +48,7 @@ public class NetworkIdentity implements Serializable {
      * @param networkID
      */
     public NetworkIdentity(NetworkID networkID) {
-        try {
-            setNetworkId(networkID);
-            this.publicKey =
-                    KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(this.networkID.getData()));
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (InvalidKeySpecException e) {
-            e.printStackTrace();
-        }
+        setNetworkId(networkID);
     }
 
     /**
@@ -71,6 +68,12 @@ public class NetworkIdentity implements Serializable {
      */
     public void setNetworkId(NetworkID id) {
         this.networkID = id;
+        try {
+            this.publicKey = networkID.getPublicKey();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        this.privateKey = null;
     }
     /**
      * Gets the network id.
@@ -80,35 +83,32 @@ public class NetworkIdentity implements Serializable {
         return networkID;
     }
 
+
     /**
      * Generates the public and private keypair for the identity.
      */
-    public void generateKeys() throws NoSuchAlgorithmException {
-        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-        keyGen.initialize(NetworkID.NETWORK_ID_LENGTH *8 - 30*8);
-        KeyPair generatedKeyPair = keyGen.genKeyPair();
-        this.publicKey = generatedKeyPair.getPublic();
-        this.privateKey = generatedKeyPair.getPrivate();
+    public void generateKeys() {
+        //Generating keys.
+        KeyPair kp = KeyTools.generateKeypair();
+        this.publicKey = (ECPublicKey)kp.getPublic();
+        this.privateKey = (ECPrivateKey)kp.getPrivate();
     }
 
     /**
      * Gets the public key.
      * @return
      */
-    public PublicKey getPublicKey() {
+    public ECPublicKey getPublicKey() {
         return this.publicKey;
     }
     /**
      * Gets the private key.
      * @return
      */
-    public PrivateKey getPrivateKey() { return this.privateKey; }
+    public ECPrivateKey getPrivateKey() { return this.privateKey; }
 
     @Override
     public String toString() {
-        return "NetworkIdentity{" +
-                "publicKey='" + getPublicKey() + '\'' +
-                ", networkID=" + getNetworkId() +
-                '}';
+        return getNetworkId().toString();
     }
 }

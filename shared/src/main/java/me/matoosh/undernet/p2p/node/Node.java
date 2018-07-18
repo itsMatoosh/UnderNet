@@ -96,13 +96,9 @@ public class Node implements Serializable {
     public void sendRaw(NetworkMessage msg) {
         logger.info("Sending a message to: {}", address);
         if(channel == null) {
-            logger.error("Node {} is not a neighboring node, can't send the message!", new Exception());
+            logger.error("Node {} is not a neighboring node, can't send the message!", this);
         } else {
-            try {
-                channel.writeAndFlush(msg).sync();
-            } catch (InterruptedException e) {
-                logger.error("Sending a message to: " + address + " has been interrupted!", e);
-            }
+            channel.writeAndFlush(msg, channel.voidPromise());
         }
     }
 

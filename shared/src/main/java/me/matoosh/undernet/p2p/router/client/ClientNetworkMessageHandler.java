@@ -43,12 +43,9 @@ public class ClientNetworkMessageHandler extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * Calls {@link ChannelHandlerContext#fireChannelActive()} to forward
-     * to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
-     * <p>
-     * Sub-classes may override this method to change behavior.
-     *
+     * Called when a channel becomes active.
      * @param ctx
+     * @throws Exception
      */
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -69,12 +66,9 @@ public class ClientNetworkMessageHandler extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * Calls {@link ChannelHandlerContext#fireChannelInactive()} to forward
-     * to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
-     * <p>
-     * Sub-classes may override this method to change behavior.
-     *
+     * Called when a channel becomes inactive.
      * @param ctx
+     * @throws Exception
      */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
@@ -91,13 +85,10 @@ public class ClientNetworkMessageHandler extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * Calls {@link ChannelHandlerContext#fireChannelRead(Object)} to forward
-     * to the next {@link ChannelInboundHandler} in the {@link ChannelPipeline}.
-     * <p>
-     * Sub-classes may override this method to change behavior.
-     *
+     * Called when a channel is being read.
      * @param ctx
      * @param msg
+     * @throws Exception
      */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -113,13 +104,10 @@ public class ClientNetworkMessageHandler extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * Calls {@link ChannelHandlerContext#fireExceptionCaught(Throwable)} to forward
-     * to the next {@link ChannelHandler} in the {@link ChannelPipeline}.
-     * <p>
-     * Sub-classes may override this method to change behavior.
-     *
+     * Called when an exception is called.
      * @param ctx
      * @param cause
+     * @throws Exception
      */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {

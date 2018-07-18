@@ -6,7 +6,7 @@ subprojects {
     sourceCompatibility = "1.8"
     targetCompatibility = "1.8"
     group 'me.matoosh.undernet'
-    version '0.2.1'
+    version '0.3'
 
     repositories {
         mavenCentral()

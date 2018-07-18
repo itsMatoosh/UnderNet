@@ -8,15 +8,14 @@ package me.matoosh.undernet.p2p.router.data.message;
 
 public enum MsgType {
     TUNNEL_ESTABLISH_REQUEST((short)0), //Request to establish a message tunnel.
+    TUNNEL_ESTABLISH_RESPONSE((short)1), //Tunnel response
 
-    NODE_PING((short)1), //Message to ping a neighboring node.
-    NODE_INFO((short)2), //Contains the node information about the sender.
-    RES_PUSH((short)3), //Contains information on the resource that needs to be pushed to the receiver.
-    RES_PULL((short)4), //Contains information on the resource that needs to be pulled to the sender.
-    RES_RETRIEVE((short)5), //Contains information on the retrieved resrouce that needs to be pushed to the sender.
-    FILE_REQ((short)6), //Requests a file from a neighboring node.
-    FILE_CHUNK((short)7), //A chunk of a file.
-    UNKNOWN((short)-1);
+    NODE_PING((short)2), //Message to ping a neighboring node.
+    NODE_INFO((short)3), //Contains the node information about the sender.
+    RES_INFO((short)4), //Info about a transferred resource.
+    RES_PULL((short)5), //Contains the Network id of the pulled resource.
+    RES_DATA((short)6), //Data of a resource.
+    UNKNOWN((short)-1); //Unknown msg type.
 
     public short id;
 

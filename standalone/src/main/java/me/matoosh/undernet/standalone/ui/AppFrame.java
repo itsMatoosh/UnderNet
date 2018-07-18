@@ -255,40 +255,42 @@ public class AppFrame extends JFrame {
             public void onEventCalled(Event e) {
                 RouterStatusEvent statusEvent = (RouterStatusEvent)e;
 
-                switch(statusEvent.newStatus) {
-                    case STOPPED:
-                        connectButton.setEnabled(true);
-                        connectButton.setText("Connect");
-                        for( ActionListener al : connectButton.getActionListeners() ) {
-                            connectButton.removeActionListener( al );
-                        }
-                        connectButton.addActionListener(connectActionListener);
+                EventQueue.invokeLater(() -> {
+                    switch (statusEvent.newStatus) {
+                        case STOPPED:
+                            connectButton.setEnabled(true);
+                            connectButton.setText("Connect");
+                            for (ActionListener al : connectButton.getActionListeners()) {
+                                connectButton.removeActionListener(al);
+                            }
+                            connectButton.addActionListener(connectActionListener);
 
-                        resourcePublishItem.setEnabled(false);
-                        resourcePullItem.setEnabled(false);
-                        break;
-                    case STARTING:
-                        connectButton.setEnabled(false);
-                        resourcePublishItem.setEnabled(false);
-                        resourcePullItem.setEnabled(false);
-                        break;
-                    case STARTED:
-                        connectButton.setText("Disconnect");
-                        connectButton.setEnabled(true);
-                        for( ActionListener al : connectButton.getActionListeners() ) {
-                            connectButton.removeActionListener( al );
-                        }
-                        connectButton.addActionListener(disconnectActionListener);
+                            resourcePublishItem.setEnabled(false);
+                            resourcePullItem.setEnabled(false);
+                            break;
+                        case STARTING:
+                            connectButton.setEnabled(false);
+                            resourcePublishItem.setEnabled(false);
+                            resourcePullItem.setEnabled(false);
+                            break;
+                        case STARTED:
+                            connectButton.setText("Disconnect");
+                            connectButton.setEnabled(true);
+                            for (ActionListener al : connectButton.getActionListeners()) {
+                                connectButton.removeActionListener(al);
+                            }
+                            connectButton.addActionListener(disconnectActionListener);
 
-                        resourcePublishItem.setEnabled(true);
-                        resourcePullItem.setEnabled(true);
-                        break;
-                    case STOPPING:
-                        connectButton.setEnabled(false);
-                        resourcePublishItem.setEnabled(false);
-                        resourcePullItem.setEnabled(false);
-                        break;
-                }
+                            resourcePublishItem.setEnabled(true);
+                            resourcePullItem.setEnabled(true);
+                            break;
+                        case STOPPING:
+                            connectButton.setEnabled(false);
+                            resourcePublishItem.setEnabled(false);
+                            resourcePullItem.setEnabled(false);
+                            break;
+                    }
+                });
             }
         }, RouterStatusEvent.class);
 
@@ -296,13 +298,13 @@ public class AppFrame extends JFrame {
         EventManager.registerHandler(new EventHandler() {
             @Override
             public void onEventCalled(Event e) {
-                JOptionPane.showMessageDialog(AppFrame.this, ((ClientExceptionEvent)e).exception.getMessage() + "\nThe router will stop.", "Error with client", JOptionPane.ERROR_MESSAGE);
+                EventQueue.invokeLater(()-> JOptionPane.showMessageDialog(AppFrame.this, ((ClientExceptionEvent)e).exception.getMessage() + "\nThe router will stop.", "Error with client", JOptionPane.ERROR_MESSAGE));
             }
         }, ClientExceptionEvent.class);
         EventManager.registerHandler(new EventHandler() {
             @Override
             public void onEventCalled(Event e) {
-                JOptionPane.showMessageDialog(AppFrame.this, ((ClientExceptionEvent)e).exception.getMessage() + "\nThe router will stop.", "Error with server", JOptionPane.ERROR_MESSAGE);
+                EventQueue.invokeLater(()-> JOptionPane.showMessageDialog(AppFrame.this, ((ClientExceptionEvent)e).exception.getMessage() + "\nThe router will stop.", "Error with server", JOptionPane.ERROR_MESSAGE));
             }
         }, ServerExceptionEvent.class);
 

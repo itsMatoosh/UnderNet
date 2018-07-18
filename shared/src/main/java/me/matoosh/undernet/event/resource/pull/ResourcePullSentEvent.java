@@ -1,10 +1,6 @@
 package me.matoosh.undernet.event.resource.pull;
 
-import me.matoosh.undernet.event.resource.ResourceEvent;
-import me.matoosh.undernet.p2p.node.Node;
-import me.matoosh.undernet.p2p.router.data.message.ResourceMessage;
 import me.matoosh.undernet.p2p.router.data.message.ResourcePullMessage;
-import me.matoosh.undernet.p2p.router.data.resource.Resource;
 
 /**
  * Called when a resource pull is sent.
@@ -19,6 +15,6 @@ public class ResourcePullSentEvent extends ResourcePullMessageEvent {
      */
     @Override
     public void onCalled() {
-
+        logger.info("Pull request was sent for: {}", pullMessage.networkMessage.getDestination());
     }
 }

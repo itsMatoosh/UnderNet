@@ -40,9 +40,9 @@ public class ServerNetworkMessageHandler extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * Called when the channel is ready for data transfer.
-     *
+     * Called when a channel becomes active.
      * @param ctx
+     * @throws Exception
      */
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -63,9 +63,9 @@ public class ServerNetworkMessageHandler extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * Called when the channel is no longer ready for data transfer.
-     *
+     * Called when a channel becomes inactive.
      * @param ctx
+     * @throws Exception
      */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
@@ -101,13 +101,10 @@ public class ServerNetworkMessageHandler extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * Calls {@link ChannelHandlerContext#fireExceptionCaught(Throwable)} to forward
-     * to the next {@link ChannelHandler} in the {@link ChannelPipeline}.
-     * <p>
-     * Sub-classes may override this method to change behavior.
-     *
+     * Called when an exception is caught.
      * @param ctx
      * @param cause
+     * @throws Exception
      */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {

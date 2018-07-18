@@ -1,17 +1,13 @@
 package me.matoosh.undernet.p2p.router.data.message;
 
+import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
 import java.io.*;
 import java.nio.ByteBuffer;
-import java.security.Key;
-import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
+import java.security.*;
 
 /**
  * Network Message is the base for all the network communication.
@@ -28,23 +24,9 @@ public class NetworkMessage {
     public static Logger logger = LoggerFactory.getLogger(NetworkMessage.class);
 
     /**
-     * The cipher used to encypt the messages.
-     */
-    private static Cipher cipher;
-    static {
-        try {
-            cipher = Cipher.getInstance("RSA");
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
      * The length of a network message header.
      */
-    public static final int NETWORK_MESSAGE_HEADER_LENGTH = NetworkID.NETWORK_ID_LENGTH + 16 /*checksum*/ + 2 /*dataLength*/ + 1 /*direction*/;
+    public static final int NETWORK_MESSAGE_HEADER_LENGTH = NetworkID.NETWORK_ID_LENGTH * 2 + 2 /*dataLength*/ + 1 /* signatureLength */ + 1 /*direction*/;
 
     /**
      * The maximum packet size of the network.
@@ -68,7 +50,7 @@ public class NetworkMessage {
      * Checksum of the decrypted content.
      * Used to see whether the message is unencrypted.
      */
-    private byte[] checksum;
+    private byte[] signature;
     /**
      * The length of the message content data.
      */
@@ -109,12 +91,12 @@ public class NetworkMessage {
      * Creates a network message.
      * @param origin
      * @param destination
-     * @param checksum
+     * @param signature
      */
-    public NetworkMessage(NetworkID origin, NetworkID destination, byte[] checksum, MessageDirection direction) {
+    public NetworkMessage(NetworkID origin, NetworkID destination, byte[] signature, MessageDirection direction) {
         this.origin = origin;
         this.destination = destination;
-        this.checksum = checksum;
+        this.signature = signature;
         this.direction = direction.value;
     }
 
@@ -122,14 +104,14 @@ public class NetworkMessage {
      * Serializes the message's content.
      */
     public void serialize() {
-        logger.info("Serializing a message of type {}", content.getType());
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutput out = null;
+        ObjectOutput out;
         try {
             out = new ObjectOutputStream(bos);
             out.writeObject(this.content);
             out.flush();
             this.data = ByteBuffer.wrap(bos.toByteArray());
+            logger.info("Serialized a message of type {}, data length: {}", content.getType(), this.data.array().length);
         } catch (IOException e) {
             logger.error("Error while serializing a network message: " + this.toString(), e);
         } finally {
@@ -169,55 +151,6 @@ public class NetworkMessage {
     }
 
     /**
-     * Calculates the checksum of the content data.
-     * @return
-     */
-    public void calcChecksum() {
-        this.checksum = DigestUtils.md5(this.data.array());
-    }
-    /**
-     * Checks the message integrity with its checksum.
-     * @return
-     */
-    public boolean checkIntegrity() {
-        byte[] currentSum = DigestUtils.md5(this.data.array());
-
-        if(Arrays.equals(currentSum, this.checksum)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Encrypts the message.
-     * @param key the key used to encrypt the message.
-     */
-    public void encrypt(Key key) {
-        try {
-            //Encrypt the bytes using the secret key
-            NetworkMessage.cipher.init(Cipher.ENCRYPT_MODE, key);
-            this.data = ByteBuffer.wrap(cipher.doFinal(this.data.array()));
-        } catch (Exception e) {
-            logger.error("Failed to encrypt {}", this, e);
-        }
-    }
-
-    /**
-     * Decrypts the message.
-     * @param key the key used to decrypt the message.
-     */
-    public void decrypt(Key key) {
-        try {
-            //Do the decryption
-            NetworkMessage.cipher.init(Cipher.DECRYPT_MODE, key);
-            this.data = ByteBuffer.wrap(cipher.doFinal(this.data.array()));
-        } catch (Exception e) {
-            logger.error("Failed to decrypt {}", this, e);
-        }
-    }
-
-    /**
      * Gets the destination of the message.
      * @return
      */
@@ -235,8 +168,8 @@ public class NetworkMessage {
      * Gets the checksum of the message.
      * @return
      */
-    public byte[] getChecksum() {
-        return this.checksum;
+    public byte[] getSignature() {
+        return this.signature;
     }
     /**
      * Gets the content length of the message.
@@ -274,22 +207,22 @@ public class NetworkMessage {
             logger.warn("Destination of message {} missing or invalid!", this);
             return false;
         }
-        if(checksum == null) {
-            logger.warn("Checksum of message {} missing!", this);
+        if(signature == null) {
+            logger.warn("Signature of message {} missing!", this);
             return false;
         }
-        if(checksum.length != 16) {
-            logger.warn("Length of the message {} chesum incorrect, {}!", this, checksum.length);
+        if(signature.length <= 0) {
+            logger.warn("Length of the message {} signature incorrect, {}!", this, signature.length);
             return false;
         }
         if(contentLength <= 0) {
             logger.warn("Content length of message {} less or equal to 0", this);
             return false;
         }
-        if(!checkLength()) {
+        /*if(!checkLength()) {
             logger.warn("Message {} is bigger than the network MTU, {}", this, getTotalLength());
             return false;
-        }
+        }*/
 
         return true;
     }
@@ -308,11 +241,57 @@ public class NetworkMessage {
     }
 
     /**
+     * Signs bytes with the self private key.
+     */
+    public void sign() {
+        try {
+            Signature sig = Signature.getInstance("SHA1withECDSA","SunEC");
+            sig.initSign(Node.self.getIdentity().getPrivateKey());
+            sig.update(data.array());
+            this.signature = sig.sign();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (SignatureException e) {
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (NoSuchProviderException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Verifies the data with the origin's public key.
+     */
+    public boolean verify() {
+        try {
+            Signature sig = Signature.getInstance("SHA1withECDSA","SunEC");
+            sig.initVerify(getOrigin().getPublicKey());
+            sig.update(data.array());
+
+            return sig.verify(signature);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (SignatureException e) {
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        } catch (NoSuchProviderException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
      * Gets the total length of the message.
      * @return
      */
     public int getTotalLength() {
-        return NETWORK_MESSAGE_HEADER_LENGTH + contentLength;
+        if(signature != null) {
+            return NETWORK_MESSAGE_HEADER_LENGTH + contentLength + signature.length;
+        } else {
+            return NETWORK_MESSAGE_HEADER_LENGTH + contentLength;
+        }
     }
 
     /**

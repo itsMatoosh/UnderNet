@@ -1,5 +1,6 @@
 package me.matoosh.undernet.p2p;
 
+import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.p2p.router.Router;
 
@@ -27,6 +28,7 @@ public abstract class Manager extends EventHandler {
      * Sets up the manager.
      */
     public void setup() {
+        UnderNet.logger.info("Setting up {}...", this.getClass().getSimpleName());
         registerEvents();
         registerHandlers();
     }

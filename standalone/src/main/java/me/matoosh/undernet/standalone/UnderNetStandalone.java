@@ -6,6 +6,7 @@ import com.esotericsoftware.yamlbeans.YamlWriter;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.file.StandaloneFileManager;
 import me.matoosh.undernet.identity.NetworkIdentity;
+import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.standalone.config.StandaloneConfig;
 import me.matoosh.undernet.standalone.config.StandaloneConfigManager;
 import me.matoosh.undernet.standalone.serialization.SerializationTools;
@@ -19,6 +20,8 @@ import org.cfg4j.source.context.filesprovider.ConfigFilesProvider;
 import org.cfg4j.source.files.FilesConfigurationSource;
 import org.cfg4j.source.reload.ReloadStrategy;
 import org.cfg4j.source.reload.strategy.PeriodicalReloadStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.io.*;
@@ -54,6 +57,11 @@ public class UnderNetStandalone {
      */
     private static StandaloneFileManager tmpFileMgr;
 
+    /**
+     * The logger of the class.
+     */
+    public static Logger logger = LoggerFactory.getLogger(UnderNetStandalone.class);
+
     public static void main (String[] args) {
         //Setting up the environment.
         setup();
@@ -70,11 +78,20 @@ public class UnderNetStandalone {
                     UnderNetStandalone.setNetworkIdentity(null, null);
                 } else {
                     File currentIdentityFile = new File(standaloneConfig.identity());
-                    if(currentIdentityFile != null && currentIdentityFile.exists()) {
-                        NetworkIdentity identity = (NetworkIdentity)SerializationTools.readObjectFromFile(currentIdentityFile);
-                        UnderNetStandalone.setNetworkIdentity(identity, currentIdentityFile);
-                    } else {
-                        UnderNetStandalone.setNetworkIdentity(null, null);
+                    try {
+                        if (currentIdentityFile != null && currentIdentityFile.exists()) {
+                            NetworkIdentity identity = (NetworkIdentity) SerializationTools.readObjectFromFile(currentIdentityFile);
+                            UnderNetStandalone.setNetworkIdentity(identity, currentIdentityFile);
+                        }
+                    }
+                    catch (NullPointerException e) {
+                        logger.warn("Error reading the identity file!", e);
+                        currentIdentityFile.delete();
+                    }
+                    finally {
+                        if(Node.self.getIdentity() == null) {
+                            UnderNetStandalone.setNetworkIdentity(null, null);
+                        }
                     }
                 }
             }

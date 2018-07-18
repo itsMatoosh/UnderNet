@@ -1,4 +1,7 @@
 dependencies {
     // https://mvnrepository.com/artifact/io.netty/netty-all
     compile group: 'io.netty', name: 'netty-all', version: '4.1.22.Final'
+    compile group: 'org.apache.commons', name: 'commons-crypto', version: '1.0.0'
+    // https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk16
+    compile group: 'org.bouncycastle', name: 'bcprov-jdk16', version: '1.45'
 }

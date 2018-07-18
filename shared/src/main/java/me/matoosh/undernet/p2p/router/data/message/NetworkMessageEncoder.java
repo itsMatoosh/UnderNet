@@ -19,25 +19,35 @@ public class NetworkMessageEncoder extends MessageToByteEncoder<NetworkMessage> 
      * @param ctx the {@link ChannelHandlerContext} which this {@link MessageToByteEncoder} belongs to
      * @param msg the message to encode
      * @param out the {@link ByteBuf} into which the encoded message will be written
-     * @throws Exception is thrown if an error occurs
      */
     @Override
-    protected void encode(ChannelHandlerContext ctx, NetworkMessage msg, ByteBuf out) throws Exception {
+    protected void encode(ChannelHandlerContext ctx, NetworkMessage msg, ByteBuf out) {
         //Setting message details.
         msg.updateDetails();
+        if(!msg.isValid()) {
+            logger.warn("Message to {} is invalid!", ctx.channel().remoteAddress());
+            ctx.flush();
+            return;
+        }
 
         //Allocating the buffer.
-        logger.info("Constructing a network message, allocating {} bytes", msg.getTotalLength());
+        logger.info("Constructing a network message, allocating {} bytes",
+                msg.getTotalLength());
         out.alloc().buffer(msg.getTotalLength());
 
         //Writing the header.
         out.writeBytes(msg.getOrigin().getData());
         out.writeBytes(msg.getDestination().getData());
-        out.writeBytes(msg.getChecksum());
-        out.writeShort(msg.getContentLength());
+        out.writeShort(msg.getContentLength() + Short.MIN_VALUE);
+        out.writeByte(msg.getSignature().length);
         out.writeByte(msg.getDirection().value);
 
+        //Writing the signature.
+        out.writeBytes(msg.getSignature());
+
         //Writing the content.
-        out.writeBytes(msg.data);
+        out.writeBytes(msg.data.array());
+
+        logger.info("Message sent to: {}", ctx.channel().remoteAddress(), out.capacity());
     }
 }

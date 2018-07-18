@@ -1,21 +1,22 @@
 package me.matoosh.undernet.event.channel.message.tunnel;
 
-import me.matoosh.undernet.event.Event;
+import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessageManager;
 import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnel;
 
-public class MessageTunnelEstablishedEvent extends Event {
+public class MessageTunnelEstablishedEvent extends MessageTunnelEvent {
     /**
-     * The message tunnel
+     * The direction in which the tunnel was established.
      */
-    public MessageTunnel messageTunnel;
+    public NetworkMessage.MessageDirection establishDirection;
 
-    public MessageTunnelEstablishedEvent(MessageTunnel messageTunnel) {
-        this.messageTunnel = messageTunnel;
+    public MessageTunnelEstablishedEvent(MessageTunnel messageTunnel, NetworkMessage.MessageDirection establishDirection) {
+        super(messageTunnel);
+        this.establishDirection = establishDirection;
     }
 
     @Override
     public void onCalled() {
-        NetworkMessageManager.logger.info("Tunnel with {} was established with key {}", messageTunnel.getRecipient().getStringValue(), messageTunnel.getRecipientPublicKey());
+        NetworkMessageManager.logger.info("Tunnel {} established!", messageTunnel);
     }
 }

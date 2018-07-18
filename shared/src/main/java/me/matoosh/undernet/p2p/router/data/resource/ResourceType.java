@@ -5,7 +5,8 @@ package me.matoosh.undernet.p2p.router.data.resource;
  */
 public enum ResourceType {
     FILE((byte)0),
-    RM_FILE_FLAG((byte)1);
+    RM_FILE_FLAG((byte)1),
+    UNKNOWN((byte)-1);
 
     /**
      * The type value of the resource.
@@ -18,5 +19,17 @@ public enum ResourceType {
 
     public byte getValue() {
         return this.value;
+    }
+
+    /**
+     * Gets a message type given its id.
+     * @param value
+     * @return
+     */
+    public static ResourceType getByValue(short value) {
+        for(ResourceType e : values()) {
+            if(e.value == value) return e;
+        }
+        return UNKNOWN;
     }
 }

@@ -1,9 +1,7 @@
 package me.matoosh.undernet.event.channel.message;
 
 import io.netty.channel.Channel;
-import me.matoosh.undernet.p2p.router.client.Client;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
-import me.matoosh.undernet.p2p.router.server.Server;
 
 /**
  * Called when a raw message is received on connection.
@@ -28,10 +26,6 @@ public class ChannelMessageReceivedEvent extends ChannelMessageEvent {
      */
     @Override
     public void onCalled() {
-        if(isServer) {
-            Server.logger.info("A raw network message to: {}, received from: {}", message.getDestination(), channel.remoteAddress());
-        } else {
-            Client.logger.info("A raw network message to: {}, received from: {}", message.getDestination(), channel.remoteAddress());
-        }
+
     }
 }

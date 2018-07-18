@@ -70,7 +70,15 @@ public class EventManager {
         }
         event.onCalled();
         for (int i = 0; i < handlers.size(); i++) {
-            handlers.get(i).onEventCalled(event);
+            if(handlers.get(i) == null) {
+                continue;
+            }
+            try {
+                handlers.get(i).onEventCalled(event);
+            } catch (Exception e) {
+                logger.error("Error while running event handler!", e);
+                continue;
+            }
         }
     }
 }

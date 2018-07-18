@@ -1,16 +1,15 @@
 package me.matoosh.undernet.p2p.router.data.resource;
 
 import me.matoosh.undernet.UnderNet;
-import me.matoosh.undernet.event.Event;
-import me.matoosh.undernet.event.EventHandler;
-import me.matoosh.undernet.event.EventManager;
-import me.matoosh.undernet.event.ftp.FileTransferFinishedEvent;
-import me.matoosh.undernet.p2p.node.Node;
+import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
-import me.matoosh.undernet.p2p.router.data.filetransfer.FileInfo;
-import me.matoosh.undernet.p2p.router.data.filetransfer.FileTransfer;
+import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
+import me.matoosh.undernet.p2p.router.data.resource.transfer.FileTransferHandler;
+import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferHandler;
+import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferType;
 
 import java.io.*;
+import java.util.HashMap;
 
 /**
  * Represents a stored file resource.
@@ -19,19 +18,9 @@ import java.io.*;
 
 public class FileResource extends Resource {
     /**
-     * Information about the file.
-     */
-    public FileInfo fileInfo;
-
-    /**
      * The file.
      */
-    private transient File file;
-
-    /**
-     * The file transfer of this resource.
-     */
-    private transient FileTransfer transfer;
+    public transient File file;
 
     /**
      * Creates a new file resource given file.
@@ -39,7 +28,7 @@ public class FileResource extends Resource {
      */
     public FileResource(File file) {
         this.file = file;
-        this.fileInfo = new FileInfo(this.file);
+        updateAttributes();
     }
 
     /**
@@ -48,7 +37,7 @@ public class FileResource extends Resource {
     @Override
     public void calcNetworkId() {
         if(this.getNetworkID() == null) {
-            this.setNetworkID(NetworkID.generateFromString(fileInfo.fileName));
+            this.setNetworkID(NetworkID.generateFromString(getInfo().attributes.get(1)));
         }
     }
 
@@ -69,29 +58,28 @@ public class FileResource extends Resource {
             OutputStream os = null;
             try {
                 is = new FileInputStream(file);
-                os = new FileOutputStream(UnderNet.fileManager.getContentFolder() + "/" + this.fileInfo.fileName);
+                os = new FileOutputStream(UnderNet.fileManager.getContentFolder() + "/" + this.getInfo().attributes.get(1));
                 byte[] buffer = new byte[1024];
                 int length;
                 while ((length = is.read(buffer)) > 0) {
                     os.write(buffer, 0, length);
                 }
             } catch (IOException e) {
-                ResourceManager.logger.error("An error occured copying file: " + file.toString() + " to the content directory!", e);
+                ResourceManager.logger.error("An error occurred copying file: " + file.toString() + " to the content directory!", e);
                 return false;
             } finally {
                 try {
                     is.close();
                     os.close();
                 } catch (IOException e) {
-                    ResourceManager.logger.error("An error occured while closing the copy streams for file: " + file.toString() + "!", e);
+                    ResourceManager.logger.error("An error occurred while closing the copy streams for file: " + file.toString() + "!", e);
                     return false;
                 }
             }
         }
 
         //Updating the path.
-        this.file = new File(UnderNet.fileManager.getContentFolder() + "/" + this.fileInfo.fileName);
-        this.fileInfo = new FileInfo(this.file);
+        this.file = new File(UnderNet.fileManager.getContentFolder() + "/" + this.getInfo().attributes.get(1));
 
         return true;
     }
@@ -106,47 +94,37 @@ public class FileResource extends Resource {
         return ResourceType.FILE;
     }
 
-    /**
-     * Prepares the file transfer for the receiver.
-     * @param recipient
-     * @param resourceActionListener
-     */
     @Override
-    public void send(Node recipient, IResourceActionListener resourceActionListener) {
-        //Preparing a file transfer to the pushTo node.
-        UnderNet.router.fileTransferManager.prepareFileTranfer(FileResource.this, recipient);
-        resourceActionListener.onFinished(recipient);
+    void updateAttributes() {
+        this.attributes = new HashMap<>();
+        this.attributes.put(0, Long.toString(this.file.length()));
+        this.attributes.put(1, this.file.getName());
     }
 
     /**
-     * Requests and receives the file.
-     * @param sender
-     * @param resourceActionListener
+     * Gets the transfer handler.
+     * @param resourceTransferType
+     * @param messageDirection
+     * @param recipient
+     * @param router
+     * @return
      */
     @Override
-    public void receive(final Node sender, final IResourceActionListener resourceActionListener) {
-        //Requesting the file transfer.
-        transfer = UnderNet.router.fileTransferManager.requestFileTransfer(sender, this);
-        EventManager.registerHandler(new EventHandler() {
-            @Override
-            public void onEventCalled(Event e) {
-                FileTransferFinishedEvent transferFinishedEvent = (FileTransferFinishedEvent)e;
-                if(transferFinishedEvent.transfer == FileResource.this.transfer) {
-                    //Transfer of the resource has finished. The resource is ready to push.
-                    resourceActionListener.onFinished(sender);
-
-                    //Unregisters the current handler.
-                    EventManager.unregisterHandler(this, FileTransferFinishedEvent.class);
-                }
-            }
-        }, FileTransferFinishedEvent.class);
+    public ResourceTransferHandler getTransferHandler(ResourceTransferType resourceTransferType, NetworkMessage.MessageDirection messageDirection, NetworkID recipient, Router router) {
+        byte transferId;
+        if(resourceTransferType == ResourceTransferType.OUTBOUND) {
+            transferId = (byte)router.resourceManager.outboundHandlers.size();
+        } else {
+            transferId = (byte)router.resourceManager.inboundHandlers.size();
+        }
+        return new FileTransferHandler(this, resourceTransferType, messageDirection, recipient, transferId, router);
     }
 
     @Override
     public String toString() {
         return "FileResource{" +
                 "networkID=" + this.getNetworkID() +
-                ", fileInfo=" + fileInfo +
+                ", fileInfo=" + getInfo().attributes +
                 '}';
     }
 
@@ -157,20 +135,11 @@ public class FileResource extends Resource {
     @Override
     public boolean isLocal() {
         if(this.file == null) {
-            this.file = new File(UnderNet.fileManager.getContentFolder() + "/" + this.fileInfo.fileName);
+            this.file = new File(UnderNet.fileManager.getContentFolder() + "/" + getInfo().attributes.get(1));
         }
         if(this.file != null && this.file.exists()) {
             return true;
         }
         return false;
-    }
-
-    /**
-     * Returns the name of the file.
-     * @return
-     */
-    @Override
-    public String getDisplayName() {
-        return fileInfo.fileName;
     }
 }

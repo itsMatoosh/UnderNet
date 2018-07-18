@@ -3,10 +3,10 @@ package me.matoosh.undernet.standalone.ui;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
-import me.matoosh.undernet.event.resource.push.ResourcePushSentEvent;
-import me.matoosh.undernet.p2p.node.Node;
+import me.matoosh.undernet.event.resource.transfer.ResourceTransferStartedEvent;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
 import me.matoosh.undernet.p2p.router.data.resource.Resource;
+import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferType;
 import me.matoosh.undernet.standalone.serialization.SerializationTools;
 
 import javax.swing.*;
@@ -81,15 +81,13 @@ public class ResourcesPanel extends JPanel {
         EventManager.registerHandler(new EventHandler() {
             @Override
             public void onEventCalled(me.matoosh.undernet.event.Event e) {
-                //Called when a node is removed from the node cache.
-                ResourcePushSentEvent resourcePushReceivedEvent = (ResourcePushSentEvent) e;
-                if(resourcePushReceivedEvent.pushMessage.sender == Node.self) {
-                    System.out.println("SADASDASD");
-                    addCachedResource(resourcePushReceivedEvent.resource);
+                ResourceTransferStartedEvent transferStartedEvent = (ResourceTransferStartedEvent) e;
+                if(transferStartedEvent.transferHandler.transferType == ResourceTransferType.OUTBOUND) {
+                    addCachedResource(transferStartedEvent.transferHandler.resource);
                     refreshResourcesList();
                 }
             }
-        }, ResourcePushSentEvent.class);
+        }, ResourceTransferStartedEvent.class);
     }
 
     /**
@@ -145,7 +143,7 @@ class ResourcesListCellRenderer extends DefaultListCellRenderer
         Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         if (value instanceof Resource) {
             Resource resource = (Resource) value;
-            setText(resource.getDisplayName());
+            setText(resource.getNetworkID().toString());
             if(resource.isLocal()) {
                 setBackground(Color.GREEN);
             } else {

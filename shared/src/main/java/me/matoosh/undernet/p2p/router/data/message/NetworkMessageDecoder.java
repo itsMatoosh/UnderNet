@@ -41,20 +41,34 @@ public class NetworkMessageDecoder extends ByteToMessageDecoder {
      * @throws Exception is thrown if an error occurs
      */
     @Override
-    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
         //Caching the message header if not yet cached.
         if(in.readableBytes() >= NetworkMessage.NETWORK_MESSAGE_HEADER_LENGTH && cachedMessage == null) {
             //Decoding the message header.
-            NetworkID msgOrigin = new NetworkID(in.readBytes(NetworkID.NETWORK_ID_LENGTH).array());
-            NetworkID msgDestination = new NetworkID(in.readBytes(NetworkID.NETWORK_ID_LENGTH).array());
-            byte[] checksum = in.readBytes(16).array();
-            short dataLenght = in.readShort();
-            byte direction = in.readByte();
+
+            //Origin id
+            byte[] originId = new byte[NetworkID.NETWORK_ID_LENGTH];
+            in.readBytes(originId);
+            NetworkID msgOrigin = new NetworkID(originId);
+
+            //Destination id
+            byte[] destinationId = new byte[NetworkID.NETWORK_ID_LENGTH];
+            in.readBytes(destinationId);
+            NetworkID msgDestination = new NetworkID(destinationId);
+
+            short dataLenght = in.readShort(); //content data length.
+            byte signatureLength = in.readByte(); //signature length
+            byte direction = in.readByte(); //message direction
+
+            //Reading the signature.
+            byte[] signature = new byte[signatureLength];
+            in.readBytes(signature);
 
             //Creating the cached message.
-            cachedMessage = new NetworkMessage(msgOrigin, msgDestination, checksum, direction);
-            cachedMessage.data = ByteBuffer.wrap(new byte[dataLenght - Short.MIN_VALUE]);
+            cachedMessage = new NetworkMessage(msgOrigin, msgDestination, signature, NetworkMessage.MessageDirection.getByValue(direction));
+            cachedMessage.data = ByteBuffer.allocate(dataLenght - Short.MIN_VALUE);
         }
+
         //Reading the data of the cached message.
         while(cachedMessage != null && dataWriteIndex < cachedMessage.data.capacity() && in.readableBytes() > 0) {
             cachedMessage.data.put(dataWriteIndex, in.readByte());
@@ -63,6 +77,7 @@ public class NetworkMessageDecoder extends ByteToMessageDecoder {
 
         //Checking if all the data has been received.
         if(cachedMessage != null && dataWriteIndex >= cachedMessage.data.capacity()) {
+
             //Message data received. Outputting the constructed message.
             out.add(cachedMessage);
 

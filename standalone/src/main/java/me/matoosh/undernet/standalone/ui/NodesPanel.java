@@ -1,16 +1,5 @@
 package me.matoosh.undernet.standalone.ui;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.nio.channels.Channel;
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import javax.swing.*;
-
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventHandler;
@@ -23,11 +12,17 @@ import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
 import me.matoosh.undernet.p2p.cache.EntryNodeCache;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
-import me.matoosh.undernet.p2p.router.data.message.MsgType;
-import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 import me.matoosh.undernet.p2p.router.data.message.PingMessage;
 import me.matoosh.undernet.standalone.UnderNetStandalone;
 import me.matoosh.undernet.standalone.ui.dialog.AddNodeCacheDialog;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
 /**
  * Panel displaying the list of known nodes.
@@ -67,7 +62,7 @@ public class NodesPanel extends JPanel {
                         //Checking if the node is connected.
                         if(node.isConnected()) {
                             //Sending a ping content.
-                            node.send(new NetworkMessage(MsgType.NODE_PING, new PingMessage(false)));
+                            node.getIdentity().getNetworkId().sendMessage(new PingMessage(false));
                         } else {
                             //Connecting to the node.
                             UnderNet.router.connectNode(node);

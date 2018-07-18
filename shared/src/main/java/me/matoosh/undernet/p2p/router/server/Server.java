@@ -1,6 +1,7 @@
 package me.matoosh.undernet.p2p.router.server;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -98,6 +99,7 @@ public class Server
                 .channel(NioServerSocketChannel.class) //Using the non blocking io for transfer.
                 .childHandler(new ServerChannelInitializer(this))
                 .option(ChannelOption.SO_BACKLOG, UnderNet.networkConfig.backlogCapacity())//Setting the number of pending connections to keep in the queue.
+                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT) //Setting the defauly pooled allocator.
                 .childOption(ChannelOption.SO_KEEPALIVE, true); //Making sure the connection event loop sends keep alive messages.
 
         //Binding and starting to accept incoming connections.
