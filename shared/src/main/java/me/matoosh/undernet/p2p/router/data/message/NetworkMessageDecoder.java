@@ -17,15 +17,6 @@ import java.util.List;
 
 public class NetworkMessageDecoder extends ByteToMessageDecoder {
     /**
-     * The message currently being read.
-     */
-    private NetworkMessage cachedMessage;
-    /**
-     * The current data write index.
-     */
-    private int dataWriteIndex = 0;
-
-    /**
      * The logger of the class.
      */
     public static Logger logger = LoggerFactory.getLogger(NetworkMessageDecoder.class);
@@ -42,48 +33,36 @@ public class NetworkMessageDecoder extends ByteToMessageDecoder {
      */
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
-        //Caching the message header if not yet cached.
-        if(in.readableBytes() >= NetworkMessage.NETWORK_MESSAGE_HEADER_LENGTH && cachedMessage == null) {
-            //Decoding the message header.
+        //The length of the received message.
+        int messageLength = in.capacity();
 
-            //Origin id
-            byte[] originId = new byte[NetworkID.NETWORK_ID_LENGTH];
-            in.readBytes(originId);
-            NetworkID msgOrigin = new NetworkID(originId);
+        //Reading the message.
+        //Origin id
+        byte[] originId = new byte[NetworkID.NETWORK_ID_LENGTH];
+        in.readBytes(originId);
+        NetworkID msgOrigin = new NetworkID(originId);
 
-            //Destination id
-            byte[] destinationId = new byte[NetworkID.NETWORK_ID_LENGTH];
-            in.readBytes(destinationId);
-            NetworkID msgDestination = new NetworkID(destinationId);
+        //Destination id
+        byte[] destinationId = new byte[NetworkID.NETWORK_ID_LENGTH];
+        in.readBytes(destinationId);
+        NetworkID msgDestination = new NetworkID(destinationId);
 
-            short dataLenght = in.readShort(); //content data length.
-            byte signatureLength = in.readByte(); //signature length
-            byte direction = in.readByte(); //message direction
+        byte signatureLength = in.readByte(); //signature length
+        byte direction = in.readByte(); //message direction
 
-            //Reading the signature.
-            byte[] signature = new byte[signatureLength];
-            in.readBytes(signature);
+        //Reading the signature.
+        byte[] signature = new byte[signatureLength];
+        in.readBytes(signature);
 
-            //Creating the cached message.
-            cachedMessage = new NetworkMessage(msgOrigin, msgDestination, signature, NetworkMessage.MessageDirection.getByValue(direction));
-            cachedMessage.data = ByteBuffer.allocate(dataLenght - Short.MIN_VALUE);
-        }
+        //Creating the cached message.
+        NetworkMessage receivedMessage = new NetworkMessage(msgOrigin, msgDestination, signature, NetworkMessage.MessageDirection.getByValue(direction));
+
+        //Allocating data part.
+        receivedMessage.data = ByteBuffer.allocate(messageLength - NetworkMessage.NETWORK_MESSAGE_HEADER_LENGTH - signatureLength);
 
         //Reading the data of the cached message.
-        while(cachedMessage != null && dataWriteIndex < cachedMessage.data.capacity() && in.readableBytes() > 0) {
-            cachedMessage.data.put(dataWriteIndex, in.readByte());
-            dataWriteIndex++;
-        }
+        in.readBytes(receivedMessage.data);
 
-        //Checking if all the data has been received.
-        if(cachedMessage != null && dataWriteIndex >= cachedMessage.data.capacity()) {
-
-            //Message data received. Outputting the constructed message.
-            out.add(cachedMessage);
-
-            //Resetting vars.
-            cachedMessage = null;
-            dataWriteIndex = 0;
-        }
+        out.add(receivedMessage);
     }
 }

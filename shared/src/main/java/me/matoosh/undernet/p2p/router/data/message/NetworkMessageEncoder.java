@@ -38,7 +38,6 @@ public class NetworkMessageEncoder extends MessageToByteEncoder<NetworkMessage> 
         //Writing the header.
         out.writeBytes(msg.getOrigin().getData());
         out.writeBytes(msg.getDestination().getData());
-        out.writeShort(msg.getContentLength() + Short.MIN_VALUE);
         out.writeByte(msg.getSignature().length);
         out.writeByte(msg.getDirection().value);
 

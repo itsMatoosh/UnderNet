@@ -3,8 +3,12 @@ package me.matoosh.undernet.p2p.router.server;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.stream.ChunkedWriteHandler;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.ChannelErrorEvent;
+import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessageDecoder;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessageEncoder;
 
@@ -35,6 +39,9 @@ public class ServerChannelInitializer extends ChannelInitializer {
     @Override
     protected void initChannel(Channel ch) throws Exception {
         //Registering the server channel handler.
+        ch.pipeline().addLast(new LengthFieldPrepender(2));
+        ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(NetworkMessage.NETWORK_MTU_SIZE, 0, 2, 0, 2));
+        ch.pipeline().addLast(new ChunkedWriteHandler());
         ch.pipeline().addLast(new NetworkMessageEncoder());
         ch.pipeline().addLast(new NetworkMessageDecoder());
         ch.pipeline().addLast(new ServerNetworkMessageHandler(server));

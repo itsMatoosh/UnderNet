@@ -9,8 +9,6 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.client.ClientExceptionEvent;
@@ -127,15 +125,12 @@ public class Client {
         //Connecting
         ChannelFuture future = clientBootstrap.connect(node.address); //Connecting to the node.
         ChannelFuture closeFuture = future.channel().closeFuture();
-        closeFuture.addListener(new GenericFutureListener<Future<? super Void>>() {
-            @Override
-            public void operationComplete(Future<? super Void> future) throws Exception {
-                //Removing the future from future list.
-                closeFutures.remove(future);
-                if(closeFutures.size() == 0) {
-                    //Stopping the worker group.
-                    EventManager.callEvent(new ClientStatusEvent(Client.this, InterfaceStatus.STOPPED));
-                }
+        closeFuture.addListener(future1 -> {
+            //Removing the future from future list.
+            closeFutures.remove(future1);
+            if(closeFutures.size() == 0) {
+                //Stopping the worker group.
+                EventManager.callEvent(new ClientStatusEvent(Client.this, InterfaceStatus.STOPPED));
             }
         });
         closeFutures.add(closeFuture);

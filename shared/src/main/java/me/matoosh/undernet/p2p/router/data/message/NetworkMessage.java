@@ -26,7 +26,7 @@ public class NetworkMessage {
     /**
      * The length of a network message header.
      */
-    public static final int NETWORK_MESSAGE_HEADER_LENGTH = NetworkID.NETWORK_ID_LENGTH * 2 + 2 /*dataLength*/ + 1 /* signatureLength */ + 1 /*direction*/;
+    public static final int NETWORK_MESSAGE_HEADER_LENGTH = NetworkID.NETWORK_ID_LENGTH * 2 + 1 /* signatureLength */ + 1 /*direction*/;
 
     /**
      * The maximum packet size of the network.
