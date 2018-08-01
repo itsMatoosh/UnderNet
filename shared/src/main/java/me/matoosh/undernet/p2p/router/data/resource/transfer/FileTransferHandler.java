@@ -1,5 +1,7 @@
 package me.matoosh.undernet.p2p.router.data.resource.transfer;
 
+import io.netty.handler.stream.ChunkedInput;
+import io.netty.handler.stream.ChunkedNioFile;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferDataReceivedEvent;
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferDataSentEvent;
@@ -22,33 +24,24 @@ import java.util.concurrent.Executors;
  */
 public class FileTransferHandler extends ResourceTransferHandler {
     /**
-     * Input for receiving file chunks.
-     */
-    public FileInputStream inputStream;
-    /**
      * Output for sending file chunks.
      */
     public FileOutputStream outputStream;
 
     /**
-     * The final length of the received file.
-     */
-    private long fileLength;
-
-    /**
      * The standard buffer size for file chunks.
      */
-    public static final int BUFFER_SIZE = 1024;
-
-    /**
-     * The service for executing file transfers.
-     */
-    public static ExecutorService ftpExecutor = Executors.newSingleThreadExecutor();
+    public static final int CHUNK_SIZE = 1024;
 
     /**
      * The amount of bytes written from the received chunks.
      */
     private int written = 0;
+
+    /**
+     * The length of the file.
+     */
+    private long fileLength;
 
     /**
      * The logger of the class.
@@ -57,8 +50,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
 
     public FileTransferHandler(FileResource resource, ResourceTransferType fileTransferType, NetworkMessage.MessageDirection messageDirection, NetworkID recipient, byte transferId, Router router) {
         super(resource, fileTransferType, messageDirection, recipient, transferId, router);
-
-        this.fileLength = Long.parseLong(resource.getInfo().attributes.get(0));
+        fileLength = Long.parseLong(resource.getInfo().attributes.get(0));
 
         //Preparing file streams.
         prepareStreams();
@@ -72,15 +64,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
         File saveFile = ((FileResource)this.resource).file;
         logger.info("Preparing {} streams for file: {}", this.transferType, saveFile.getName()) ;
 
-        if(this.transferType == ResourceTransferType.OUTBOUND) {
-            try {
-                inputStream = new FileInputStream(saveFile);
-            } catch (FileNotFoundException e) { //File doesn't exist.
-                //Calling a transfer error.
-                EventManager.callEvent(new ResourceTransferErrorEvent(this, e));
-                return;
-            }
-        } else {
+        if(this.transferType == ResourceTransferType.INBOUND) {
             //Creating or replacing the file.
             if (saveFile.exists()) {
                 saveFile.delete();
@@ -102,36 +86,21 @@ public class FileTransferHandler extends ResourceTransferHandler {
     @Override
     public void startSending() {
         if(transferType.equals(ResourceTransferType.OUTBOUND)) {
-            //File sending logic.
-            ftpExecutor.submit(() -> {
-                int totalRead = 0; //Amount of bytes read from the send stream.
-                try {
-                    if(inputStream.available() != 0) {
-                        //The send buffer.
-                        byte[] buffer = new byte[BUFFER_SIZE];
-                        int read;
-                        while ((read = inputStream.read(buffer)) > 0) {
-                            totalRead += read;
-
-                            byte[] data = new byte[read];
-                            System.arraycopy(buffer, 0, data, 0, read);
-
-                            sendChunk(data);
-                            logger.info("Chunk sent {}/{}", totalRead, resource.getInfo().attributes.get(0));
-                        }
-                    } else {
-                        //The file has no data. Sending an empty chunk.
-                        sendChunk(new byte[0]);
-                    }
-                } catch (IOException e) {
-                    EventManager.callEvent(new ResourceTransferErrorEvent(FileTransferHandler.this, e));
+            //Sending the file using the chunked file logic.
+            int totalRead = 0; //Amount of bytes read from the send stream.
+            try {
+                if(messageDirection == NetworkMessage.MessageDirection.TO_DESTINATION) {
+                    router.networkMessageManager.sendMessage(new ChunkedNioFile(((FileResource)resource).file, CHUNK_SIZE), other);
+                } else {
+                    router.networkMessageManager.sendResponse(new ChunkedNioFile(((FileResource)resource).file, CHUNK_SIZE), other);
                 }
-                finally {
-                    //File sent or error.
-                    EventManager.callEvent(new ResourceTransferFinishedEvent(FileTransferHandler.this));
-                }
-                return null;
-            });
+            } catch (IOException e) {
+                EventManager.callEvent(new ResourceTransferErrorEvent(FileTransferHandler.this, e));
+            }
+            finally {
+                //File sent or error.
+                EventManager.callEvent(new ResourceTransferFinishedEvent(FileTransferHandler.this));
+            }
         }
 
     }
@@ -142,10 +111,6 @@ public class FileTransferHandler extends ResourceTransferHandler {
     @Override
     public void close() {
         try {
-            if (inputStream != null) {
-                inputStream.close();
-                inputStream = null;
-            }
             if (outputStream != null) {
                 outputStream.close();
                 outputStream = null;
@@ -153,22 +118,6 @@ public class FileTransferHandler extends ResourceTransferHandler {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Sends a chunk of data to the other.
-     * @param buffer
-     */
-    private void sendChunk(byte[] buffer) {
-        ResourceDataMessage message = new ResourceDataMessage(buffer, transferId);
-
-        if(messageDirection == NetworkMessage.MessageDirection.TO_DESTINATION) {
-            router.networkMessageManager.sendMessage(message, other);
-        } else {
-            router.networkMessageManager.sendResponse(message, other);
-        }
-
-        EventManager.callEvent(new ResourceTransferDataSentEvent(this, message));
     }
 
     /**
