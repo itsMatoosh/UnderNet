@@ -12,6 +12,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.security.interfaces.ECPublicKey;
+import java.util.Base64;
 
 import static me.matoosh.undernet.p2p.router.Router.logger;
 
@@ -106,7 +107,7 @@ public class NetworkID implements Serializable {
      * @return
      */
     public static String getStringValue(byte[] data) {
-        return new sun.misc.BASE64Encoder().encode(data);
+        return new String(Base64.getEncoder().encode(data));
     }
 
     /**
@@ -151,12 +152,7 @@ public class NetworkID implements Serializable {
      * Gets data from net id value.
      */
     public static byte[] getByteValue(String value) {
-        try {
-            return new sun.misc.BASE64Decoder().decodeBuffer(value);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+        return Base64.getDecoder().decode(value);
     }
 
     /**

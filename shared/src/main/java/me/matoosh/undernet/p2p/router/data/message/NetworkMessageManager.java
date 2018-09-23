@@ -1,5 +1,6 @@
 package me.matoosh.undernet.p2p.router.data.message;
 
+import io.netty.handler.codec.base64.Base64Decoder;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
@@ -159,6 +160,9 @@ public class NetworkMessageManager extends Manager {
                 //Message can be read.
                 message.deserialize();
                 EventManager.callEvent(new MessageReceivedEvent(message, forwarder));
+            } else {
+                //Message can't be read.
+                logger.warn("Couldn't read the incoming message! Signature: {}", message.getSignature());
             }
         } else {
             //Forwarding.

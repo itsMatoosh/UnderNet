@@ -266,7 +266,12 @@ public class NetworkMessage {
     public boolean verify() {
         try {
             Signature sig = Signature.getInstance("SHA1withECDSA","SunEC");
-            sig.initVerify(getOrigin().getPublicKey());
+            if(getDirection() == MessageDirection.TO_DESTINATION) {
+                sig.initVerify(getOrigin().getPublicKey());
+            } else {
+                sig.initVerify(getDestination().getPublicKey());
+            }
+
             sig.update(data.array());
 
             return sig.verify(signature);

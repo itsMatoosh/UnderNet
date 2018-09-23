@@ -199,7 +199,10 @@ public class MessageTunnel {
      */
     public void decryptMsgSharedSecret(NetworkMessage message) {
         //Checking if the symmetric key exists.
-        if(getSymmetricKey() == null) return;
+        if(getSymmetricKey() == null) {
+            logger.warn("Missing symmetric key for tunnel: {}", this);
+            return;
+        }
 
         try {
             byte[] encryptedIvTextBytes = message.data.array();
