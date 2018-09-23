@@ -12,6 +12,7 @@ import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnel;
 import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnelState;
+import org.bouncycastle.util.encoders.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -162,7 +163,7 @@ public class NetworkMessageManager extends Manager {
                 EventManager.callEvent(new MessageReceivedEvent(message, forwarder));
             } else {
                 //Message can't be read.
-                logger.warn("Couldn't read the incoming message! Signature: {}", message.getSignature());
+                logger.warn("Couldn't read the incoming message! Signature: {}", Base64.encode(message.getSignature()));
             }
         } else {
             //Forwarding.
