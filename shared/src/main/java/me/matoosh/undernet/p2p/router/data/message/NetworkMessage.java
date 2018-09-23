@@ -1,7 +1,9 @@
 package me.matoosh.undernet.p2p.router.data.message;
 
+import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
+import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -195,6 +197,14 @@ public class NetworkMessage {
     }
 
     /**
+     * Gets the tunnel of the message.
+     * @return
+     */
+    public MessageTunnel getTunnel() {
+        return UnderNet.router.messageTunnelManager.getTunnel(getOrigin(), getDestination());
+    }
+
+    /**
      * Checks whether the network message is valid.
      * @return
      */
@@ -269,7 +279,14 @@ public class NetworkMessage {
             if(getDirection() == MessageDirection.TO_DESTINATION) {
                 sig.initVerify(getOrigin().getPublicKey());
             } else {
-                sig.initVerify(getDestination().getPublicKey());
+                //Checking if tunnel exists.
+                MessageTunnel tunnel = UnderNet.router.messageTunnelManager.getTunnel(getOrigin(), getDestination());
+
+                if(tunnel != null && tunnel.getOtherPublicKey() !=null) {
+                    sig.initVerify(tunnel.getOtherPublicKey());
+                } else {
+                    return true;
+                }
             }
 
             sig.update(data.array());
