@@ -135,7 +135,7 @@ public abstract class Resource implements Serializable {
         if(messageDirection == NetworkMessage.MessageDirection.TO_DESTINATION) {
             destination.sendMessage(new ResourceInfoMessage(getInfo(), transferId));
         } else {
-            destination.sendResponse(new ResourceInfoMessage(getInfo(), transferId));
+            destination.sendResponse(new ResourceInfoMessage(getInfo(), transferId), this.networkID);
         }
     }
 

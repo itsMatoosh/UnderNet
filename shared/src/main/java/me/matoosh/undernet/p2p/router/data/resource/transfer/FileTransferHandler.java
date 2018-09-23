@@ -117,7 +117,10 @@ public class FileTransferHandler extends ResourceTransferHandler {
                             System.arraycopy(buffer, 0, data, 0, read);
 
                             sendChunk(data);
-                            logger.info("Chunk sent - {}%", ((float)totalRead/Long.parseLong(resource.getInfo().attributes.get(0)))*100f);
+
+                            if((float)totalRead/Long.parseLong(resource.getInfo().attributes.get(0)) % 0.1f == 0f) {
+                                logger.info("File transfer ({}) - {}%", this.resource.attributes.get(1), ((float) totalRead / Long.parseLong(resource.getInfo().attributes.get(0))) * 100f);
+                            }
                         }
                     } else {
                         //The file has no data. Sending an empty chunk.
@@ -165,7 +168,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
         if(messageDirection == NetworkMessage.MessageDirection.TO_DESTINATION) {
             router.networkMessageManager.sendMessage(message, other);
         } else {
-            router.networkMessageManager.sendResponse(message, other);
+            router.networkMessageManager.sendResponse(message, other, this.resource.getNetworkID());
         }
 
         EventManager.callEvent(new ResourceTransferDataSentEvent(this, message));
