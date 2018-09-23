@@ -14,6 +14,7 @@ import me.matoosh.undernet.p2p.router.InterfaceStatus;
 import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.message.*;
+import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnel;
 import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferHandler;
 import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferType;
 import org.slf4j.Logger;
@@ -79,7 +80,7 @@ public class ResourceManager extends Manager {
         logger.info("Publishing resource: {}...", resource);
 
         //Sending the resource info message.
-        startPush(resource, NetworkMessage.MessageDirection.TO_DESTINATION, resource.getNetworkID());
+        startPush(resource, router.messageTunnelManager.getOrCreateTunnel(Node.self.getIdentity().getNetworkId(), resource.getNetworkID()));
     }
 
     /**
@@ -194,13 +195,13 @@ public class ResourceManager extends Manager {
             for (FileResource file :
                     getStoredFileResources()) {
                 if(router.neighborNodesManager.getClosestTo(file.getNetworkID()) != Node.self) {
-                    startPush(file, NetworkMessage.MessageDirection.TO_DESTINATION, file.getNetworkID());
+                    startPush(file, router.messageTunnelManager.getOrCreateTunnel(Node.self.getIdentity().getNetworkId(), file.getNetworkID()));
                 }
             }
             for (FlagResource flag :
                     flagResources) {
                 if(router.neighborNodesManager.getClosestTo(flag.getNetworkID()) != Node.self) {
-                    startPush(flag, NetworkMessage.MessageDirection.TO_DESTINATION, flag.getNetworkID());
+                    startPush(flag, router.messageTunnelManager.getOrCreateTunnel(Node.self.getIdentity().getNetworkId(), flag.getNetworkID()));
                 }
             }
         } else if(e instanceof ResourceTransferFinishedEvent) {
@@ -221,15 +222,14 @@ public class ResourceManager extends Manager {
     /**
      * Starts a push of a resource.
      * @param resource
-     * @param direction
-     * @param destination
+     * @param tunnel
      */
-    private void startPush(Resource resource, NetworkMessage.MessageDirection direction, NetworkID destination) {
+    private void startPush(Resource resource, MessageTunnel tunnel) {
         //Getting the transfer handler.
-        ResourceTransferHandler transferHandler = resource.getTransferHandler(ResourceTransferType.OUTBOUND, direction, destination, this.router);
+        ResourceTransferHandler transferHandler = resource.getTransferHandler(ResourceTransferType.OUTBOUND, tunnel, this.router);
 
         //Sending the resource info message.
-        resource.sendInfo(destination, direction, transferHandler.transferId);
+        resource.sendInfo(tunnel, transferHandler.transferId);
 
         //Sending the resource data.
         transferHandler.startSending();
@@ -270,7 +270,7 @@ public class ResourceManager extends Manager {
 
         resource.attributes = message.resourceInfo.attributes;
         resource.calcNetworkId();
-        inboundHandlers.add(resource.getTransferHandler(ResourceTransferType.INBOUND, NetworkMessage.MessageDirection.TO_DESTINATION, message.networkMessage.getOrigin(), this.router));
+        inboundHandlers.add(resource.getTransferHandler(ResourceTransferType.INBOUND, message.networkMessage.getTunnel(), this.router));
     }
     /**
      * Handles a resource push.
@@ -315,7 +315,7 @@ public class ResourceManager extends Manager {
 
         //Retrieving the file.
         if(requestedResource != null && requestedResource.isLocal()) {
-            startPush(requestedResource, NetworkMessage.MessageDirection.TO_ORIGIN, message.networkMessage.getOrigin());
+            startPush(requestedResource, message.networkMessage.getTunnel());
         } else {
             logger.warn("Resource: {} not available on {}. The pull request will be dropped!", message.networkMessage.getDestination(), Node.self);
         }

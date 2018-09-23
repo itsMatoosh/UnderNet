@@ -265,13 +265,4 @@ public class NetworkID implements Serializable {
     public void sendMessage(MsgBase content) {
         UnderNet.router.networkMessageManager.sendMessage(content, this);
     }
-
-    /**
-     * Sends a response to the network id destination.
-     *
-     * @param content
-     */
-    public void sendResponse(MsgBase content, NetworkID fromDestination) {
-        UnderNet.router.networkMessageManager.sendResponse(content, this, fromDestination);
-    }
 }

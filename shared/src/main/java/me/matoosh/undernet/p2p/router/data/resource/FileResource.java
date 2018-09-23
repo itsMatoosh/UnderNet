@@ -4,6 +4,7 @@ import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
+import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnel;
 import me.matoosh.undernet.p2p.router.data.resource.transfer.FileTransferHandler;
 import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferHandler;
 import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferType;
@@ -105,20 +106,19 @@ public class FileResource extends Resource {
     /**
      * Gets the transfer handler.
      * @param resourceTransferType
-     * @param messageDirection
-     * @param recipient
+     * @param tunnel
      * @param router
      * @return
      */
     @Override
-    public ResourceTransferHandler getTransferHandler(ResourceTransferType resourceTransferType, NetworkMessage.MessageDirection messageDirection, NetworkID recipient, Router router) {
+    public ResourceTransferHandler getTransferHandler(ResourceTransferType resourceTransferType, MessageTunnel tunnel, Router router) {
         byte transferId;
         if(resourceTransferType == ResourceTransferType.OUTBOUND) {
             transferId = (byte)router.resourceManager.outboundHandlers.size();
         } else {
             transferId = (byte)router.resourceManager.inboundHandlers.size();
         }
-        return new FileTransferHandler(this, resourceTransferType, messageDirection, recipient, transferId, router);
+        return new FileTransferHandler(this, resourceTransferType, tunnel, transferId, router);
     }
 
     /**

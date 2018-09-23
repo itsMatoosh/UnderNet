@@ -6,9 +6,8 @@ import me.matoosh.undernet.event.resource.transfer.ResourceTransferDataSentEvent
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferErrorEvent;
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferFinishedEvent;
 import me.matoosh.undernet.p2p.router.Router;
-import me.matoosh.undernet.p2p.router.data.NetworkID;
-import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 import me.matoosh.undernet.p2p.router.data.message.ResourceDataMessage;
+import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnel;
 import me.matoosh.undernet.p2p.router.data.resource.FileResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,8 +54,8 @@ public class FileTransferHandler extends ResourceTransferHandler {
      */
     public static Logger logger = LoggerFactory.getLogger(FileTransferHandler.class);
 
-    public FileTransferHandler(FileResource resource, ResourceTransferType fileTransferType, NetworkMessage.MessageDirection messageDirection, NetworkID recipient, byte transferId, Router router) {
-        super(resource, fileTransferType, messageDirection, recipient, transferId, router);
+    public FileTransferHandler(FileResource resource, ResourceTransferType fileTransferType, MessageTunnel tunnel, byte transferId, Router router) {
+        super(resource, fileTransferType, tunnel, transferId, router);
 
         this.fileLength = Long.parseLong(resource.getInfo().attributes.get(0));
 
@@ -164,13 +163,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
      */
     private void sendChunk(byte[] buffer) {
         ResourceDataMessage message = new ResourceDataMessage(buffer, transferId);
-
-        if(messageDirection == NetworkMessage.MessageDirection.TO_DESTINATION) {
-            router.networkMessageManager.sendMessage(message, other);
-        } else {
-            router.networkMessageManager.sendResponse(message, other, this.resource.getNetworkID());
-        }
-
+        tunnel.sendMessage(message);
         EventManager.callEvent(new ResourceTransferDataSentEvent(this, message));
     }
 

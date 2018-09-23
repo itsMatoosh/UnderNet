@@ -14,9 +14,9 @@ public class ResourceTransferStartedEvent extends ResourceTransferEvent {
     @Override
     public void onCalled() {
         if(this.transferHandler.transferType == ResourceTransferType.INBOUND) {
-            logger.info("Transfer of resource {}, from {}, started!", this.transferHandler.resource, this.transferHandler.other);
+            logger.info("Transfer of resource {}, from {}, started!", this.transferHandler.resource, this.transferHandler.tunnel.getOtherPublicKey());
         } else {
-            logger.info("Transfer of resource {}, to {}, started!", this.transferHandler.resource, this.transferHandler.other);
+            logger.info("Transfer of resource {}, to {}, started!", this.transferHandler.resource, this.transferHandler.tunnel.getOtherPublicKey());
         }
     }
 }

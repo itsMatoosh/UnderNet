@@ -1,9 +1,8 @@
 package me.matoosh.undernet.p2p.router.data.resource.transfer;
 
 import me.matoosh.undernet.p2p.router.Router;
-import me.matoosh.undernet.p2p.router.data.NetworkID;
-import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 import me.matoosh.undernet.p2p.router.data.message.ResourceDataMessage;
+import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnel;
 import me.matoosh.undernet.p2p.router.data.resource.Resource;
 
 /**
@@ -27,26 +26,20 @@ public abstract class ResourceTransferHandler {
     public ResourceTransferType transferType;
 
     /**
-     * The other of the resource.
+     * The tunnel of the resource.
      */
-    public NetworkID other;
+    public MessageTunnel tunnel;
 
     /**
      * The transfer id of the transfer.
      */
     public byte transferId;
 
-    /**
-     * The direction for messages.
-     */
-    public NetworkMessage.MessageDirection messageDirection;
 
-
-    public ResourceTransferHandler(Resource resource, ResourceTransferType transferType, NetworkMessage.MessageDirection messageDirection, NetworkID other, byte transferId, Router router) {
+    public ResourceTransferHandler(Resource resource, ResourceTransferType transferType, MessageTunnel tunnel, byte transferId, Router router) {
         this.resource = resource;
         this.transferType = transferType;
-        this.messageDirection = messageDirection;
-        this.other = other;
+        this.tunnel = tunnel;
         this.router = router;
         this.transferId = transferId;
     }

@@ -1,6 +1,5 @@
 package me.matoosh.undernet.p2p.router.data.message;
 
-import io.netty.handler.codec.base64.Base64Decoder;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
@@ -46,7 +45,7 @@ public class NetworkMessageManager extends Manager {
      * @param content
      * @param recipient
      */
-    public void sendMessage(me.matoosh.undernet.p2p.router.data.message.MsgBase content, NetworkID recipient) {
+    public void sendMessage(MsgBase content, NetworkID recipient) {
         //Getting the appropriate message tunnel.
         MessageTunnel messageTunnel = router.messageTunnelManager.getOrCreateTunnel(Node.self.getIdentity().getNetworkId(), recipient);
 
@@ -77,20 +76,16 @@ public class NetworkMessageManager extends Manager {
      * The response can only be sent as a response to the previously received message.
      * A message tunnel is needed for the message to be delivered.
      * @param content
-     * @param origin
      */
-    public void sendResponse(MsgBase content, NetworkID origin, NetworkID destination) {
-        //Getting the appropriate message tunnel.
-        MessageTunnel messageTunnel = router.messageTunnelManager.getTunnel(origin, destination);
-
-        if(messageTunnel == null) {
-            logger.warn("Can't send a response to: {}, the tunnel doesn't exist!", origin);
+    public void sendResponse(MsgBase content, MessageTunnel tunnel) {
+        if(tunnel == null) {
+            logger.warn("Can't send a response, the tunnel is null!");
             return;
         }
 
         //Using an existing tunnel.
-        NetworkMessage message = constructMessage(messageTunnel, content, NetworkMessage.MessageDirection.TO_ORIGIN);
-        messageTunnel.encryptMsgSymmetric(message);
+        NetworkMessage message = constructMessage(tunnel, content, NetworkMessage.MessageDirection.TO_ORIGIN);
+        tunnel.encryptMsgSymmetric(message);
         forwardMessage(message, Node.self);
     }
 

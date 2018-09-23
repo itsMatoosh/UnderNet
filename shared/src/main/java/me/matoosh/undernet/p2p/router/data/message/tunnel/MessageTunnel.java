@@ -1,8 +1,10 @@
 package me.matoosh.undernet.p2p.router.data.message.tunnel;
 
+import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.p2p.crypto.KeyTools;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
+import me.matoosh.undernet.p2p.router.data.message.MsgBase;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -251,6 +253,24 @@ public class MessageTunnel {
             return MessageTunnelState.ESTABLISHED;
         }
         return MessageTunnelState.NOT_ESTABLISHED;
+    }
+
+    /**
+     * Sends the specified message.
+     * @param content
+     */
+    public void sendMessage(MsgBase content) {
+        if(getTunnelState() == MessageTunnelState.HOSTED) {
+            logger.warn("Can't send messages through hosted tunnels!");
+            return;
+        }
+        if(getOrigin().equals(Node.self.getIdentity().getNetworkId())) {
+            //TO_DESTINATION
+            UnderNet.router.networkMessageManager.sendMessage(content, getDestination());
+        } else {
+            //TO_ORIGIN
+            UnderNet.router.networkMessageManager.sendResponse(content, this);
+        }
     }
 
     @Override
