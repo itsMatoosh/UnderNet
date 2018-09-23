@@ -176,6 +176,9 @@ public class FileTransferHandler extends ResourceTransferHandler {
         if(transferType == ResourceTransferType.INBOUND) {
             EventManager.callEvent(new ResourceTransferDataReceivedEvent(this, dataMessage));
 
+            if(this.tunnel == null)
+                this.tunnel = dataMessage.networkMessage.getTunnel();
+
             //Adding the data to the data byte[] of the transfer.
             if(dataMessage.resourceData.length != 0) {
                 try {
