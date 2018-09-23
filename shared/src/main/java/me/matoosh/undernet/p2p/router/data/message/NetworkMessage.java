@@ -209,6 +209,7 @@ public class NetworkMessage {
      * @return
      */
     public boolean isValid() {
+        updateDetails();
         if(origin == null || !origin.isValid()) {
             logger.warn("Origin of message {} missing or invalid!", this);
             return false;

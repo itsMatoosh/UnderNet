@@ -79,9 +79,9 @@ public class NetworkMessageManager extends Manager {
      * @param content
      * @param origin
      */
-    public void sendResponse(MsgBase content, NetworkID origin) {
+    public void sendResponse(MsgBase content, NetworkID origin, NetworkID destination) {
         //Getting the appropriate message tunnel.
-        MessageTunnel messageTunnel = router.messageTunnelManager.getTunnelByOrigin(origin);
+        MessageTunnel messageTunnel = router.messageTunnelManager.getTunnel(origin, destination);
 
         if(messageTunnel == null) {
             logger.warn("Can't send a response to: {}, the tunnel doesn't exist!", origin);
@@ -123,11 +123,19 @@ public class NetworkMessageManager extends Manager {
         }
 
         if(forwarder == Node.self) {
-            logger.info("Forwarding message ({}), ({}) -> ({}) -> ({}) -> (...) -> ({})",message.content.getType(), message.getOrigin(), forwarder, Node.self, message.getDestination());
+            if(message.getDirection() == NetworkMessage.MessageDirection.TO_DESTINATION) {
+                logger.info("Forwarding message ({}), ({}) -> ({}) -> ({}) -> (...) -> ({})", message.content.getType(), message.getOrigin(), forwarder, Node.self, message.getDestination());
+            } else {
+                logger.info("Forwarding message ({}), ({}) <- ({}) <- ({}) <- (...) <- ({})", message.content.getType(), message.getOrigin(), forwarder, Node.self, message.getDestination());
+            }
         } else {
-            logger.info("Forwarding message, ({}) -> ({}) -> ({}) -> (...) -> ({})", message.getOrigin(), forwarder, Node.self, message.getDestination());
+            if(message.getDirection() == NetworkMessage.MessageDirection.TO_DESTINATION) {
+                logger.info("Forwarding message, ({}) -> ({}) -> ({}) -> (...) -> ({})", message.getOrigin(), forwarder, Node.self, message.getDestination());
+            } else {
+                logger.info("Forwarding message, ({}) <- ({}) <- ({}) <- (...) <- ({})", message.getOrigin(), forwarder, Node.self, message.getDestination());
+            }
+
         }
-        message.updateDetails();
 
         if(!message.isValid()) {
             logger.warn("Message: {} is invalid, the message won't be forwarded!", message);
@@ -178,6 +186,7 @@ public class NetworkMessageManager extends Manager {
     private boolean decryptMessage(NetworkMessage message, MessageTunnel messageTunnel) {
         //Checking whether the message was encrypted at all.
         if(message.verify()) {
+            logger.info("Message: {}, doesn't need to be decrypted...", message);
             return true;
         }
 
