@@ -5,7 +5,6 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
-import io.netty.handler.stream.ChunkedWriteHandler;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.ChannelErrorEvent;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
@@ -38,7 +37,6 @@ public class ClientChannelInitializer extends ChannelInitializer<SocketChannel>{
         //Registering the client channel handler.
         ch.pipeline().addLast(new LengthFieldPrepender(2));
         ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(NetworkMessage.NETWORK_MTU_SIZE, 0, 2, 0, 2));
-        ch.pipeline().addLast(new ChunkedWriteHandler());
         ch.pipeline().addLast(new NetworkMessageEncoder());
         ch.pipeline().addLast(new NetworkMessageDecoder());
         ch.pipeline().addLast(new ClientNetworkMessageHandler(client));

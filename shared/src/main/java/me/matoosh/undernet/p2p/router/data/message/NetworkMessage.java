@@ -33,7 +33,7 @@ public class NetworkMessage {
     /**
      * The maximum packet size of the network.
      */
-    public static final int NETWORK_MTU_SIZE = 1500;
+    public static final int NETWORK_MTU_SIZE = 65536;
 
     /**
      * The maximum network content size.

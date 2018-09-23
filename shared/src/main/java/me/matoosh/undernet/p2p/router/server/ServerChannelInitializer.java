@@ -41,7 +41,6 @@ public class ServerChannelInitializer extends ChannelInitializer {
         //Registering the server channel handler.
         ch.pipeline().addLast(new LengthFieldPrepender(2));
         ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(NetworkMessage.NETWORK_MTU_SIZE, 0, 2, 0, 2));
-        ch.pipeline().addLast(new ChunkedWriteHandler());
         ch.pipeline().addLast(new NetworkMessageEncoder());
         ch.pipeline().addLast(new NetworkMessageDecoder());
         ch.pipeline().addLast(new ServerNetworkMessageHandler(server));
