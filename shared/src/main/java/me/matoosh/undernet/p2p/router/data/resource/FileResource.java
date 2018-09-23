@@ -26,7 +26,8 @@ public class FileResource extends Resource {
      * Creates a new file resource given file.
      * @param file
      */
-    public FileResource(File file) {
+    public FileResource(Router router, File file) {
+        super(router);
         this.file = file;
         updateAttributes();
     }
@@ -118,6 +119,16 @@ public class FileResource extends Resource {
             transferId = (byte)router.resourceManager.inboundHandlers.size();
         }
         return new FileTransferHandler(this, resourceTransferType, messageDirection, recipient, transferId, router);
+    }
+
+    /**
+     * Clears the file resource, deleting the underlying file.
+     */
+    @Override
+    public void clear() {
+        if(file.exists()) {
+            file.delete();
+        }
     }
 
     @Override

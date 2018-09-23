@@ -117,7 +117,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
                             System.arraycopy(buffer, 0, data, 0, read);
 
                             sendChunk(data);
-                            logger.info("Chunk sent {}/{}", totalRead, resource.getInfo().attributes.get(0));
+                            logger.info("Chunk sent - {}%", ((float)totalRead/Long.parseLong(resource.getInfo().attributes.get(0)))*100f);
                         }
                     } else {
                         //The file has no data. Sending an empty chunk.
@@ -185,7 +185,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
                 try {
                     outputStream.write(dataMessage.resourceData);
                     written += dataMessage.resourceData.length;
-                    logger.info("File chunk received for: {} | {}/{}", this.resource.getNetworkID(), written, fileLength);
+                    logger.info("File chunk received for: {} | {}%", this.resource.getNetworkID(), ((float)written/(float)fileLength)*100f);
                     if(written >= fileLength) {
                         //File fully received.
                         EventManager.callEvent(new ResourceTransferFinishedEvent(this));

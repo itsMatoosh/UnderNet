@@ -28,9 +28,22 @@ public abstract class Resource implements Serializable {
     private NetworkID owner;
 
     /**
+     * The router of this resource.
+     */
+    private Router router;
+
+    /**
      * The attributes of the resource.
      */
     public HashMap<Integer, String> attributes = new HashMap<Integer, String>();
+
+    /**
+     * Creates a new resource instance.
+     * @param router
+     */
+    public Resource(Router router) {
+        this.router = router;
+    }
 
     /**
      * Calculates the network id of the resource based on its contents.
@@ -101,6 +114,12 @@ public abstract class Resource implements Serializable {
     }
 
     /**
+     * Gets the router.
+     * @return
+     */
+    public Router getRouter() {return this.router; }
+
+    /**
      * Gets the resource info.
      * @return
      */
@@ -119,6 +138,11 @@ public abstract class Resource implements Serializable {
             destination.sendResponse(new ResourceInfoMessage(getInfo(), transferId));
         }
     }
+
+    /**
+     * Clears the resource if it's available locally.
+     */
+    public abstract void clear();
 
     /**
      * Listens for the finishing of a resource action.

@@ -130,7 +130,7 @@ public class ResourceManager extends Manager {
                 UnderNet.fileManager.getContentFolder().listFiles()) {
             if(file.isHidden()) continue;
             if(!file.canRead()) continue;
-            FileResource res = new FileResource(file);
+            FileResource res = new FileResource(router, file);
             res.calcNetworkId();
             if(res.getNetworkID().equals(resource)) {
                 return res;
@@ -148,7 +148,7 @@ public class ResourceManager extends Manager {
                 UnderNet.fileManager.getContentFolder().listFiles()) {
             if(file.isHidden()) continue;
             if(!file.canRead()) continue;
-            FileResource res = new FileResource(file);
+            FileResource res = new FileResource(router, file);
             res.calcNetworkId();
             resources.add(res);
         }
@@ -265,7 +265,7 @@ public class ResourceManager extends Manager {
 
         //Creating appropriate resources.
         if(message.resourceInfo.resourceType == ResourceType.FILE) {
-            resource = new FileResource(new File(UnderNet.fileManager.getContentFolder() + "/" + message.resourceInfo.attributes.get(1)));
+            resource = new FileResource(this.router, new File(UnderNet.fileManager.getContentFolder() + "/" + message.resourceInfo.attributes.get(1)));
         }
 
         resource.attributes = message.resourceInfo.attributes;

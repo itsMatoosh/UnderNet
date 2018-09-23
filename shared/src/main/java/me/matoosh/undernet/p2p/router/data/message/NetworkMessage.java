@@ -111,7 +111,7 @@ public class NetworkMessage {
             out.writeObject(this.content);
             out.flush();
             this.data = ByteBuffer.wrap(bos.toByteArray());
-            logger.info("Serialized a message of type {}, data length: {}", content.getType(), this.data.array().length);
+            logger.debug("Serialized a message of type {}, data length: {}", content.getType(), this.data.array().length);
         } catch (IOException e) {
             logger.error("Error while serializing a network message: " + this.toString(), e);
         } finally {
@@ -128,13 +128,13 @@ public class NetworkMessage {
      * @return
      */
     public void deserialize() {
-        logger.info("Deserializing message of length: {}", this.data.array().length);
         ByteArrayInputStream bis = new ByteArrayInputStream(this.data.array());
         ObjectInput in = null;
         try {
             in = new ObjectInputStream(bis);
             this.content = (MsgBase)in.readObject();
             this.content.networkMessage = this;
+            logger.debug("Deserialized message of length: {}", this.data.array().length);
         } catch (ClassNotFoundException e) {
             logger.error("Error occured while deserializing a network message!", e);
         } catch (IOException e) {

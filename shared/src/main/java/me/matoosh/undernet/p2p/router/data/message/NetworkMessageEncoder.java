@@ -31,7 +31,7 @@ public class NetworkMessageEncoder extends MessageToByteEncoder<NetworkMessage> 
         }
 
         //Allocating the buffer.
-        logger.info("Constructing a network message, allocating {} bytes",
+        logger.debug("Constructing a network message, allocating {} bytes",
                 msg.getTotalLength());
         out.alloc().buffer(msg.getTotalLength());
 
@@ -47,6 +47,6 @@ public class NetworkMessageEncoder extends MessageToByteEncoder<NetworkMessage> 
         //Writing the content.
         out.writeBytes(msg.data.array());
 
-        logger.info("Message sent to: {}", ctx.channel().remoteAddress(), out.capacity());
+        logger.debug("Message sent to: {}", ctx.channel().remoteAddress(), out.capacity());
     }
 }

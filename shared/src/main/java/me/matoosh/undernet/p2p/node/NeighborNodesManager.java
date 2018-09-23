@@ -74,7 +74,7 @@ public class NeighborNodesManager extends Manager {
                     if(messageReceivedEvent.message.content.getType() == MsgType.NODE_INFO) {
                         NodeInfoMessage nodeInfoMessage = (NodeInfoMessage)messageReceivedEvent.message.content;
 
-                        logger.info("Received node info for {}", nodeInfoMessage.networkMessage.getOrigin());
+                        logger.debug("Received node info for {}", nodeInfoMessage.networkMessage.getOrigin());
                         NetworkIdentity networkIdentity = new NetworkIdentity(nodeInfoMessage.networkMessage.getOrigin());
                         messageReceivedEvent.remoteNode.setIdentity(networkIdentity);
 
@@ -90,7 +90,7 @@ public class NeighborNodesManager extends Manager {
      * @param infoTo
      */
     public void sendSelfNodeInfo(Node infoTo) {
-        logger.info("Sending [self] - {} node info to: {}", Node.self.getIdentity().getNetworkId().getStringValue(), infoTo.toString());
+        logger.info("Sending [self] node info to: {}", infoTo.toString());
         NetworkMessage message = new NetworkMessage(Node.self.getIdentity().getNetworkId(), Node.self.getIdentity().getNetworkId(), new NodeInfoMessage(), NetworkMessage.MessageDirection.TO_DESTINATION);
         message.serialize();
         message.sign();

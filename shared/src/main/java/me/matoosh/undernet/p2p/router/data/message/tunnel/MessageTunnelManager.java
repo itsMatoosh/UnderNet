@@ -11,6 +11,8 @@ import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.message.MsgType;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 
@@ -22,6 +24,11 @@ public class MessageTunnelManager extends Manager {
      * The currently active message tunnels.
      */
     public ArrayList<MessageTunnel> messageTunnels = new ArrayList<>();
+
+    /**
+     * The class logger.
+     */
+    public static final Logger logger = LoggerFactory.getLogger(MessageTunnelManager.class);
 
     /**
      * Router specification is mandatory.
@@ -67,6 +74,8 @@ public class MessageTunnelManager extends Manager {
      * @param tunnel
      */
     public void establishTunnel(MessageTunnel tunnel) {
+        logger.info("[ Establishing tunnel {} ]", tunnel);
+
         //Sending a tunnel creation request to the other.
         sendTunnelRequest(tunnel);
     }

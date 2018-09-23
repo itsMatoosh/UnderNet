@@ -250,13 +250,13 @@ public class MessageTunnel {
     @Override
     public String toString() {
         if(getTunnelState() == MessageTunnelState.HOSTED) {
-            return "MT:{(" + origin + ")" + " <-> " + "(" + Node.self + ")" + " <-> " + "(" + destination + ")}";
+            return String.format("MT:{(%1$s) <-> (%2$s) <-> (%3$s)}", getOrigin(), Node.self, getDestination());
         }
         if(getTunnelState() == MessageTunnelState.NOT_ESTABLISHED || getTunnelState() == MessageTunnelState.ESTABLISHING) {
-            return "MT:{(...) -> (...)}";
+            return String.format("MT:{(%1$s) <x> (%2$s)}", getOrigin(), getDestination());
         }
         if(getTunnelState() == MessageTunnelState.ESTABLISHED) {
-            return "MT:{(" + origin + ")" + " <-> " + "(" + destination + ")}";
+            return String.format("MT:{(%1$s) <-> (%2$s)}", getOrigin(), getDestination());
         }
         return "MT:{UNKNOWN}";
     }

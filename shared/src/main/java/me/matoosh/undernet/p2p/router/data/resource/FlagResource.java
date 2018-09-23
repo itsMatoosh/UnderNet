@@ -1,6 +1,7 @@
 package me.matoosh.undernet.p2p.router.data.resource;
 
 import me.matoosh.undernet.UnderNet;
+import me.matoosh.undernet.p2p.router.Router;
 
 /**
  * Represents a flag resource.
@@ -9,6 +10,15 @@ import me.matoosh.undernet.UnderNet;
  */
 
 public abstract class FlagResource extends Resource {
+    /**
+     * Creates a new resource instance.
+     *
+     * @param router
+     */
+    public FlagResource(Router router) {
+        super(router);
+    }
+
     @Override
     public boolean isLocal() {
         for (FlagResource flag :
@@ -18,5 +28,15 @@ public abstract class FlagResource extends Resource {
             }
         }
         return false;
+    }
+
+    /**
+     * Clears the flag resource.
+     */
+    @Override
+    public void clear() {
+        if(getRouter().resourceManager.flagResources.contains(this)) {
+            getRouter().resourceManager.flagResources.remove(this);
+        }
     }
 }

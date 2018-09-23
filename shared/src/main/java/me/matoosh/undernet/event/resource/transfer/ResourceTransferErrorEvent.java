@@ -1,5 +1,6 @@
 package me.matoosh.undernet.event.resource.transfer;
 
+import me.matoosh.undernet.p2p.router.data.resource.FileResource;
 import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferHandler;
 
 /**
@@ -21,5 +22,10 @@ public class ResourceTransferErrorEvent extends ResourceTransferEvent {
     @Override
     public void onCalled() {
         logger.error("Error occurred transferring resource: " + transferHandler.resource, exception);
+
+        //Deleting the remainders of the transferred file.
+        if(this.transferHandler.resource instanceof FileResource) {
+
+        }
     }
 }

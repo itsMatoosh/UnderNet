@@ -1,23 +1,15 @@
 package me.matoosh.undernet.standalone.ui.dialog;
 
-import java.awt.MouseInfo;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.net.InetSocketAddress;
-
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.p2p.cache.EntryNodeCache;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.net.InetSocketAddress;
 
 /**
  * A dialog for adding new node to the node cache.
@@ -87,12 +79,17 @@ public class AddNodeCacheDialog extends JDialog {
                 //Adding the node to the cache.
                 EntryNodeCache.addNode(savedNode);
 
+                //Connecting if started.
+                if(UnderNet.router.status.equals(InterfaceStatus.STARTED) || UnderNet.router.status.equals(InterfaceStatus.STARTING)) {
+                    UnderNet.router.connectNode(savedNode);
+                }
+
                 //Closing the dialog.
                 AddNodeCacheDialog.this.dispose();
             }
         });
         if(UnderNet.router.status.equals(InterfaceStatus.STARTED) || UnderNet.router.status.equals(InterfaceStatus.STARTING)) {
-            saveButton.setEnabled(false);
+            saveButton.setText("Connect");
         }
         buttonDrawer.add(saveButton);
 
