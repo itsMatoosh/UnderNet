@@ -38,7 +38,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
     /**
      * The standard buffer size for file chunks.
      */
-    public static final int BUFFER_SIZE = 1024;
+    public static final int BUFFER_SIZE = 512;
 
     /**
      * The service for executing file transfers.
