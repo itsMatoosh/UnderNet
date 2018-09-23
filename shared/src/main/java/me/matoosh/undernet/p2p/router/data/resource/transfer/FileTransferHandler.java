@@ -117,9 +117,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
 
                             sendChunk(data);
 
-                            if((float)totalRead/Long.parseLong(resource.getInfo().attributes.get(0)) % 0.1f == 0f) {
-                                logger.info("File transfer ({}) - {}%", this.resource.attributes.get(1), ((float) totalRead / Long.parseLong(resource.getInfo().attributes.get(0))) * 100f);
-                            }
+                            logger.info("File transfer ({}) - {}%", this.resource.attributes.get(1), ((float) totalRead / Long.parseLong(resource.getInfo().attributes.get(0))) * 100f);
                         }
                     } else {
                         //The file has no data. Sending an empty chunk.
