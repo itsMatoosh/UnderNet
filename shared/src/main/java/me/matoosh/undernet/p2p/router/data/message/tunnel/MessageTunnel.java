@@ -198,6 +198,9 @@ public class MessageTunnel {
      * @param message
      */
     public void decryptMsgSharedSecret(NetworkMessage message) {
+        //Checking if the symmetric key exists.
+        if(getSymmetricKey() == null) return;
+
         try {
             byte[] encryptedIvTextBytes = message.data.array();
             int ivSize = 16;

@@ -120,7 +120,11 @@ public class NetworkMessageManager extends Manager {
             return;
         }
 
-        logger.info("Forwarding message, ({}) -> ({}) -> ({}) -> (...) -> ({})", message.getOrigin(), forwarder, Node.self, message.getDestination());
+        if(forwarder == Node.self) {
+            logger.info("Forwarding message ({}), ({}) -> ({}) -> ({}) -> (...) -> ({})",message.content.getType(), message.getOrigin(), forwarder, Node.self, message.getDestination());
+        } else {
+            logger.info("Forwarding message, ({}) -> ({}) -> ({}) -> (...) -> ({})", message.getOrigin(), forwarder, Node.self, message.getDestination());
+        }
         message.updateDetails();
 
         if(!message.isValid()) {
