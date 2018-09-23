@@ -94,6 +94,7 @@ public class MessageTunnel {
         return destinationPublicKey;
     }
     public void setOtherPublicKey(PublicKey publicKey) {
+        logger.info("Set the other public key to: {}", publicKey);
         this.destinationPublicKey = publicKey;
     }
     /**
