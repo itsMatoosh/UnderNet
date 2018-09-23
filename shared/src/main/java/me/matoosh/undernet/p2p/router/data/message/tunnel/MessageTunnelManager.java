@@ -48,7 +48,7 @@ public class MessageTunnelManager extends Manager {
     public MessageTunnel getTunnel(NetworkID origin, NetworkID destination) {
         for (int i = 0; i < messageTunnels.size(); i++) {
             MessageTunnel tunnel = messageTunnels.get(i);
-            if(tunnel.getDestination().equals(origin) && tunnel.getOrigin().equals(destination)) {
+            if(tunnel.getOrigin().equals(origin) && tunnel.getDestination().equals(destination)) {
                 return tunnel;
             }
         }
