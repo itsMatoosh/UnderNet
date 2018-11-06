@@ -45,7 +45,7 @@ public class NetworkMessageEncoder extends MessageToByteEncoder<NetworkMessage> 
         out.writeBytes(msg.getSignature());
 
         //Writing the content.
-        out.writeBytes(msg.data.array());
+        out.writeBytes(msg.getData());
 
         logger.debug("Message sent to: {}", ctx.channel().remoteAddress(), out.capacity());
     }

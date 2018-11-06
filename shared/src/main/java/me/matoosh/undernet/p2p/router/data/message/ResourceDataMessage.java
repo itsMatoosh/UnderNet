@@ -9,24 +9,42 @@ public class ResourceDataMessage extends MsgBase {
     /**
      * The resource to be pushed.
      */
-    public byte[] resourceData;
+    private byte[] resourceData;
 
     /**
      * The transfer id of the data.
      */
-    public byte transferId;
+    private byte transferId;
+
+    /**
+     * The id of the file chunk
+     */
+    private int chunkId;
 
     /**
      * Creates a new resource message given the resource.
      * @param data
      */
-    public ResourceDataMessage(byte[] data, byte transferId) {
+    public ResourceDataMessage(byte[] data, byte transferId, int chunkId) {
         this.resourceData = data;
         this.transferId = transferId;
+        this.chunkId = chunkId;
     }
 
     @Override
     public MsgType getType() {
         return MsgType.RES_DATA;
+    }
+
+    public byte[] getResourceData() {
+        return resourceData;
+    }
+
+    public byte getTransferId() {
+        return transferId;
+    }
+
+    public int getChunkId() {
+        return chunkId;
     }
 }

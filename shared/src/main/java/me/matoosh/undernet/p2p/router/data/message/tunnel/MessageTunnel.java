@@ -172,7 +172,7 @@ public class MessageTunnel {
      */
     public void encryptMsgSymmetric(NetworkMessage message) {
         try {
-            byte[] clean = message.data.array();
+            byte[] clean = message.getData();
 
             //Generating random IV.
             int ivSize = 16;
@@ -190,7 +190,7 @@ public class MessageTunnel {
             System.arraycopy(iv, 0, encryptedIVAndData, 0, ivSize);
             System.arraycopy(encrypted, 0, encryptedIVAndData, ivSize, encrypted.length);
 
-            message.data = ByteBuffer.wrap(encryptedIVAndData);
+            message.setData(encryptedIVAndData);
         } catch (Exception e) {
             logger.error("Failed to encrypt {}", this, e);
         }
@@ -208,7 +208,7 @@ public class MessageTunnel {
         }
 
         try {
-            byte[] encryptedIvTextBytes = message.data.array();
+            byte[] encryptedIvTextBytes = message.getData();
             int ivSize = 16;
             int keySize = 16;
 
@@ -226,7 +226,7 @@ public class MessageTunnel {
             Cipher cipherDecrypt = Cipher.getInstance("AES/CBC/PKCS5Padding");
             cipherDecrypt.init(Cipher.DECRYPT_MODE, getSymmetricKey(), ivParameterSpec);
 
-            message.data = ByteBuffer.wrap(cipherDecrypt.doFinal(encryptedBytes));
+            message.setData(cipherDecrypt.doFinal(encryptedBytes));
         } catch (Exception e) {
             logger.error("Failed to decrypt {}", this, e);
         }

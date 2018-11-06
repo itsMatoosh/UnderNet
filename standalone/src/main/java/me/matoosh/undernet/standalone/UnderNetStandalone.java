@@ -147,7 +147,7 @@ public class UnderNetStandalone {
      * @param identity
      */
     public static void setNetworkIdentity(NetworkIdentity identity, File identityFile) {
-        if(identity == null || identityFile == null) {
+        if(identity == null || identityFile == null || !identity.isCorrect()) {
             identity = new NetworkIdentity();
             identityFile = new File(UnderNet.fileManager.getAppFolder() + "/random.id");
             SerializationTools.writeObjectToFile(identity, identityFile);

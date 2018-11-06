@@ -9,9 +9,7 @@ public class NodeInfoMessage extends MsgBase {
     /**
      * Constructs the node info message.
      */
-    public NodeInfoMessage () {
-
-    }
+    public NodeInfoMessage () {}
 
     @Override
     public MsgType getType() {

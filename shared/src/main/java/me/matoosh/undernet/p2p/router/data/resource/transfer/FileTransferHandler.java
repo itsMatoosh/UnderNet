@@ -6,6 +6,7 @@ import me.matoosh.undernet.event.resource.transfer.ResourceTransferDataSentEvent
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferErrorEvent;
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferFinishedEvent;
 import me.matoosh.undernet.p2p.router.Router;
+import me.matoosh.undernet.p2p.router.data.message.ResourceDataChunkRequest;
 import me.matoosh.undernet.p2p.router.data.message.ResourceDataMessage;
 import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnel;
 import me.matoosh.undernet.p2p.router.data.resource.FileResource;
@@ -13,8 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Handles file transfers.
@@ -40,14 +39,14 @@ public class FileTransferHandler extends ResourceTransferHandler {
     public static final int BUFFER_SIZE = 1024;
 
     /**
-     * The service for executing file transfers.
-     */
-    public static ExecutorService ftpExecutor = Executors.newSingleThreadExecutor();
-
-    /**
      * The amount of bytes written from the received chunks.
      */
     private int written = 0;
+
+    /**
+     * The amount of bytes sent.
+     */
+    private int sent = 0;
 
     /**
      * The logger of the class.
@@ -68,10 +67,10 @@ public class FileTransferHandler extends ResourceTransferHandler {
      */
     private void prepareStreams() {
         //Caching as file resource.
-        File saveFile = ((FileResource)this.resource).file;
-        logger.info("Preparing {} streams for file: {}", this.transferType, saveFile.getName()) ;
+        File saveFile = ((FileResource)this.getResource()).file;
+        logger.info("Preparing {} streams for file: {}", this.getTransferType(), saveFile.getName()) ;
 
-        if(this.transferType == ResourceTransferType.OUTBOUND) {
+        if(this.getTransferType() == ResourceTransferType.OUTBOUND) {
             try {
                 inputStream = new FileInputStream(saveFile);
             } catch (FileNotFoundException e) { //File doesn't exist.
@@ -80,6 +79,17 @@ public class FileTransferHandler extends ResourceTransferHandler {
                 return;
             }
         } else {
+            //Checking if file already exists.
+            if(getResource().isLocal()) {
+                getResource().calcNetworkId();
+                if(getResource().getNetworkID().equals(getTunnel().getDestination())) {
+                    //The file is already stored locally.
+                    getTunnel().sendMessage(new ResourceDataChunkRequest(this.getTransferId(), -2));
+                    EventManager.callEvent(new ResourceTransferFinishedEvent(this));
+                    return;
+                }
+            }
+
             //Creating or replacing the file.
             if (saveFile.exists()) {
                 saveFile.delete();
@@ -93,47 +103,6 @@ public class FileTransferHandler extends ResourceTransferHandler {
                 return;
             }
         }
-    }
-
-    /**
-     * Starts the file transfer.
-     */
-    @Override
-    public void startSending() {
-        if(transferType.equals(ResourceTransferType.OUTBOUND)) {
-            //File sending logic.
-            ftpExecutor.submit(() -> {
-                int totalRead = 0; //Amount of bytes read from the send stream.
-                try {
-                    if(inputStream.available() != 0) {
-                        //The send buffer.
-                        byte[] buffer = new byte[BUFFER_SIZE];
-                        int read;
-                        while ((read = inputStream.read(buffer)) > 0) {
-                            totalRead += read;
-
-                            byte[] data = new byte[read];
-                            System.arraycopy(buffer, 0, data, 0, read);
-
-                            sendChunk(data);
-
-                            logger.info("File transfer ({}) - {}%", this.resource.attributes.get(1), ((float) totalRead / Long.parseLong(resource.getInfo().attributes.get(0))) * 100f);
-                        }
-                    } else {
-                        //The file has no data. Sending an empty chunk.
-                        sendChunk(new byte[0]);
-                    }
-                } catch (IOException e) {
-                    EventManager.callEvent(new ResourceTransferErrorEvent(FileTransferHandler.this, e));
-                }
-                finally {
-                    //File sent or error.
-                    EventManager.callEvent(new ResourceTransferFinishedEvent(FileTransferHandler.this));
-                }
-                return null;
-            });
-        }
-
     }
 
     /**
@@ -157,11 +126,48 @@ public class FileTransferHandler extends ResourceTransferHandler {
 
     /**
      * Sends a chunk of data to the other.
-     * @param buffer
      */
-    private void sendChunk(byte[] buffer) {
-        ResourceDataMessage message = new ResourceDataMessage(buffer, transferId);
-        tunnel.sendMessage(message);
+    @Override
+    public void sendChunk(int chunkId) {
+        if(getTransferType().equals(ResourceTransferType.OUTBOUND)) {
+            //Stopping on request.
+            if(chunkId < 0) {
+                logger.info("File sending interrupted by the destination!");
+                //File sent or error.
+                EventManager.callEvent(new ResourceTransferFinishedEvent(FileTransferHandler.this));
+            }
+
+            //File sending logic.
+            try {
+                logger.info("Sending file, available bytes: {}", inputStream.available());
+                if(inputStream.available() != 0) {
+                    //The send buffer.
+                    byte[] buffer = new byte[BUFFER_SIZE];
+                    int read = inputStream.read(buffer);
+                    sent += read;
+
+                    byte[] data = new byte[read];
+                    System.arraycopy(buffer, 0, data, 0, read);
+
+                    logger.info("File transfer ({}) - {}%", this.getResource().attributes.get(1), ((float) sent / Long.parseLong(getResource().getInfo().attributes.get(0))) * 100f);
+                    sendData(data, chunkId);
+                } else {
+                    //The file has no data. Sending an empty chunk.
+                    sendData(new byte[0], chunkId);
+                }
+            } catch (IOException e) {
+                EventManager.callEvent(new ResourceTransferErrorEvent(FileTransferHandler.this, e));
+            }
+            finally {
+                //File sent or error.
+                EventManager.callEvent(new ResourceTransferFinishedEvent(FileTransferHandler.this));
+            }
+        }
+    }
+
+    private void sendData(byte[] data, int chunkId) {
+        ResourceDataMessage message = new ResourceDataMessage(data, getTransferId(), chunkId);
+        getTunnel().sendMessage(message);
         EventManager.callEvent(new ResourceTransferDataSentEvent(this, message));
     }
 
@@ -171,21 +177,25 @@ public class FileTransferHandler extends ResourceTransferHandler {
      */
     @Override
     public void onResourceMessage(ResourceDataMessage dataMessage) {
-        if(transferType == ResourceTransferType.INBOUND) {
+        if(getTransferType() == ResourceTransferType.INBOUND && outputStream != null) {
             EventManager.callEvent(new ResourceTransferDataReceivedEvent(this, dataMessage));
 
-            if(this.tunnel == null)
-                this.tunnel = dataMessage.networkMessage.getTunnel();
+            //Caching the used message tunnel.
+            if(this.getTunnel() == null)
+                this.setTunnel(dataMessage.getNetworkMessage().getTunnel());
 
             //Adding the data to the data byte[] of the transfer.
-            if(dataMessage.resourceData.length != 0) {
+            if(dataMessage.getResourceData().length != 0) {
                 try {
-                    outputStream.write(dataMessage.resourceData);
-                    written += dataMessage.resourceData.length;
-                    logger.info("File chunk received for: {} | {}%", this.resource.getNetworkID(), ((float)written/(float)fileLength)*100f);
+                    outputStream.write(dataMessage.getResourceData());
+                    written += dataMessage.getResourceData().length;
+                    logger.info("File chunk received for: {} | {}%", this.getResource().getNetworkID(), ((float)written/(float)fileLength)*100f);
                     if(written >= fileLength) {
                         //File fully received.
+                        getTunnel().sendMessage(new ResourceDataChunkRequest(this.getTransferId(), -2));
                         EventManager.callEvent(new ResourceTransferFinishedEvent(this));
+                    } else {
+                        getTunnel().sendMessage(new ResourceDataChunkRequest(this.getTransferId(), dataMessage.getChunkId() + 1));
                     }
                 } catch (IOException e) {
                     //Error

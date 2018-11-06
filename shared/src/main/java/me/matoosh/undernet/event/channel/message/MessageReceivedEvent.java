@@ -33,6 +33,6 @@ public class MessageReceivedEvent extends Event {
 
     @Override
     public void onCalled() {
-        NetworkMessageManager.logger.info("A network message of type: {}, received.", networkMessage.content.getType());
+        NetworkMessageManager.logger.info("A network message of type: {}, received.", networkMessage.getContent().getType());
     }
 }

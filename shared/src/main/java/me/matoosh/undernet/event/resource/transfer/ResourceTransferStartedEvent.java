@@ -13,10 +13,10 @@ public class ResourceTransferStartedEvent extends ResourceTransferEvent {
 
     @Override
     public void onCalled() {
-        if(this.transferHandler.transferType == ResourceTransferType.INBOUND) {
-            logger.info("Transfer of resource {}, from {}, started!", this.transferHandler.resource, this.transferHandler.tunnel.getDestination());
+        if(this.transferHandler.getTransferType() == ResourceTransferType.INBOUND) {
+            logger.info("Transfer of resource {}, from {}, started!", this.transferHandler.getResource(), this.transferHandler.getTunnel().getDestination());
         } else {
-            logger.info("Transfer of resource {}, to {}, started!", this.transferHandler.resource, this.transferHandler.tunnel.getDestination());
+            logger.info("Transfer of resource {}, to {}, started!", this.transferHandler.getResource(), this.transferHandler.getTunnel().getDestination());
         }
     }
 }

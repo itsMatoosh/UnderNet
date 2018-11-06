@@ -3,14 +3,11 @@ package me.matoosh.undernet.p2p.router.data;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.p2p.crypto.KeyTools;
 import me.matoosh.undernet.p2p.router.data.message.MsgBase;
-import uk.org.bobulous.java.crypto.keccak.FIPS202;
-import uk.org.bobulous.java.crypto.keccak.KeccakSponge;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.nio.charset.Charset;
 import java.security.interfaces.ECPublicKey;
 import java.util.Base64;
 
@@ -62,7 +59,7 @@ public class NetworkID implements Serializable {
         if (data.length == NETWORK_ID_LENGTH) {
             return true;
         } else {
-            logger.error("Network ID is not " + NETWORK_ID_LENGTH + " bytes long! Current number of bytes: " + data.length);
+            logger.error("Network ID is not {} bytes long! Current number of bytes: {}", NETWORK_ID_LENGTH, data.length);
             return false;
         }
     }
@@ -187,18 +184,6 @@ public class NetworkID implements Serializable {
 
         //Extract data from the public key.
         return new NetworkID(encoded);
-    }
-
-    /**
-     * Generates a NetworkID from a string through Keccak.
-     *
-     * @param string
-     * @return
-     */
-    public static NetworkID generateFromString(String string) {
-        KeccakSponge spongeFunction = FIPS202.ExtendableOutputFunction.SHAKE256.withOutputLength(NETWORK_ID_LENGTH * 8);
-
-        return new NetworkID(spongeFunction.apply(string.getBytes(Charset.forName("UTF-8"))));
     }
 
     /**

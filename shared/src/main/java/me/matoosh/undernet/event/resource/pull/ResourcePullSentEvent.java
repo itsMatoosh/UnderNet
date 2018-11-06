@@ -15,6 +15,6 @@ public class ResourcePullSentEvent extends ResourcePullMessageEvent {
      */
     @Override
     public void onCalled() {
-        logger.info("Pull request was sent for: {}", pullMessage.networkMessage.getDestination());
+        logger.info("Pull request was sent for: {}", pullMessage.getNetworkMessage().getDestination());
     }
 }

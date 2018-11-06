@@ -9,12 +9,12 @@ public class ResourceInfoMessage extends MsgBase {
     /**
      * The resource info.
      */
-    public ResourceInfo resourceInfo;
+    private ResourceInfo resourceInfo;
 
     /**
      * The transfer id.
      */
-    public byte transferId;
+    private byte transferId;
 
     public ResourceInfoMessage(ResourceInfo resourceInfo, byte transferId) {
         this.resourceInfo = resourceInfo;
@@ -24,5 +24,13 @@ public class ResourceInfoMessage extends MsgBase {
     @Override
     public MsgType getType() {
         return MsgType.RES_INFO;
+    }
+
+    public ResourceInfo getResourceInfo() {
+        return resourceInfo;
+    }
+
+    public byte getTransferId() {
+        return transferId;
     }
 }

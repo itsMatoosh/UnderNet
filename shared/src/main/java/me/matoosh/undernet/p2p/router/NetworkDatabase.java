@@ -57,11 +57,11 @@ public class NetworkDatabase extends Manager {
         if(e instanceof MessageReceivedEvent) {
             //Checking message type.
             ChannelMessageReceivedEvent messageEvent = (ChannelMessageReceivedEvent)e;
-            if(messageEvent.message.content.getType() == MsgType.NODE_PING) {
-                PingMessage pingMessage = (PingMessage)messageEvent.message.content;
+            if(messageEvent.message.getContent().getType() == MsgType.NODE_PING) {
+                PingMessage pingMessage = (PingMessage)messageEvent.message.getContent();
 
                 //Sending a ping message back.
-                if(pingMessage.pong == true) {
+                if(pingMessage.isPong() == true) {
                     return;
                 }
                 logger.info("Ping!");

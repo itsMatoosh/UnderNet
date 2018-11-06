@@ -10,6 +10,8 @@ import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferHan
 import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferType;
 
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.util.HashMap;
 
 /**
@@ -25,12 +27,18 @@ public class FileResource extends Resource {
 
     /**
      * Creates a new file resource given file.
+     *
      * @param file
      */
     public FileResource(Router router, File file) {
         super(router);
         this.file = file;
         updateAttributes();
+
+        //Calculate checksum if file is stored.
+        if(file.length() > 0) {
+            calcNetworkId();
+        }
     }
 
     /**
@@ -38,50 +46,62 @@ public class FileResource extends Resource {
      */
     @Override
     public void calcNetworkId() {
-        if(this.getNetworkID() == null) {
-            this.setNetworkID(NetworkID.generateFromString(getInfo().attributes.get(1)));
+        if (this.getNetworkID() == null) {
+            this.setNetworkID(new NetworkID(calcChecksum()));
         }
+    }
+
+    /**
+     * Calculates checksum of the file.
+     */
+    public byte[] calcChecksum() {
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(file);
+            ByteBuffer checksum = ByteBuffer.allocate(65);
+            checksum.put(org.apache.commons.codec.digest.DigestUtils.sha512(fis));
+            fis.close();
+            return checksum.array();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     /**
      * Copies the file if its not in the content directory.
      */
     public boolean copyToContent() {
-        if(this.getNetworkID() == null) {
+        if (this.getNetworkID() == null) {
             calcNetworkId();
         }
-        if(!file.toString().startsWith(UnderNet.fileManager.getContentFolder().toString())) {
-            if(!file.exists()) return false;
-            if(!file.canRead()) return false;
-            if(file.isHidden()) return false;
-            if(file.isDirectory()) return false;
+        if (!file.toString().startsWith(UnderNet.fileManager.getContentFolder().toString())) {
+            //Make sure file is accessible.
+            if (!file.exists()) return false;
+            if (!file.canRead()) return false;
+            if (file.isHidden()) return false;
+            if (file.isDirectory()) return false;
 
-            InputStream is = null;
-            OutputStream os = null;
-            try {
-                is = new FileInputStream(file);
-                os = new FileOutputStream(UnderNet.fileManager.getContentFolder() + "/" + this.getInfo().attributes.get(1));
-                byte[] buffer = new byte[1024];
-                int length;
-                while ((length = is.read(buffer)) > 0) {
-                    os.write(buffer, 0, length);
-                }
-            } catch (IOException e) {
-                ResourceManager.logger.error("An error occurred copying file: " + file.toString() + " to the content directory!", e);
-                return false;
-            } finally {
-                try {
-                    is.close();
-                    os.close();
-                } catch (IOException e) {
-                    ResourceManager.logger.error("An error occurred while closing the copy streams for file: " + file.toString() + "!", e);
-                    return false;
-                }
+            //Destination
+            File destination = new File(UnderNet.fileManager.getContentFolder() + "/" + this.getInfo().attributes.get(1));
+            if (destination.exists()) {
+                destination.delete();
             }
-        }
 
-        //Updating the path.
-        this.file = new File(UnderNet.fileManager.getContentFolder() + "/" + this.getInfo().attributes.get(1));
+            //Copy
+            try {
+                Files.copy(file.toPath(), destination.toPath());
+            } catch (IOException e) {
+                ResourceManager.logger.error("Couldn't copy file to content directory!", e);
+                return false;
+            }
+
+            //Updating the path.
+            this.file = destination;
+        }
 
         return true;
     }
@@ -105,6 +125,7 @@ public class FileResource extends Resource {
 
     /**
      * Gets the transfer handler.
+     *
      * @param resourceTransferType
      * @param tunnel
      * @param router
@@ -113,10 +134,10 @@ public class FileResource extends Resource {
     @Override
     public ResourceTransferHandler getTransferHandler(ResourceTransferType resourceTransferType, MessageTunnel tunnel, Router router) {
         byte transferId;
-        if(resourceTransferType == ResourceTransferType.OUTBOUND) {
-            transferId = (byte)router.resourceManager.outboundHandlers.size();
+        if (resourceTransferType == ResourceTransferType.OUTBOUND) {
+            transferId = (byte) router.resourceManager.outboundHandlers.size();
         } else {
-            transferId = (byte)router.resourceManager.inboundHandlers.size();
+            transferId = (byte) router.resourceManager.inboundHandlers.size();
         }
         return new FileTransferHandler(this, resourceTransferType, tunnel, transferId, router);
     }
@@ -126,7 +147,7 @@ public class FileResource extends Resource {
      */
     @Override
     public void clear() {
-        if(file.exists()) {
+        if (file.exists()) {
             file.delete();
         }
     }
@@ -141,14 +162,15 @@ public class FileResource extends Resource {
 
     /**
      * Checks whether the file is within the content folder.
+     *
      * @return
      */
     @Override
     public boolean isLocal() {
-        if(this.file == null) {
+        if (this.file == null) {
             this.file = new File(UnderNet.fileManager.getContentFolder() + "/" + getInfo().attributes.get(1));
         }
-        if(this.file != null && this.file.exists()) {
+        if (this.file != null && this.file.exists()) {
             return true;
         }
         return false;

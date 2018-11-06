@@ -168,21 +168,20 @@ public class ResourceManager extends Manager {
             final MessageReceivedEvent messageReceivedEvent = (MessageReceivedEvent) e;
 
             //Resource message type.
-            if(messageReceivedEvent.networkMessage.content.getType() == MsgType.RES_INFO) {
+            if(messageReceivedEvent.networkMessage.getContent().getType() == MsgType.RES_INFO) {
                 //Resource info.
-                handleResourceInfo((ResourceInfoMessage) messageReceivedEvent.networkMessage.content);
+                handleResourceInfo((ResourceInfoMessage) messageReceivedEvent.networkMessage.getContent());
             }
-            else if(messageReceivedEvent.networkMessage.content.getType() == MsgType.RES_DATA) {
-                if(messageReceivedEvent.networkMessage.getDirection() == NetworkMessage.MessageDirection.TO_DESTINATION) {
-                    //Push
-                    handleResourcePush((ResourceDataMessage)messageReceivedEvent.networkMessage.content);
-                } else {
-                    //Retrieve
-                    handleResourceRetrieve((ResourceDataMessage)messageReceivedEvent.networkMessage.content);
-                }
-            } else if(messageReceivedEvent.networkMessage.content.getType() == MsgType.RES_PULL) {
+            else if(messageReceivedEvent.networkMessage.getContent().getType() == MsgType.RES_DATA) {
+                //Retrieve
+                handleResourceRetrieve((ResourceDataMessage)messageReceivedEvent.networkMessage.getContent());
+            }
+            else if(messageReceivedEvent.networkMessage.getContent().getType() == MsgType.RES_DATA_REQUEST) {
+                //Request data
+                handlerResourceDataRequest((ResourceDataChunkRequest) messageReceivedEvent.networkMessage.getContent());
+            }else if(messageReceivedEvent.networkMessage.getContent().getType() == MsgType.RES_PULL) {
                 //Resource pull
-                handleResourcePullRequest((ResourcePullMessage)messageReceivedEvent.networkMessage.content);
+                handleResourcePullRequest((ResourcePullMessage)messageReceivedEvent.networkMessage.getContent());
             }
         } else if(e instanceof ConnectionEstablishedEvent) { //Redistribute the currently available resources when a new node connects.
             ConnectionEstablishedEvent connectionEvent = (ConnectionEstablishedEvent) e;
@@ -211,7 +210,7 @@ public class ResourceManager extends Manager {
             transferFinishedEvent.transferHandler.close();
 
             //Removing from the list.
-            if(transferFinishedEvent.transferHandler.transferType == ResourceTransferType.INBOUND) {
+            if(transferFinishedEvent.transferHandler.getTransferType() == ResourceTransferType.INBOUND) {
                 inboundHandlers.remove(transferFinishedEvent.transferHandler);
             } else {
                 outboundHandlers.remove(transferFinishedEvent.transferHandler);
@@ -229,7 +228,7 @@ public class ResourceManager extends Manager {
         ResourceTransferHandler transferHandler = resource.getTransferHandler(ResourceTransferType.OUTBOUND, tunnel, this.router);
 
         //Sending the resource info message.
-        resource.sendInfo(tunnel, transferHandler.transferId);
+        resource.sendInfo(tunnel, transferHandler.getTransferId());
 
         //Sending the resource data.
         transferHandler.startSending();
@@ -250,13 +249,13 @@ public class ResourceManager extends Manager {
      * @param message
      */
     private void handleResourceInfo(ResourceInfoMessage message) {
-        logger.info("Inbound {} resource transfer, preparing to receive...", message.resourceInfo.resourceType);
+        logger.info("Inbound {} resource transfer, preparing to receive...", message.getResourceInfo().resourceType);
 
         //Checks if the resource has already started being received.
         for (ResourceTransferHandler transferHandler :
                 inboundHandlers) {
-            if(transferHandler.resource.getNetworkID().equals(message.networkMessage.getDestination())) {
-                logger.warn("Received a duplicate resource info for: {}", message.networkMessage.getDestination());
+            if(transferHandler.getResource().getNetworkID().equals(message.getNetworkMessage().getDestination())) {
+                logger.warn("Received a duplicate resource info for: {}", message.getNetworkMessage().getDestination());
                 return;
             }
         }
@@ -264,24 +263,25 @@ public class ResourceManager extends Manager {
         Resource resource = null;
 
         //Creating appropriate resources.
-        if(message.resourceInfo.resourceType == ResourceType.FILE) {
-            resource = new FileResource(this.router, new File(UnderNet.fileManager.getContentFolder() + "/" + message.resourceInfo.attributes.get(1)));
+        if(message.getResourceInfo().resourceType == ResourceType.FILE) {
+            resource = new FileResource(this.router, new File(UnderNet.fileManager.getContentFolder() + "/" + message.getResourceInfo().attributes.get(1)));
         }
 
-        resource.attributes = message.resourceInfo.attributes;
-        resource.calcNetworkId();
-        inboundHandlers.add(resource.getTransferHandler(ResourceTransferType.INBOUND, message.networkMessage.getTunnel(), this.router));
+        resource.attributes = message.getResourceInfo().attributes;
+        resource.setNetworkID(message.getNetworkMessage().getDestination());
+        inboundHandlers.add(resource.getTransferHandler(ResourceTransferType.INBOUND, message.getNetworkMessage().getTunnel(), this.router));
     }
+
     /**
-     * Handles a resource push.
+     * Sends the next requested data chunk of a resource.
      * @param message
      */
-    private void handleResourcePush(ResourceDataMessage message) {
-        //Checking if the resource push is already being received.
+    private void handlerResourceDataRequest(ResourceDataChunkRequest message) {
+        //Sending next chunk from handler.
         for (ResourceTransferHandler transferHandler :
                 inboundHandlers) {
-            if(transferHandler.resource.getNetworkID().equals(message.networkMessage.getDestination()) && transferHandler.transferId == message.transferId) {
-                transferHandler.onResourceMessage(message);
+            if(transferHandler.getResource().getNetworkID().equals(message.getNetworkMessage().getDestination()) && transferHandler.getTransferId() == message.getTransferId()) {
+                transferHandler.sendChunk(message.getChunkId());
             }
             return;
         }
@@ -295,7 +295,7 @@ public class ResourceManager extends Manager {
         //Checking if the resource push is already being received.
         for (ResourceTransferHandler transferHandler :
                 inboundHandlers) {
-            if(transferHandler.resource.getNetworkID().equals(message.networkMessage.getDestination()) && message.transferId == transferHandler.transferId) {
+            if(transferHandler.getResource().getNetworkID().equals(message.getNetworkMessage().getDestination()) && message.getTransferId() == transferHandler.getTransferId()) {
                 transferHandler.onResourceMessage(message);
             }
             return;
@@ -311,13 +311,13 @@ public class ResourceManager extends Manager {
         EventManager.callEvent(new ResourcePullReceivedEvent(message));
 
         //Getting the requested resource.
-        Resource requestedResource = getLocalResource(message.networkMessage.getDestination());
+        Resource requestedResource = getLocalResource(message.getNetworkMessage().getDestination());
 
         //Retrieving the file.
         if(requestedResource != null && requestedResource.isLocal()) {
-            startPush(requestedResource, message.networkMessage.getTunnel());
+            startPush(requestedResource, message.getNetworkMessage().getTunnel());
         } else {
-            logger.warn("Resource: {} not available on {}. The pull request will be dropped!", message.networkMessage.getDestination(), Node.self);
+            logger.warn("Resource: {} not available on {}. The pull request will be dropped!", message.getNetworkMessage().getDestination(), Node.self);
         }
     }
 

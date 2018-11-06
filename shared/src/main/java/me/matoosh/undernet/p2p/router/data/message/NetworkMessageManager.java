@@ -101,7 +101,7 @@ public class NetworkMessageManager extends Manager {
 
         message.serialize();
         message.sign();
-        content.networkMessage = message;
+        content.setNetworkMessage(message);
         return message;
     }
 
@@ -113,15 +113,15 @@ public class NetworkMessageManager extends Manager {
      */
     public void forwardMessage(NetworkMessage message, Node forwarder) {
         //Ignore node info.
-        if(message.content != null && message.content.getType() == MsgType.NODE_INFO) {
+        if(message.getContent() != null && message.getContent().getType() == MsgType.NODE_INFO) {
             return;
         }
 
         if(forwarder == Node.self) {
             if(message.getDirection() == NetworkMessage.MessageDirection.TO_DESTINATION) {
-                logger.info("Forwarding message ({}), ({}) -> ({}) -> ({}) -> (...) -> ({})", message.content.getType(), message.getOrigin(), forwarder, Node.self, message.getDestination());
+                logger.info("Forwarding message ({}), ({}) -> ({}) -> ({}) -> (...) -> ({})", message.getContent().getType(), message.getOrigin(), forwarder, Node.self, message.getDestination());
             } else {
-                logger.info("Forwarding message ({}), ({}) <- ({}) <- ({}) <- (...) <- ({})", message.content.getType(), message.getOrigin(), forwarder, Node.self, message.getDestination());
+                logger.info("Forwarding message ({}), ({}) <- ({}) <- ({}) <- (...) <- ({})", message.getContent().getType(), message.getOrigin(), forwarder, Node.self, message.getDestination());
             }
         } else {
             if(message.getDirection() == NetworkMessage.MessageDirection.TO_DESTINATION) {

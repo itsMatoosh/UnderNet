@@ -13,27 +13,27 @@ public abstract class ResourceTransferHandler {
     /**
      * The router used.
      */
-    public Router router;
+    private Router router;
 
     /**
      * The transferred resource.
      */
-    public Resource resource;
+    private Resource resource;
 
     /**
      * The type of the resource transfer.
      */
-    public ResourceTransferType transferType;
+    private ResourceTransferType transferType;
 
     /**
      * The tunnel of the resource.
      */
-    public MessageTunnel tunnel;
+    private MessageTunnel tunnel;
 
     /**
      * The transfer id of the transfer.
      */
-    public byte transferId;
+    private byte transferId;
 
 
     public ResourceTransferHandler(Resource resource, ResourceTransferType transferType, MessageTunnel tunnel, byte transferId, Router router) {
@@ -47,7 +47,15 @@ public abstract class ResourceTransferHandler {
     /**
      * Starts the sending process.
      */
-    public abstract void startSending();
+    public void startSending() {
+        sendChunk(0);
+    }
+
+    /**
+     * Sends chunk with id chunk id.
+     * @param chunkId
+     */
+    public abstract void sendChunk(int chunkId);
 
     /**
      * Releases all the resources associated with the handler.
@@ -59,4 +67,28 @@ public abstract class ResourceTransferHandler {
      * @param dataMessage
      */
     public abstract void onResourceMessage(ResourceDataMessage dataMessage);
+
+    public Router getRouter() {
+        return router;
+    }
+
+    public Resource getResource() {
+        return resource;
+    }
+
+    public ResourceTransferType getTransferType() {
+        return transferType;
+    }
+
+    public MessageTunnel getTunnel() {
+        return tunnel;
+    }
+
+    public void setTunnel(MessageTunnel tunnel) {
+        this.tunnel = tunnel;
+    }
+
+    public byte getTransferId() {
+        return transferId;
+    }
 }

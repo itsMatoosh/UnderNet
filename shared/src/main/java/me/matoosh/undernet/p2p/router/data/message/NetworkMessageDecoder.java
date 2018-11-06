@@ -58,10 +58,10 @@ public class NetworkMessageDecoder extends ByteToMessageDecoder {
         NetworkMessage receivedMessage = new NetworkMessage(msgOrigin, msgDestination, signature, NetworkMessage.MessageDirection.getByValue(direction));
 
         //Allocating data part.
-        receivedMessage.data = ByteBuffer.allocate(messageLength - NetworkMessage.NETWORK_MESSAGE_HEADER_LENGTH - signatureLength);
+        receivedMessage.setData(new byte[messageLength - NetworkMessage.NETWORK_MESSAGE_HEADER_LENGTH - signatureLength]);
 
         //Reading the data of the cached message.
-        in.readBytes(receivedMessage.data);
+        in.readBytes(receivedMessage.getData());
 
         out.add(receivedMessage);
     }

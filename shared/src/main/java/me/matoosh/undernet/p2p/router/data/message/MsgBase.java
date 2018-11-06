@@ -11,7 +11,15 @@ public abstract class MsgBase implements Serializable {
     /**
      * The network message object that carries this content.
      */
-    public NetworkMessage networkMessage;
+    private NetworkMessage networkMessage;
+
+    public NetworkMessage getNetworkMessage() {
+        return networkMessage;
+    }
+
+    public void setNetworkMessage(NetworkMessage networkMessage) {
+        this.networkMessage = networkMessage;
+    }
 
     /**
      * Gets the type of the message.

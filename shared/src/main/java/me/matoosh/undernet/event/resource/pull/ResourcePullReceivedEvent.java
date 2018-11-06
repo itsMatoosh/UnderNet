@@ -15,6 +15,6 @@ public class ResourcePullReceivedEvent extends ResourcePullMessageEvent {
      */
     @Override
     public void onCalled() {
-        logger.info("Resource pull request received from: {}, for: {}", pullMessage.networkMessage.getOrigin(), pullMessage.networkMessage.getDestination());
+        logger.info("Resource pull request received from: {}, for: {}", pullMessage.getNetworkMessage().getOrigin(), pullMessage.getNetworkMessage().getDestination());
     }
 }

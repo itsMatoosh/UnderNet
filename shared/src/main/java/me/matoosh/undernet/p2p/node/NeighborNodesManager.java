@@ -71,11 +71,11 @@ public class NeighborNodesManager extends Manager {
             if(messageReceivedEvent.remoteNode.getIdentity() == null) {
                 if (messageReceivedEvent.message.verify()) {
                     messageReceivedEvent.message.deserialize();
-                    if(messageReceivedEvent.message.content.getType() == MsgType.NODE_INFO) {
-                        NodeInfoMessage nodeInfoMessage = (NodeInfoMessage)messageReceivedEvent.message.content;
+                    if(messageReceivedEvent.message.getContent().getType() == MsgType.NODE_INFO) {
+                        NodeInfoMessage nodeInfoMessage = (NodeInfoMessage)messageReceivedEvent.message.getContent();
 
-                        logger.debug("Received node info for {}", nodeInfoMessage.networkMessage.getOrigin());
-                        NetworkIdentity networkIdentity = new NetworkIdentity(nodeInfoMessage.networkMessage.getOrigin());
+                        logger.debug("Received node info for {}", nodeInfoMessage.getNetworkMessage().getOrigin());
+                        NetworkIdentity networkIdentity = new NetworkIdentity(nodeInfoMessage.getNetworkMessage().getOrigin());
                         messageReceivedEvent.remoteNode.setIdentity(networkIdentity);
 
                         EventManager.callEvent(new ConnectionEstablishedEvent(messageReceivedEvent.remoteNode));

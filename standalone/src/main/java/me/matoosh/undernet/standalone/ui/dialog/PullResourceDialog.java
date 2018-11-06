@@ -93,8 +93,8 @@ public class PullResourceDialog extends JDialog {
                         public void onEventCalled(Event e) {
                             ResourceTransferFinishedEvent transferFinishedEvent = (ResourceTransferFinishedEvent) e;
 
-                            if(transferFinishedEvent.transferHandler.transferType == ResourceTransferType.INBOUND && transferFinishedEvent.transferHandler.resource.getNetworkID().equals(netId) && transferFinishedEvent.transferHandler.resource.getInfo().resourceType == ResourceType.FILE) {
-                                FileResource fileResource = (FileResource)transferFinishedEvent.transferHandler.resource;
+                            if(transferFinishedEvent.transferHandler.getTransferType() == ResourceTransferType.INBOUND && transferFinishedEvent.transferHandler.getResource().getNetworkID().equals(netId) && transferFinishedEvent.transferHandler.getResource().getInfo().resourceType == ResourceType.FILE) {
+                                FileResource fileResource = (FileResource)transferFinishedEvent.transferHandler.getResource();
 
                                 //Copying the received file to dest.
                                 if(saveFile[0] != null) {

@@ -82,8 +82,8 @@ public class ResourcesPanel extends JPanel {
             @Override
             public void onEventCalled(me.matoosh.undernet.event.Event e) {
                 ResourceTransferStartedEvent transferStartedEvent = (ResourceTransferStartedEvent) e;
-                if(transferStartedEvent.transferHandler.transferType == ResourceTransferType.OUTBOUND) {
-                    addCachedResource(transferStartedEvent.transferHandler.resource);
+                if(transferStartedEvent.transferHandler.getTransferType() == ResourceTransferType.OUTBOUND) {
+                    addCachedResource(transferStartedEvent.transferHandler.getResource());
                     refreshResourcesList();
                 }
             }

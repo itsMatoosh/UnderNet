@@ -68,20 +68,22 @@ public class NetworkMessage {
      * The deserialized content of the message.
      * Known only by the destination node.
      */
-    public MsgBase content;
+    private MsgBase content;
     /**
      * The raw data.
      * The serialized content.
      */
-    public ByteBuffer data;
+    private ByteBuffer data;
 
-    public NetworkMessage() {}
+    public NetworkMessage() {
+    }
 
     /**
      * Creates a network message.
-     * @param origin the origin of the network message.
+     *
+     * @param origin      the origin of the network message.
      * @param destination the destination of the network message.
-     * @param content the content of the message.
+     * @param content     the content of the message.
      */
     public NetworkMessage(NetworkID origin, NetworkID destination, MsgBase content, MessageDirection direction) {
         this.origin = origin;
@@ -89,8 +91,10 @@ public class NetworkMessage {
         this.content = content;
         this.direction = direction.value;
     }
+
     /**
      * Creates a network message.
+     *
      * @param origin
      * @param destination
      * @param signature
@@ -127,6 +131,7 @@ public class NetworkMessage {
 
     /**
      * Deserializes the content from its byte[] data.
+     *
      * @return
      */
     public void deserialize() {
@@ -134,8 +139,8 @@ public class NetworkMessage {
         ObjectInput in = null;
         try {
             in = new ObjectInputStream(bis);
-            this.content = (MsgBase)in.readObject();
-            this.content.networkMessage = this;
+            this.content = (MsgBase) in.readObject();
+            this.content.setNetworkMessage(this);
             logger.debug("Deserialized message of length: {}", this.data.array().length);
         } catch (ClassNotFoundException e) {
             logger.error("Error occured while deserializing a network message!", e);
@@ -154,50 +159,70 @@ public class NetworkMessage {
 
     /**
      * Gets the destination of the message.
+     *
      * @return
      */
     public NetworkID getDestination() {
         return this.destination;
     }
+
     /**
      * Gets the origin of the message.
+     *
      * @return
      */
     public NetworkID getOrigin() {
         return this.origin;
     }
+
     /**
      * Gets the checksum of the message.
+     *
      * @return
      */
     public byte[] getSignature() {
         return this.signature;
     }
+
     /**
      * Gets the content length of the message.
+     *
      * @return
      */
     public int getContentLength() {
         return this.contentLength;
     }
+
     /**
      * Gets the raw data of the message.
+     *
      * @return
      */
     public byte[] getData() {
         return this.data.array();
     }
+
     /**
      * Sets the message data.
+     *
      * @param data
      */
     public void setData(byte[] data) {
         this.data = ByteBuffer.wrap(data);
-        this.contentLength = (short) (Short.MIN_VALUE + (short)data.length);
+        this.contentLength = (short) (Short.MIN_VALUE + (short) data.length);
+    }
+
+    public MsgBase getContent() {
+        return content;
+    }
+
+    public void setContent(MsgBase content) {
+        this.content = content;
     }
 
     /**
      * Gets the tunnel of the message.
+     *
      * @return
      */
     public MessageTunnel getTunnel() {
@@ -206,27 +231,28 @@ public class NetworkMessage {
 
     /**
      * Checks whether the network message is valid.
+     *
      * @return
      */
     public boolean isValid() {
         updateDetails();
-        if(origin == null || !origin.isValid()) {
+        if (origin == null || !origin.isValid()) {
             logger.warn("Origin of message {} missing or invalid!", this);
             return false;
         }
-        if(destination == null || !destination.isValid()) {
+        if (destination == null || !destination.isValid()) {
             logger.warn("Destination of message {} missing or invalid!", this);
             return false;
         }
-        if(signature == null) {
+        if (signature == null) {
             logger.warn("Signature of message {} missing!", this);
             return false;
         }
-        if(signature.length <= 0) {
+        if (signature.length <= 0) {
             logger.warn("Length of the message {} signature incorrect, {}!", this, signature.length);
             return false;
         }
-        if(contentLength <= 0) {
+        if (contentLength <= 0) {
             logger.warn("Content length of message {} less or equal to 0", this);
             return false;
         }
@@ -240,11 +266,12 @@ public class NetworkMessage {
 
     /**
      * Checks if the length of the message fits in the MTU of the network.
+     *
      * @return
      */
     public boolean checkLength() {
         int messageLength = getTotalLength();
-        if(messageLength > NETWORK_MTU_SIZE) {
+        if (messageLength > NETWORK_MTU_SIZE) {
             return false;
         } else {
             return true;
@@ -256,7 +283,7 @@ public class NetworkMessage {
      */
     public void sign() {
         try {
-            Signature sig = Signature.getInstance("SHA1withECDSA","SunEC");
+            Signature sig = Signature.getInstance("SHA1withECDSA", "SunEC");
             sig.initSign(Node.self.getIdentity().getPrivateKey());
             sig.update(data.array());
             this.signature = sig.sign();
@@ -276,14 +303,14 @@ public class NetworkMessage {
      */
     public boolean verify() {
         try {
-            Signature sig = Signature.getInstance("SHA1withECDSA","SunEC");
-            if(getDirection() == MessageDirection.TO_DESTINATION) {
+            Signature sig = Signature.getInstance("SHA1withECDSA", "SunEC");
+            if (getDirection() == MessageDirection.TO_DESTINATION) {
                 sig.initVerify(getOrigin().getPublicKey());
             } else {
                 //Checking if tunnel exists.
                 MessageTunnel tunnel = UnderNet.router.messageTunnelManager.getTunnel(getOrigin(), getDestination());
 
-                if(tunnel != null && tunnel.getOtherPublicKey() !=null) {
+                if (tunnel != null && tunnel.getOtherPublicKey() != null) {
                     sig.initVerify(tunnel.getOtherPublicKey());
                 } else {
                     return true;
@@ -307,10 +334,11 @@ public class NetworkMessage {
 
     /**
      * Gets the total length of the message.
+     *
      * @return
      */
     public int getTotalLength() {
-        if(signature != null) {
+        if (signature != null) {
             return NETWORK_MESSAGE_HEADER_LENGTH + contentLength + signature.length;
         } else {
             return NETWORK_MESSAGE_HEADER_LENGTH + contentLength;
@@ -319,6 +347,7 @@ public class NetworkMessage {
 
     /**
      * Gets the current message direction.
+     *
      * @return
      */
     public MessageDirection getDirection() {
@@ -334,15 +363,15 @@ public class NetworkMessage {
      * Updates the message details.
      */
     public void updateDetails() {
-        this.contentLength = (short)data.array().length;
+        this.contentLength = (short) data.array().length;
     }
 
     /**
      * Direction of a network message.
      */
     public enum MessageDirection {
-        TO_DESTINATION((byte)0),
-        TO_ORIGIN((byte)1);
+        TO_DESTINATION((byte) 0),
+        TO_ORIGIN((byte) 1);
 
         public byte value;
 
@@ -352,12 +381,13 @@ public class NetworkMessage {
 
         /**
          * Gets a message direction given its value.
+         *
          * @param value
          * @return
          */
         public static MessageDirection getByValue(byte value) {
-            for(MessageDirection direction : values()) {
-                if(direction.value == value) return direction;
+            for (MessageDirection direction : values()) {
+                if (direction.value == value) return direction;
             }
             return TO_DESTINATION;
         }

@@ -41,6 +41,8 @@ public class NetworkIdentity implements Serializable {
     public NetworkIdentity() {
         generateKeys();
         networkID = NetworkID.generateFromPublicKey(this.publicKey);
+
+        logger.info("Generated new Network identity: {}", toString());
     }
 
     /**
@@ -58,8 +60,9 @@ public class NetworkIdentity implements Serializable {
     public boolean isCorrect() {
         if (networkID == null) {
             return false;
+        } else {
+            return networkID.isValid();
         }
-        return true;
     }
 
     /**

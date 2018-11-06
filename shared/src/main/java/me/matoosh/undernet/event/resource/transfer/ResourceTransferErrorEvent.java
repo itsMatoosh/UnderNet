@@ -21,10 +21,10 @@ public class ResourceTransferErrorEvent extends ResourceTransferEvent {
 
     @Override
     public void onCalled() {
-        logger.error("Error occurred transferring resource: " + transferHandler.resource, exception);
+        logger.error("Error occurred transferring resource: " + transferHandler.getResource(), exception);
 
         //Deleting the remainders of the transferred file.
-        if(this.transferHandler.resource instanceof FileResource) {
+        if(this.transferHandler.getResource() instanceof FileResource) {
 
         }
     }

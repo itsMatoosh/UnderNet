@@ -15,6 +15,7 @@ public enum MsgType {
     RES_INFO((short)4), //Info about a transferred resource.
     RES_PULL((short)5), //Contains the Network id of the pulled resource.
     RES_DATA((short)6), //Data of a resource.
+    RES_DATA_REQUEST((short)7), //Confirm data of a resource.
     UNKNOWN((short)-1); //Unknown msg type.
 
     public short id;

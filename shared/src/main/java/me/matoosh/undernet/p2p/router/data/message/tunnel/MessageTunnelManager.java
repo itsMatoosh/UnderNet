@@ -145,14 +145,14 @@ public class MessageTunnelManager extends Manager {
     public void onEventCalled(Event e) {
         if(e instanceof MessageReceivedEvent) {
             MessageReceivedEvent messageReceivedEvent = (MessageReceivedEvent)e;
-            if(messageReceivedEvent.networkMessage.content.getType() == MsgType.TUNNEL_ESTABLISH_REQUEST) {
-                TunnelEstablishRequestMessage tunnelEstablishRequestMessage = (TunnelEstablishRequestMessage) messageReceivedEvent.networkMessage.content;
-                MessageTunnel tunnel = getOrCreateTunnel(tunnelEstablishRequestMessage.networkMessage.getOrigin(), tunnelEstablishRequestMessage.networkMessage.getDestination());
+            if(messageReceivedEvent.networkMessage.getContent().getType() == MsgType.TUNNEL_ESTABLISH_REQUEST) {
+                TunnelEstablishRequestMessage tunnelEstablishRequestMessage = (TunnelEstablishRequestMessage) messageReceivedEvent.networkMessage.getContent();
+                MessageTunnel tunnel = getOrCreateTunnel(tunnelEstablishRequestMessage.getNetworkMessage().getOrigin(), tunnelEstablishRequestMessage.getNetworkMessage().getDestination());
 
                 //Checking if we need to reply with our public key.
                 if(messageReceivedEvent.networkMessage.getDirection() == NetworkMessage.MessageDirection.TO_DESTINATION) {
                     //Setting the other's public key.
-                    tunnel.setOtherPublicKey(tunnelEstablishRequestMessage.networkMessage.getOrigin().getPublicKey());
+                    tunnel.setOtherPublicKey(tunnelEstablishRequestMessage.getNetworkMessage().getOrigin().getPublicKey());
 
                     //Calculating the shared secret.
                     tunnel.calcSharedSecret();
@@ -162,9 +162,9 @@ public class MessageTunnelManager extends Manager {
                     //Calling the event.
                     EventManager.callEvent(new MessageTunnelEstablishedEvent(tunnel, NetworkMessage.MessageDirection.TO_DESTINATION));
                 }
-            } else if(messageReceivedEvent.networkMessage.content.getType() == MsgType.TUNNEL_ESTABLISH_RESPONSE) {
-                TunnelEstablishResponseMessage tunnelEstablishResponseMessage = (TunnelEstablishResponseMessage) messageReceivedEvent.networkMessage.content;
-                MessageTunnel tunnel = getOrCreateTunnel(tunnelEstablishResponseMessage.networkMessage.getOrigin(), tunnelEstablishResponseMessage.networkMessage.getDestination());
+            } else if(messageReceivedEvent.networkMessage.getContent().getType() == MsgType.TUNNEL_ESTABLISH_RESPONSE) {
+                TunnelEstablishResponseMessage tunnelEstablishResponseMessage = (TunnelEstablishResponseMessage) messageReceivedEvent.networkMessage.getContent();
+                MessageTunnel tunnel = getOrCreateTunnel(tunnelEstablishResponseMessage.getNetworkMessage().getOrigin(), tunnelEstablishResponseMessage.getNetworkMessage().getDestination());
 
                 //Setting the other's public key.
                 try {
