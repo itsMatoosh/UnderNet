@@ -84,8 +84,8 @@ public class FileTransferHandler extends ResourceTransferHandler {
                 getResource().calcNetworkId();
                 if(getResource().getNetworkID().equals(getTunnel().getDestination())) {
                     //The file is already stored locally.
-                    getTunnel().sendMessage(new ResourceDataChunkRequest(this.getTransferId(), -2));
                     EventManager.callEvent(new ResourceTransferFinishedEvent(this, "File exists already!"));
+                    getTunnel().sendMessage(new ResourceDataChunkRequest(this.getTransferId(), -2));
                     return;
                 }
             }

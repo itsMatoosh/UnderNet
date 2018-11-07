@@ -227,11 +227,11 @@ public class ResourceManager extends Manager {
         //Getting the transfer handler.
         ResourceTransferHandler transferHandler = resource.getTransferHandler(ResourceTransferType.OUTBOUND, tunnel, this.router);
 
-        //Sending the resource info message.
-        resource.sendInfo(tunnel, transferHandler.getTransferId());
-
         //Sending the resource data.
         outboundHandlers.add(transferHandler);
+
+        //Sending the resource info message.
+        resource.sendInfo(tunnel, transferHandler.getTransferId());
     }
 
     /**
@@ -299,6 +299,7 @@ public class ResourceManager extends Manager {
         for (ResourceTransferHandler transferHandler :
                 outboundHandlers) {
             if(transferHandler.getResource().getNetworkID().equals(message.getNetworkMessage().getDestination()) && transferHandler.getTransferId() == message.getTransferId()) {
+                logger.info("Sending chunk: {}, of file transfer {}", message.getChunkId(), transferHandler.getResource().getNetworkID());
                 transferHandler.sendChunk(message.getChunkId());
             }
             return;
