@@ -198,7 +198,6 @@ public class FileTransferHandler extends ResourceTransferHandler {
                     logger.info("File chunk received for: {} | {}%", this.getResource().getNetworkID(), ((float)written/(float)fileLength)*100f);
                     if(written >= fileLength) {
                         //File fully received.
-                        getTunnel().sendMessage(new ResourceDataChunkRequest(this.getTransferId(), -2));
                         EventManager.callEvent(new ResourceTransferFinishedEvent(this, "File transfer complete!"));
                     } else {
                         getTunnel().sendMessage(new ResourceDataChunkRequest(this.getTransferId(), dataMessage.getChunkId() + 1));
