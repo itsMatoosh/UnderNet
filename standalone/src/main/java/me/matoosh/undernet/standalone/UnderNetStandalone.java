@@ -75,13 +75,18 @@ public class UnderNetStandalone {
 
                 //Creating network identity.
                 if(standaloneConfig.identity() == null || standaloneConfig.identity().isEmpty() || standaloneConfig.identity().equals("empty")) {
+                    logger.info("No identity cached, creating a new identity!");
                     UnderNetStandalone.setNetworkIdentity(null, null);
                 } else {
+                    logger.info("Identity cached, loading identity {}!", standaloneConfig.identity());
                     File currentIdentityFile = new File(standaloneConfig.identity());
+
                     try {
-                        if (currentIdentityFile != null && currentIdentityFile.exists()) {
+                        if (currentIdentityFile.exists()) {
                             NetworkIdentity identity = (NetworkIdentity) SerializationTools.readObjectFromFile(currentIdentityFile);
                             UnderNetStandalone.setNetworkIdentity(identity, currentIdentityFile);
+                        } else {
+                            logger.warn("Identity file: {}, doesn't exist! Creating a new identity!", currentIdentityFile);
                         }
                     }
                     catch (NullPointerException e) {
@@ -89,7 +94,7 @@ public class UnderNetStandalone {
                         currentIdentityFile.delete();
                     }
                     finally {
-                        if(Node.self.getIdentity() == null) {
+                        if(networkIdentity == null) {
                             UnderNetStandalone.setNetworkIdentity(null, null);
                         }
                     }
@@ -110,7 +115,7 @@ public class UnderNetStandalone {
 
         //Getting the file configuration source.
         //Specify which files to load. Configuration from both files will be merged.
-        System.out.println(tmpFileMgr.getAppFolder());
+        logger.info("Loading configuration from: {}", tmpFileMgr.getAppFolder());
         ConfigFilesProvider configFilesProvider = new ConfigFilesProvider() {
             @Override
             public Iterable<Path> getConfigFiles() {
@@ -148,11 +153,14 @@ public class UnderNetStandalone {
      */
     public static void setNetworkIdentity(NetworkIdentity identity, File identityFile) {
         if(identity == null || identityFile == null || !identity.isCorrect()) {
+            logger.warn("Network Identity incorrect, creating a new identity!");
             identity = new NetworkIdentity();
             identityFile = new File(UnderNet.fileManager.getAppFolder() + "/random.id");
             SerializationTools.writeObjectToFile(identity, identityFile);
         }
 
+        //Setting the identity.
+        logger.info("Setting the current UnderNet identity to: {}", identity.getNetworkId().getStringValue());
         UnderNetStandalone.networkIdentity = identity;
         mainAppFrame.setTitle("UnderNet - " + UnderNetStandalone.networkIdentity.getNetworkId().getStringValue());
 
