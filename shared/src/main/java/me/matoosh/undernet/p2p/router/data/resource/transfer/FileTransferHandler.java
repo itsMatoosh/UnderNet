@@ -34,9 +34,9 @@ public class FileTransferHandler extends ResourceTransferHandler {
     private long fileLength;
 
     /**
-     * The standard buffer size for file chunks.
+     * The standard buffer size for file chunks (1MB)
      */
-    public static final int BUFFER_SIZE = 1024;
+    public static final int BUFFER_SIZE = 10000000;
 
     /**
      * The amount of bytes written from the received chunks.
@@ -134,6 +134,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
             if(chunkId < 0) {
                 //File sent or error.
                 EventManager.callEvent(new ResourceTransferFinishedEvent(FileTransferHandler.this, "File transfer interrupted by destination!"));
+                return;
             }
 
             //File sending logic.
@@ -145,17 +146,18 @@ public class FileTransferHandler extends ResourceTransferHandler {
                     int read = inputStream.read(buffer);
                     sent += read;
 
-                    if(read <= 0) {
-                        //File sent fully.
-                        EventManager.callEvent(new ResourceTransferFinishedEvent(FileTransferHandler.this, "File transfer complete!"));
-                        return;
-                    }
-
                     byte[] data = new byte[read];
                     System.arraycopy(buffer, 0, data, 0, read);
 
                     logger.info("File transfer ({}) - {}%", this.getResource().attributes.get(1), ((float) sent / Long.parseLong(getResource().getInfo().attributes.get(0))) * 100f);
                     sendData(data, chunkId);
+
+                    //Finish if no more bytes available!
+                    if(inputStream.available() <= 0) {
+                        //File sent fully.
+                        EventManager.callEvent(new ResourceTransferFinishedEvent(FileTransferHandler.this, "File transfer complete!"));
+                        return;
+                    }
                 } else {
                     //The file has no data. Sending an empty chunk.
                     sendData(new byte[0], chunkId);
