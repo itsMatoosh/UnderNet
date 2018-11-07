@@ -253,7 +253,7 @@ public class NetworkMessage {
             return false;
         }
         if (contentLength <= 0) {
-            logger.warn("Content length of message {} less or equal to 0", this);
+            logger.warn("Content length of message {} less or equal to 0, {}", this, contentLength);
             return false;
         }
         /*if(!checkLength()) {
