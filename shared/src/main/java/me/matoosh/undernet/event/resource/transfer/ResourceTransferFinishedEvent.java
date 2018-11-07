@@ -7,16 +7,28 @@ import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferTyp
  * Called when a resource transfer finishes.
  */
 public class ResourceTransferFinishedEvent extends ResourceTransferEvent {
-    public ResourceTransferFinishedEvent(ResourceTransferHandler transferHandler) {
+
+    private String reason;
+
+    public ResourceTransferFinishedEvent(ResourceTransferHandler transferHandler, String reason) {
         super(transferHandler);
+        this.reason = reason;
     }
 
     @Override
     public void onCalled() {
         if(this.transferHandler.getTransferType() == ResourceTransferType.INBOUND) {
-            logger.info("Transfer of resource {}, from {}, finished!", this.transferHandler.getResource(), this.transferHandler.getTunnel().getDestination());
+            logger.info("Transfer of resource {}, from {}, finished!, {}", this.transferHandler.getResource(), this.transferHandler.getTunnel().getDestination(), this.reason);
         } else {
-            logger.info("Transfer of resource {}, to {}, finished!", this.transferHandler.getResource(), this.transferHandler.getTunnel().getDestination());
+            logger.info("Transfer of resource {}, to {}, finished!, {}", this.transferHandler.getResource(), this.transferHandler.getTunnel().getDestination(), this.reason);
         }
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
+
+    public String getReason() {
+        return reason;
     }
 }
