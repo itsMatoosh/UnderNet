@@ -129,7 +129,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
      */
     @Override
     public void sendChunk(int chunkId) {
-        if(getTransferType().equals(ResourceTransferType.OUTBOUND)) {
+        if(getTransferType().equals(ResourceTransferType.OUTBOUND) && inputStream != null) {
             //Stopping on request.
             if(chunkId < 0) {
                 //File sent or error.
