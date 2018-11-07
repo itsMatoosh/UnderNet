@@ -209,7 +209,7 @@ public class NetworkMessage {
      */
     public void setData(byte[] data) {
         this.data = ByteBuffer.wrap(data);
-        this.contentLength = (short) (Short.MIN_VALUE + (short) data.length);
+        this.contentLength = (short) data.length;
     }
 
     public MsgBase getContent() {
