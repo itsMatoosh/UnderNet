@@ -231,7 +231,6 @@ public class ResourceManager extends Manager {
         resource.sendInfo(tunnel, transferHandler.getTransferId());
 
         //Sending the resource data.
-        transferHandler.startSending();
         outboundHandlers.add(transferHandler);
     }
 

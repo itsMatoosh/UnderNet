@@ -70,7 +70,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
         File saveFile = ((FileResource)this.getResource()).file;
         logger.info("Preparing {} streams for file: {}", this.getTransferType(), saveFile.getName()) ;
 
-        if(this.getTransferType() == ResourceTransferType.OUTBOUND) {
+        if(this.getTransferType() == ResourceTransferType.OUTBOUND) { //Sending
             try {
                 inputStream = new FileInputStream(saveFile);
             } catch (FileNotFoundException e) { //File doesn't exist.
@@ -78,7 +78,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
                 EventManager.callEvent(new ResourceTransferErrorEvent(this, e));
                 return;
             }
-        } else {
+        } else { //Receiving
             //Checking if file already exists.
             if(getResource().isLocal()) {
                 getResource().calcNetworkId();
@@ -102,6 +102,9 @@ public class FileTransferHandler extends ResourceTransferHandler {
                 EventManager.callEvent(new ResourceTransferErrorEvent(this, e));
                 return;
             }
+
+            //Requesting the first chunk.
+            getTunnel().sendMessage(new ResourceDataChunkRequest(this.getTransferId(), 0));
         }
     }
 

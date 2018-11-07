@@ -45,13 +45,6 @@ public abstract class ResourceTransferHandler {
     }
 
     /**
-     * Starts the sending process.
-     */
-    public void startSending() {
-        sendChunk(0);
-    }
-
-    /**
      * Sends chunk with id chunk id.
      * @param chunkId
      */
