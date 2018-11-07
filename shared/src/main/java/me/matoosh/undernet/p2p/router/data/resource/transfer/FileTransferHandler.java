@@ -36,7 +36,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
     /**
      * The standard buffer size for file chunks (1MB)
      */
-    public static final int BUFFER_SIZE = 1024;
+    public static final int BUFFER_SIZE = 102400;
 
     /**
      * The amount of bytes written from the received chunks.
@@ -135,9 +135,16 @@ public class FileTransferHandler extends ResourceTransferHandler {
         if(getTransferType().equals(ResourceTransferType.OUTBOUND) && inputStream != null) {
             //Stopping on request.
             if(chunkId < 0) {
-                //File sent or error.
-                EventManager.callEvent(new ResourceTransferFinishedEvent(FileTransferHandler.this, "File transfer interrupted by destination!"));
-                return;
+                if(chunkId == -1) {
+                    //File sent or error.
+                    EventManager.callEvent(new ResourceTransferFinishedEvent(FileTransferHandler.this, "File transfer complete!"));
+                    return;
+                }
+                if(chunkId == -2) {
+                    //File sent or error.
+                    EventManager.callEvent(new ResourceTransferFinishedEvent(FileTransferHandler.this, "File transfer interrupted by destination!"));
+                    return;
+                }
             }
 
             //File sending logic.
@@ -198,6 +205,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
                     logger.info("File chunk received for: {} | {}%", this.getResource().getNetworkID(), ((float)written/(float)fileLength)*100f);
                     if(written >= fileLength) {
                         //File fully received.
+                        getTunnel().sendMessage(new ResourceDataChunkRequest(this.getTransferId(), -1));
                         EventManager.callEvent(new ResourceTransferFinishedEvent(this, "File transfer complete!"));
                     } else {
                         getTunnel().sendMessage(new ResourceDataChunkRequest(this.getTransferId(), dataMessage.getChunkId() + 1));
