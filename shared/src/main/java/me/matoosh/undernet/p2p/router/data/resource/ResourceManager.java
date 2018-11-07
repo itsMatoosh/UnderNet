@@ -273,13 +273,32 @@ public class ResourceManager extends Manager {
     }
 
     /**
+     * Handles resource pull requests.
+     * @param message
+     */
+    private void handleResourcePullRequest(ResourcePullMessage message) {
+        //Call event.
+        EventManager.callEvent(new ResourcePullReceivedEvent(message));
+
+        //Getting the requested resource.
+        Resource requestedResource = getLocalResource(message.getNetworkMessage().getDestination());
+
+        //Retrieving the file.
+        if(requestedResource != null && requestedResource.isLocal()) {
+            startPush(requestedResource, message.getNetworkMessage().getTunnel());
+        } else {
+            logger.warn("Resource: {} not available on {}. The pull request will be dropped!", message.getNetworkMessage().getDestination(), Node.self);
+        }
+    }
+
+    /**
      * Sends the next requested data chunk of a resource.
      * @param message
      */
     private void handlerResourceDataRequest(ResourceDataChunkRequest message) {
         //Sending next chunk from handler.
         for (ResourceTransferHandler transferHandler :
-                inboundHandlers) {
+                outboundHandlers) {
             if(transferHandler.getResource().getNetworkID().equals(message.getNetworkMessage().getDestination()) && transferHandler.getTransferId() == message.getTransferId()) {
                 transferHandler.sendChunk(message.getChunkId());
             }
@@ -299,25 +318,6 @@ public class ResourceManager extends Manager {
                 transferHandler.onResourceMessage(message);
             }
             return;
-        }
-    }
-
-    /**
-     * Handles resource pull requests.
-     * @param message
-     */
-    private void handleResourcePullRequest(ResourcePullMessage message) {
-        //Call event.
-        EventManager.callEvent(new ResourcePullReceivedEvent(message));
-
-        //Getting the requested resource.
-        Resource requestedResource = getLocalResource(message.getNetworkMessage().getDestination());
-
-        //Retrieving the file.
-        if(requestedResource != null && requestedResource.isLocal()) {
-            startPush(requestedResource, message.getNetworkMessage().getTunnel());
-        } else {
-            logger.warn("Resource: {} not available on {}. The pull request will be dropped!", message.getNetworkMessage().getDestination(), Node.self);
         }
     }
 
