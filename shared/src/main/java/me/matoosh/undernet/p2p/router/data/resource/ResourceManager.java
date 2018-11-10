@@ -157,6 +157,114 @@ public class ResourceManager extends Manager {
     }
 
     /**
+     * Starts a push of a resource.
+     * @param resource
+     * @param tunnel
+     */
+    private void startPush(Resource resource, MessageTunnel tunnel) {
+        //Getting the transfer handler.
+        ResourceTransferHandler transferHandler = resource.getTransferHandler(ResourceTransferType.OUTBOUND, tunnel, (byte)0, this.router);
+        logger.info("Outbound {} resource transfer, transfer id: {}", resource.getResourceType(), transferHandler.getTransferId());
+        outboundHandlers.add(transferHandler);
+
+        //Sending the resource info message.
+        transferHandler.prepare();
+        resource.sendInfo(tunnel, transferHandler.getTransferId());
+    }
+
+    /**
+     * Returns path to a local resource.
+     * @param resource
+     * @return
+     */
+    private File getLocalResourceFile(NetworkID resource) {
+        return new File(UnderNet.fileManager.getContentFolder() + "/" + resource.getStringValue());
+    }
+
+    /**
+     * Handles a resource info message.
+     * @param message
+     */
+    private void handleResourceInfo(ResourceInfoMessage message) {
+        //Checks if the resource has already started being received.
+        for (ResourceTransferHandler transferHandler :
+                inboundHandlers) {
+            if(transferHandler.getResource().getNetworkID().equals(message.getNetworkMessage().getDestination())) {
+                logger.warn("Received a duplicate resource info for: {}", message.getNetworkMessage().getDestination());
+                return;
+            }
+        }
+
+        Resource resource = null;
+
+        //Creating appropriate resources.
+        if(message.getResourceInfo().resourceType == ResourceType.FILE) {
+            resource = new FileResource(this.router, new File(UnderNet.fileManager.getContentFolder() + "/" + message.getResourceInfo().attributes.get(1)));
+        }
+
+        resource.attributes = message.getResourceInfo().attributes;
+        resource.setNetworkID(message.getNetworkMessage().getDestination());
+
+        //Getting a new resource handler.
+        ResourceTransferHandler transferHandler = resource.getTransferHandler(ResourceTransferType.INBOUND, message.getNetworkMessage().getTunnel(), message.getTransferId(), this.router);
+        logger.info("Inbound {} resource transfer, transfer id: {}", message.getResourceInfo().resourceType, transferHandler.getTransferId());
+        inboundHandlers.add(transferHandler);
+
+        //Preparing for incoming resource.
+        transferHandler.prepare();
+    }
+
+    /**
+     * Handles resource pull requests.
+     * @param message
+     */
+    private void handleResourcePullRequest(ResourcePullMessage message) {
+        //Call event.
+        EventManager.callEvent(new ResourcePullReceivedEvent(message));
+
+        //Getting the requested resource.
+        Resource requestedResource = getLocalResource(message.getNetworkMessage().getDestination());
+
+        //Retrieving the file.
+        if(requestedResource != null && requestedResource.isLocal()) {
+            startPush(requestedResource, message.getNetworkMessage().getTunnel());
+        } else {
+            logger.warn("Resource: {} not available on {}. The pull request will be dropped!", message.getNetworkMessage().getDestination(), Node.self);
+        }
+    }
+
+    /**
+     * Sends the next requested data chunk of a resource.
+     * @param message
+     */
+    private void handlerResourceDataRequest(ResourceDataChunkRequest message) {
+        //Sending next chunk from handler.
+        for (ResourceTransferHandler transferHandler :
+                outboundHandlers) {
+            if(transferHandler.getTunnel() == message.getNetworkMessage().getTunnel() && transferHandler.getTransferId() == message.getTransferId()) {
+                logger.info("Sending chunk: {}, of file transfer {}", message.getChunkId(), transferHandler.getResource().getNetworkID());
+                transferHandler.sendChunk(message.getChunkId());
+            }
+            return;
+        }
+    }
+
+    /**
+     * Handles resource retrieval.
+     * @param message
+     */
+    private void handleResourceRetrieve(ResourceDataMessage message) {
+        //Checking if the resource push is already being received.
+        for (ResourceTransferHandler transferHandler :
+                inboundHandlers) {
+            if(transferHandler.getTunnel() == message.getNetworkMessage().getTunnel() && message.getTransferId() == transferHandler.getTransferId()) {
+                transferHandler.onDataReceived(message);
+            }
+            return;
+        }
+    }
+
+    /**
      * Called when the handled event is called.
      *
      * @param e
@@ -215,114 +323,6 @@ public class ResourceManager extends Manager {
             } else {
                 outboundHandlers.remove(transferFinishedEvent.transferHandler);
             }
-        }
-    }
-
-    /**
-     * Starts a push of a resource.
-     * @param resource
-     * @param tunnel
-     */
-    private void startPush(Resource resource, MessageTunnel tunnel) {
-        //Getting the transfer handler.
-        ResourceTransferHandler transferHandler = resource.getTransferHandler(ResourceTransferType.OUTBOUND, tunnel, this.router);
-
-        logger.info("Outbound {} resource transfer, transfer id: {}", resource.getResourceType(), transferHandler.getTransferId());
-
-        //Sending the resource data.
-        outboundHandlers.add(transferHandler);
-
-        //Sending the resource info message.
-        resource.sendInfo(tunnel, transferHandler.getTransferId());
-    }
-
-    /**
-     * Returns path to a local resource.
-     * @param resource
-     * @return
-     */
-    private File getLocalResourceFile(NetworkID resource) {
-        return new File(UnderNet.fileManager.getContentFolder() + "/" + resource.getStringValue());
-    }
-
-    /**
-     * Handles a resource info message.
-     * @param message
-     */
-    private void handleResourceInfo(ResourceInfoMessage message) {
-        //Checks if the resource has already started being received.
-        for (ResourceTransferHandler transferHandler :
-                inboundHandlers) {
-            if(transferHandler.getResource().getNetworkID().equals(message.getNetworkMessage().getDestination())) {
-                logger.warn("Received a duplicate resource info for: {}", message.getNetworkMessage().getDestination());
-                return;
-            }
-        }
-
-        Resource resource = null;
-
-        //Creating appropriate resources.
-        if(message.getResourceInfo().resourceType == ResourceType.FILE) {
-            resource = new FileResource(this.router, new File(UnderNet.fileManager.getContentFolder() + "/" + message.getResourceInfo().attributes.get(1)));
-        }
-
-        resource.attributes = message.getResourceInfo().attributes;
-        resource.setNetworkID(message.getNetworkMessage().getDestination());
-
-        ResourceTransferHandler transferHandler = resource.getTransferHandler(ResourceTransferType.INBOUND, message.getNetworkMessage().getTunnel(), this.router);
-
-        logger.info("Inbound {} resource transfer, transfer id: {}", message.getResourceInfo().resourceType, transferHandler.getTransferId());
-
-        inboundHandlers.add(transferHandler);
-    }
-
-    /**
-     * Handles resource pull requests.
-     * @param message
-     */
-    private void handleResourcePullRequest(ResourcePullMessage message) {
-        //Call event.
-        EventManager.callEvent(new ResourcePullReceivedEvent(message));
-
-        //Getting the requested resource.
-        Resource requestedResource = getLocalResource(message.getNetworkMessage().getDestination());
-
-        //Retrieving the file.
-        if(requestedResource != null && requestedResource.isLocal()) {
-            startPush(requestedResource, message.getNetworkMessage().getTunnel());
-        } else {
-            logger.warn("Resource: {} not available on {}. The pull request will be dropped!", message.getNetworkMessage().getDestination(), Node.self);
-        }
-    }
-
-    /**
-     * Sends the next requested data chunk of a resource.
-     * @param message
-     */
-    private void handlerResourceDataRequest(ResourceDataChunkRequest message) {
-        //Sending next chunk from handler.
-        for (ResourceTransferHandler transferHandler :
-                outboundHandlers) {
-            if(transferHandler.getTunnel() == message.getNetworkMessage().getTunnel() && transferHandler.getTransferId() == message.getTransferId()) {
-                logger.info("Sending chunk: {}, of file transfer {}", message.getChunkId(), transferHandler.getResource().getNetworkID());
-                transferHandler.sendChunk(message.getChunkId());
-            }
-            return;
-        }
-    }
-
-    /**
-     * Handles resource retrieval.
-     * @param message
-     */
-    private void handleResourceRetrieve(ResourceDataMessage message) {
-        //Checking if the resource push is already being received.
-        for (ResourceTransferHandler transferHandler :
-                inboundHandlers) {
-            if(transferHandler.getTunnel() == message.getNetworkMessage().getTunnel() && message.getTransferId() == transferHandler.getTransferId()) {
-                transferHandler.onResourceMessage(message);
-            }
-            return;
         }
     }
 

@@ -45,6 +45,11 @@ public abstract class ResourceTransferHandler {
     }
 
     /**
+     * Prepares the transfer.
+     */
+    public abstract void prepare();
+
+    /**
      * Sends chunk with id chunk id.
      * @param chunkId
      */
@@ -59,7 +64,7 @@ public abstract class ResourceTransferHandler {
      * Called when a resource data message is sent.
      * @param dataMessage
      */
-    public abstract void onResourceMessage(ResourceDataMessage dataMessage);
+    public abstract void onDataReceived(ResourceDataMessage dataMessage);
 
     public Router getRouter() {
         return router;

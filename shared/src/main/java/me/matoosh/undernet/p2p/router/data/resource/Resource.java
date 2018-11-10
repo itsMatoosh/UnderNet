@@ -118,9 +118,9 @@ public abstract class Resource implements Serializable {
     abstract void updateAttributes();
 
     /**
-     * Gets the class of the resource transfer type.
+     * Gets the resource transfer handler.
      */
-    public abstract ResourceTransferHandler getTransferHandler(ResourceTransferType resourceTransferType, MessageTunnel tunnel, Router router);
+    public abstract ResourceTransferHandler getTransferHandler(ResourceTransferType resourceTransferType, MessageTunnel tunnel, byte transferId, Router router);
 
     /**
      * Gets the router.
@@ -154,16 +154,4 @@ public abstract class Resource implements Serializable {
      * Clears the resource if it's available locally.
      */
     public abstract void clear();
-
-    /**
-     * Listens for the finishing of a resource action.
-     */
-    public interface IResourceActionListener {
-        /**
-         * Called when the action is finished.
-         *
-         * @param other the node associated with the action.
-         */
-        public void onFinished(Node other);
-    }
 }

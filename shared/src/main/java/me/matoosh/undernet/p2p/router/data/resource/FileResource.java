@@ -129,15 +129,13 @@ public class FileResource extends Resource {
      * @param resourceTransferType
      * @param tunnel
      * @param router
+     * @param transferId the transfer id of the transfer, will only be used for INBOUND transfers.
      * @return
      */
     @Override
-    public ResourceTransferHandler getTransferHandler(ResourceTransferType resourceTransferType, MessageTunnel tunnel, Router router) {
-        byte transferId;
+    public ResourceTransferHandler getTransferHandler(ResourceTransferType resourceTransferType, MessageTunnel tunnel, byte transferId, Router router) {
         if (resourceTransferType == ResourceTransferType.OUTBOUND) {
             transferId = (byte) router.resourceManager.outboundHandlers.size();
-        } else {
-            transferId = (byte) router.resourceManager.inboundHandlers.size();
         }
         return new FileTransferHandler(this, resourceTransferType, tunnel, transferId, router);
     }
@@ -151,7 +149,6 @@ public class FileResource extends Resource {
             file.delete();
         }
     }
-
     @Override
     public String toString() {
         return "FileResource{" +

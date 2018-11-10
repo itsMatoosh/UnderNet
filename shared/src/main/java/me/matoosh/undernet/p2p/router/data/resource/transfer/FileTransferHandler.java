@@ -57,15 +57,13 @@ public class FileTransferHandler extends ResourceTransferHandler {
         super(resource, fileTransferType, tunnel, transferId, router);
 
         this.fileLength = Long.parseLong(resource.getInfo().attributes.get(0));
-
-        //Preparing file streams.
-        prepareStreams();
     }
 
     /**
-     * Prepares the file streams for this transfer.
+     * Prepares the file transfer.
      */
-    private void prepareStreams() {
+    @Override
+    public void prepare() {
         //Caching as file resource.
         File saveFile = ((FileResource)this.getResource()).file;
         logger.info("Preparing {} streams for file: {}", this.getTransferType(), saveFile.getName()) ;
@@ -113,6 +111,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
      */
     @Override
     public void close() {
+        logger.info("Closing {} streams for file {}", this.getTransferType(), ((FileResource)this.getResource()).file);
         try {
             if (inputStream != null) {
                 inputStream.close();
@@ -189,7 +188,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
      * @param dataMessage
      */
     @Override
-    public void onResourceMessage(ResourceDataMessage dataMessage) {
+    public void onDataReceived(ResourceDataMessage dataMessage) {
         if(getTransferType() == ResourceTransferType.INBOUND && outputStream != null) {
             EventManager.callEvent(new ResourceTransferDataReceivedEvent(this, dataMessage));
 
