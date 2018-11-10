@@ -28,11 +28,18 @@ public class ResourcesPanel extends JPanel {
     private JList resourcesList;
 
     /**
+     * The app frame.
+     */
+    private AppFrame frame;
+
+    /**
      * The resources currently owned by self.
      */
     public ArrayList<Resource> resourceCache = new ArrayList<>();
 
-    public ResourcesPanel() {
+    public ResourcesPanel(AppFrame frame) {
+        this.frame = frame;
+
         //Loading the resource cache.
         loadResourceCache();
         if(resourceCache == null) {
@@ -96,6 +103,7 @@ public class ResourcesPanel extends JPanel {
     private void refreshResourcesList() {
         if(resourceCache != null) {
             resourcesList.setListData(resourceCache.toArray());
+            frame.repaint();
         }
     }
     private void addCachedResource(Resource resource) {

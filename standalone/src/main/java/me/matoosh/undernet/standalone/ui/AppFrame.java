@@ -225,9 +225,9 @@ public class AppFrame extends JFrame {
         //Adding the content panel, nodes list and communities list.
         contentPanel = new ContentPanel();
         contentPanel.setBorder(BorderFactory.createLineBorder(Color.red));
-        nodesPanel = new NodesPanel();
+        nodesPanel = new NodesPanel(this);
         nodesPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-        resourcesPanel = new ResourcesPanel();
+        resourcesPanel = new ResourcesPanel(this);
         resourcesPanel.setBorder(BorderFactory.createLineBorder(Color.black));
         add(resourcesPanel, new GridBagConstraints(0, 0, 1, 1, 0.125, 1, GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
         add(contentPanel, new GridBagConstraints(1, 0, 1, 1, 0.75, 1, GridBagConstraints.FIRST_LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));

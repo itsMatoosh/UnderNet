@@ -40,7 +40,14 @@ public class NodesPanel extends JPanel {
      */
     private JList nodesList;
 
-    public NodesPanel() {
+    /**
+     * The app frame.
+     */
+    private AppFrame frame;
+
+    public NodesPanel(AppFrame frame) {
+        this.frame = frame;
+
         //Setting to gridbaglayout.
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
@@ -174,6 +181,9 @@ public class NodesPanel extends JPanel {
             //Using cached nodes if the router isn't online.
             nodesList.setListData(EntryNodeCache.cachedNodes.toArray());
         }
+
+        //repainting
+        this.frame.repaint();
     }
 
     /**
