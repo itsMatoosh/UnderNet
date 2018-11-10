@@ -227,6 +227,8 @@ public class ResourceManager extends Manager {
         //Getting the transfer handler.
         ResourceTransferHandler transferHandler = resource.getTransferHandler(ResourceTransferType.OUTBOUND, tunnel, this.router);
 
+        logger.info("Outbound {} resource transfer, transfer id: {}", resource.getResourceType(), transferHandler.getTransferId());
+
         //Sending the resource data.
         outboundHandlers.add(transferHandler);
 
@@ -248,8 +250,6 @@ public class ResourceManager extends Manager {
      * @param message
      */
     private void handleResourceInfo(ResourceInfoMessage message) {
-        logger.info("Inbound {} resource transfer, preparing to receive...", message.getResourceInfo().resourceType);
-
         //Checks if the resource has already started being received.
         for (ResourceTransferHandler transferHandler :
                 inboundHandlers) {
@@ -268,7 +268,12 @@ public class ResourceManager extends Manager {
 
         resource.attributes = message.getResourceInfo().attributes;
         resource.setNetworkID(message.getNetworkMessage().getDestination());
-        inboundHandlers.add(resource.getTransferHandler(ResourceTransferType.INBOUND, message.getNetworkMessage().getTunnel(), this.router));
+
+        ResourceTransferHandler transferHandler = resource.getTransferHandler(ResourceTransferType.INBOUND, message.getNetworkMessage().getTunnel(), this.router);
+
+        logger.info("Inbound {} resource transfer, transfer id: {}", message.getResourceInfo().resourceType, transferHandler.getTransferId());
+
+        inboundHandlers.add(transferHandler);
     }
 
     /**
@@ -298,7 +303,7 @@ public class ResourceManager extends Manager {
         //Sending next chunk from handler.
         for (ResourceTransferHandler transferHandler :
                 outboundHandlers) {
-            if(transferHandler.getResource().getNetworkID().equals(message.getNetworkMessage().getDestination()) && transferHandler.getTransferId() == message.getTransferId()) {
+            if(transferHandler.getTunnel() == message.getNetworkMessage().getTunnel() && transferHandler.getTransferId() == message.getTransferId()) {
                 logger.info("Sending chunk: {}, of file transfer {}", message.getChunkId(), transferHandler.getResource().getNetworkID());
                 transferHandler.sendChunk(message.getChunkId());
             }
@@ -314,7 +319,7 @@ public class ResourceManager extends Manager {
         //Checking if the resource push is already being received.
         for (ResourceTransferHandler transferHandler :
                 inboundHandlers) {
-            if(transferHandler.getResource().getNetworkID().equals(message.getNetworkMessage().getDestination()) && message.getTransferId() == transferHandler.getTransferId()) {
+            if(transferHandler.getTunnel() == message.getNetworkMessage().getTunnel() && message.getTransferId() == transferHandler.getTransferId()) {
                 transferHandler.onResourceMessage(message);
             }
             return;
