@@ -6,13 +6,11 @@
  - Mesh Architecture
  -- There is no central server, every device makes a piece of the network.
  - Anonymity
- -- Nodes within UnderNet use 512bit network ids instead of IP addresses for identification. Your IP address will only be known to the entry nodes.
+ -- Nodes within UnderNet use 512bit network ids instead of IP addresses for identification. Your IP address will only be known to the neighboring nodes.
  - Resource distribution
  -- After being published, resources such as files, will be distributed to appropriate nodes within the network and can be retrieved back using their network ids.
- - Global Resource Hierarchy
- -- Resources published to UnderNet can be organised by the users. The network will keep track of the global resource hierarchy.
  - Direct Communication
- -- A direct or multicast connection between nodes can be established using tunnels. Tunnels can be mounted within the Global Resource Hierarchy.
+ -- A direct or multicast connection between nodes can be established using tunnels.
  - Multi-platform
  -- Currently the network is being developed to be fully functional on standalone as well as Android devices, but with its modular design, it should be easy to port it to other platforms.
 
