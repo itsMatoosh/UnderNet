@@ -13,12 +13,6 @@ public interface NetworkConfig {
     Integer listeningPort();
 
     /**
-     * The tickrate of the network.
-     * @return
-     */
-    Integer networkTickRate();
-
-    /**
      * Amount of incoming connections kept in the backlog.
      * @return
      */
@@ -29,4 +23,25 @@ public interface NetworkConfig {
      * @return
      */
     Boolean ignoreExceptions();
+
+    /**
+     * The maximum amount of neighbors the node can have.
+     *
+     * @return
+     */
+    Integer maxNeighbors();
+
+    /**
+     * The optimal amount of neighbors the node can have.
+     *
+     * @return
+     */
+    Integer optNeighbors();
+
+    /**
+     * The maximum amount of reconnections before error.
+     *
+     * @return
+     */
+    Integer maxReconnectCount();
 }

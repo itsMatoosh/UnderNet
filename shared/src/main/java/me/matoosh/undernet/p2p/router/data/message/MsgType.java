@@ -12,10 +12,12 @@ public enum MsgType {
 
     NODE_PING((short)2), //Message to ping a neighboring node.
     NODE_INFO((short)3), //Contains the node information about the sender.
-    RES_INFO((short)4), //Info about a transferred resource.
-    RES_PULL((short)5), //Contains the Network id of the pulled resource.
-    RES_DATA((short)6), //Data of a resource.
-    RES_DATA_REQUEST((short)7), //Confirm data of a resource.
+    NODE_NEIGHBORS((short) 4), //Contains information about neighbors of a node.
+    NODE_NEIGHBORS_REQUEST((short) 5), //Requests information about the neighbors of a node.
+    RES_INFO((short) 6), //Info about a transferred resource.
+    RES_PULL((short) 7), //Contains the Network id of the pulled resource.
+    RES_DATA((short) 8), //Data of a resource.
+    RES_DATA_REQUEST((short) 9), //Confirm data of a resource.
     UNKNOWN((short)-1); //Unknown msg type.
     public short id;
 

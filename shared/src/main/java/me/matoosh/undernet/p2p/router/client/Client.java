@@ -10,6 +10,7 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
+import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.client.ClientExceptionEvent;
 import me.matoosh.undernet.event.client.ClientStatusEvent;
@@ -106,6 +107,19 @@ public class Client {
         }
         if(status != InterfaceStatus.STARTED) {
             EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STARTED));
+        }
+        if (this.router.connectedNodes.size() >= UnderNet.networkConfig.maxNeighbors()) {
+            logger.warn("Can't connect to more nodes!");
+            return;
+        }
+
+        //making sure node is not yet connected
+        for (Node conn :
+                this.router.connectedNodes) {
+            if (conn.address.getHostString().equals(node.address.getHostString())) {
+                logger.warn("Node {} already connected!", conn);
+                return;
+            }
         }
 
         logger.info("Connecting to node: " + node.address);

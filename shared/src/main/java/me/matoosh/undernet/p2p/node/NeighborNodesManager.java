@@ -1,19 +1,26 @@
 package me.matoosh.undernet.p2p.node;
 
+import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
 import me.matoosh.undernet.event.channel.ConnectionEstablishedEvent;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
+import me.matoosh.undernet.event.channel.message.MessageReceivedEvent;
 import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.p2p.Manager;
+import me.matoosh.undernet.p2p.cache.EntryNodeCache;
+import me.matoosh.undernet.p2p.router.InterfaceStatus;
 import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.message.MsgType;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 import me.matoosh.undernet.p2p.router.data.message.NodeInfoMessage;
+import me.matoosh.undernet.p2p.router.data.message.NodeNeighborsMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.InetSocketAddress;
 
 /**
  * Manages neighboring nodes connected to the router.
@@ -25,6 +32,15 @@ public class NeighborNodesManager extends Manager {
      * Logger of the class.
      */
     public static Logger logger = LoggerFactory.getLogger(NeighborNodesManager.class);
+
+    /**
+     * The percentage of neighbors that will be shared with requesting nodes.
+     */
+    public static final float NEIGHBOR_SHARE_PERCENT = 0.3333f;
+    /**
+     * Max amount of neighbor addresses shared.
+     */
+    public static final int MAX_NEIGHBORS_MSG_LENGTH = 5;
 
     /**
      * Router specification is mandatory.
@@ -51,6 +67,7 @@ public class NeighborNodesManager extends Manager {
         //Message received event.
         EventManager.registerHandler(this, ChannelMessageReceivedEvent.class);
         EventManager.registerHandler(this, ChannelCreatedEvent.class);
+        EventManager.registerHandler(this, MessageReceivedEvent.class);
     }
 
 
@@ -79,6 +96,44 @@ public class NeighborNodesManager extends Manager {
                         messageReceivedEvent.remoteNode.setIdentity(networkIdentity);
 
                         EventManager.callEvent(new ConnectionEstablishedEvent(messageReceivedEvent.remoteNode));
+                    }
+                }
+            }
+        } else if (e instanceof MessageReceivedEvent) {
+            MessageReceivedEvent messageReceivedEvent = (MessageReceivedEvent) e;
+            NetworkMessage netMsg = messageReceivedEvent.networkMessage;
+            if (netMsg.getContent().getType() == MsgType.NODE_NEIGHBORS_REQUEST && netMsg.getDirection() == NetworkMessage.MessageDirection.TO_DESTINATION) {
+                //responding with neighbors.
+                int shareableNeighbors = (int) (this.router.connectedNodes.size() * NEIGHBOR_SHARE_PERCENT);
+                if (shareableNeighbors == 0) shareableNeighbors = 1;
+                if (shareableNeighbors >= MAX_NEIGHBORS_MSG_LENGTH) shareableNeighbors = MAX_NEIGHBORS_MSG_LENGTH;
+
+                logger.info("Sending {} neighbor infos...", shareableNeighbors);
+
+                InetSocketAddress addresses[] = new InetSocketAddress[shareableNeighbors];
+                for (int i = 0; i < shareableNeighbors; i++) {
+                    addresses[i] = this.router.connectedNodes.get(i).address;
+                }
+
+                netMsg.getTunnel().sendMessage(new NodeNeighborsMessage(addresses));
+            } else if (netMsg.getContent().getType() == MsgType.NODE_NEIGHBORS && netMsg.getDirection() == NetworkMessage.MessageDirection.TO_ORIGIN) {
+                //node infos received
+                NodeNeighborsMessage neighborsMessage = (NodeNeighborsMessage) netMsg.getContent();
+
+                if (neighborsMessage.getAddresses() == null || neighborsMessage.getAddresses().length == 0) {
+                    logger.info("No new node infos received...");
+                    return;
+                }
+
+                logger.info("{} new node infos received! Connecting...", neighborsMessage.getAddresses().length);
+                for (String host :
+                        neighborsMessage.getAddresses()) {
+                    //Adds node to the cache.
+                    Node saved = EntryNodeCache.addNode(host);
+
+                    //Connecting if started.
+                    if (UnderNet.router.status.equals(InterfaceStatus.STARTED)) {
+                        UnderNet.router.connectNode(saved);
                     }
                 }
             }

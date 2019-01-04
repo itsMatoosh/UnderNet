@@ -21,6 +21,7 @@ import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.client.Client;
 import me.matoosh.undernet.p2p.router.client.ClientNetworkMessageHandler;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessageManager;
+import me.matoosh.undernet.p2p.router.data.message.NodeNeighborsRequest;
 import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnelManager;
 import me.matoosh.undernet.p2p.router.data.resource.ResourceManager;
 import me.matoosh.undernet.p2p.router.server.Server;
@@ -30,6 +31,10 @@ import org.slf4j.LoggerFactory;
 
 import java.security.Security;
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The network router.
@@ -47,6 +52,12 @@ public class Router extends EventHandler {
      * Used for receiving connections from other nodes.
      */
     public Server server;
+    /**
+     * The timer used for periodically running the control function.
+     */
+    public ScheduledExecutorService timer;
+    private ScheduledFuture<?> timerHandle;
+
     /**
      * The current status of the router.
      */
@@ -117,6 +128,9 @@ public class Router extends EventHandler {
         client = new Client(this);
         client.setup();
 
+        //Creating a scheduled executor.
+        timer = Executors.newSingleThreadScheduledExecutor();
+
         //Setting up the network database.
         netDb = new NetworkDatabase(this);
         netDb.setup();
@@ -179,6 +193,24 @@ public class Router extends EventHandler {
     }
 
     /**
+     * Control loop running every 30 seconds.
+     */
+    private void controlLoop() {
+        logger.info("Checking if everything is running smoothly...");
+
+        //Checking if enough nodes are connected.
+        if (connectedNodes.size() > 2 && connectedNodes.size() < UnderNet.networkConfig.optNeighbors()) {
+            //Request more neighbors.
+            int id = UnderNet.secureRandom.nextInt(this.connectedNodes.size());
+
+            Node neighbor = this.connectedNodes.get(id);
+            if (neighbor != Node.self) {
+                this.networkMessageManager.sendMessage(new NodeNeighborsRequest(), neighbor.getIdentity().getNetworkId());
+            }
+        }
+    }
+
+    /**
      * Stops the router.
      */
     public void stop() {
@@ -190,6 +222,9 @@ public class Router extends EventHandler {
 
         //Setting the status to stopping.
         EventManager.callEvent(new RouterStatusEvent(this, InterfaceStatus.STOPPING));
+
+        //Stops the control loop.
+        timerHandle.cancel(true);
 
         //Stops the client.
         if(client != null) {
@@ -285,11 +320,12 @@ public class Router extends EventHandler {
                 case STARTING:
                     break;
                 case STARTED:
+                    //Starting the control loop.
+                    timerHandle = timer.scheduleAtFixedRate(() -> controlLoop(), 5, 30, TimeUnit.SECONDS);
                     break;
                 case STOPPING:
                     break;
             }
-            //TODO: Handle the status change.
         } else if(e.getClass() == RouterErrorEvent.class) {
             onRouterError((RouterErrorEvent) e);
         } else if(e.getClass() == ServerStatusEvent.class) {
@@ -354,7 +390,7 @@ public class Router extends EventHandler {
         if(e.router.status != InterfaceStatus.STOPPED && e.shouldReconnect) {
             reconnectNum++;
             //Checking if we should reconnect.
-            if(reconnectNum >= 5) {
+            if (reconnectNum > UnderNet.networkConfig.maxReconnectCount()) {
                 logger.error("Exceeded the maximum number of reconnect attempts!");
                 onConnectionEnded();
             }

@@ -9,7 +9,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.InetSocketAddress;
 
 /**
  * A dialog for adding new node to the node cache.
@@ -55,38 +54,17 @@ public class AddNodeCacheDialog extends JDialog {
         buttonDrawer.setLayout(new BoxLayout(buttonDrawer, BoxLayout.X_AXIS));
 
         final JButton saveButton = new JButton("Save");
-        saveButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                //Creating an empty node.
-                Node savedNode = new Node();
+        saveButton.addActionListener(actionEvent -> {
+            //Adds node to the cache.
+            Node saved = EntryNodeCache.addNode(nodeAddressField.getText());
 
-                //Getting the address.
-                String[] addressSplit = nodeAddressField.getText().split(":");
-                int port = 2017;
-                if(addressSplit.length > 1) {
-                    if(addressSplit[1] != null) {
-                        if(!addressSplit[1].equals("")) {
-                            //Custom port was provided.
-                            port = Integer.parseInt(addressSplit[1]);
-                            savedNode.port = port;
-                        }
-                    }
-                }
-                savedNode.address = new InetSocketAddress(addressSplit[0], port);
-
-
-                //Adding the node to the cache.
-                EntryNodeCache.addNode(savedNode);
-
-                //Connecting if started.
-                if(UnderNet.router.status.equals(InterfaceStatus.STARTED) || UnderNet.router.status.equals(InterfaceStatus.STARTING)) {
-                    UnderNet.router.connectNode(savedNode);
-                }
-
-                //Closing the dialog.
-                AddNodeCacheDialog.this.dispose();
+            //Connecting if started.
+            if (UnderNet.router.status.equals(InterfaceStatus.STARTED) || UnderNet.router.status.equals(InterfaceStatus.STARTING)) {
+                UnderNet.router.connectNode(saved);
             }
+
+            //Closing the dialog.
+            AddNodeCacheDialog.this.dispose();
         });
         if(UnderNet.router.status.equals(InterfaceStatus.STARTED) || UnderNet.router.status.equals(InterfaceStatus.STARTING)) {
             saveButton.setText("Connect");
