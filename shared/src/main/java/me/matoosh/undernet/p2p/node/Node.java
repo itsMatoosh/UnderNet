@@ -4,13 +4,12 @@ import io.netty.channel.Channel;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.p2p.router.Router;
-import me.matoosh.undernet.p2p.router.data.message.MsgBase;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 
 /**
  * A single node within the network.
@@ -25,7 +24,7 @@ public class Node implements Serializable {
     /**
      * Connection address of this node.
      */
-    public SocketAddress address;
+    public InetSocketAddress address;
     /**
      * Connection port of the node.
      */
@@ -100,14 +99,6 @@ public class Node implements Serializable {
         } else {
             channel.writeAndFlush(msg, channel.voidPromise());
         }
-    }
-
-    /**
-     * Sends a message to the node.
-     * @param content
-     */
-    public void send(MsgBase content) {
-        router.networkMessageManager.sendMessage(content, this.identity.getNetworkId());
     }
 
     /**

@@ -13,6 +13,8 @@ import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
+
 /**
  * Handles data transfered over a channel.
  * Created by Mateusz Rębacz on 21.09.2017.
@@ -51,7 +53,7 @@ public class ServerNetworkMessageHandler extends ChannelInboundHandlerAdapter {
 
         //Adding a node object to the connection.
         Node clientNode = new Node();
-        clientNode.address = ctx.channel().remoteAddress(); //Setting the node's address.
+        clientNode.address = (InetSocketAddress) ctx.channel().remoteAddress(); //Setting the node's address.
         clientNode.channel = ctx.channel();
         ctx.channel().attr(ATTRIBUTE_KEY_CLIENT_NODE).set(clientNode);
 

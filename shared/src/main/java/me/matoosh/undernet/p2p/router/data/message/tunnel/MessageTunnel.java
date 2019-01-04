@@ -50,7 +50,7 @@ public class MessageTunnel {
      * The public key of the other.
      * Used by self to encrypt messages for the other side of the tunnel.
      */
-    private PublicKey destinationPublicKey;
+    private PublicKey otherPublicKey;
 
     /**
      * The shared secret.
@@ -63,6 +63,11 @@ public class MessageTunnel {
      * Derived from the shared secret and self and other public keys.
      */
     private SecretKeySpec derivedSymmetricKey;
+
+    /**
+     * The side of the tunnel.
+     */
+    private MessageTunnelSide side;
 
     //Messages
     /**
@@ -81,21 +86,32 @@ public class MessageTunnel {
     public static Logger logger = LoggerFactory.getLogger(MessageTunnel.class);
 
     /**
-     * Creates a message tunnel.
+     * Creates a hosted message tunnel.
      * @param destination
      * @param origin
      */
     public MessageTunnel(NetworkID origin, NetworkID destination) {
         this.destination = destination;
         this.origin = origin;
+        this.side = MessageTunnelSide.UNDEFINED;
+    }
+    /**
+     * Creates a message tunnel.
+     * @param destination
+     * @param origin
+     */
+    public MessageTunnel(NetworkID origin, NetworkID destination, MessageTunnelSide side) {
+        this.destination = destination;
+        this.origin = origin;
+        this.side = side;
     }
 
     public PublicKey getOtherPublicKey() {
-        return destinationPublicKey;
+        return otherPublicKey;
     }
     public void setOtherPublicKey(PublicKey publicKey) {
         logger.info("Set the other public key to: {}", publicKey);
-        this.destinationPublicKey = publicKey;
+        this.otherPublicKey = publicKey;
     }
     /**
      * Calculates the shared secret key of the tunnel.
@@ -240,7 +256,7 @@ public class MessageTunnel {
         if(nextNode == null && previousNode == null) {
             return MessageTunnelState.NOT_ESTABLISHED;
         }
-        if(previousNode != Node.self && nextNode != Node.self) {
+        if(nextNode != Node.self && previousNode != Node.self) {
             return MessageTunnelState.HOSTED;
         }
         if(origin.equals(Node.self.getIdentity().getNetworkId())) {
@@ -256,6 +272,14 @@ public class MessageTunnel {
         return MessageTunnelState.NOT_ESTABLISHED;
     }
 
+    public MessageTunnelSide getSide() {
+        return side;
+    }
+
+    public void setSide(MessageTunnelSide side) {
+        this.side = side;
+    }
+
     /**
      * Sends the specified message.
      * @param content
@@ -265,10 +289,10 @@ public class MessageTunnel {
             logger.warn("Can't send messages through hosted tunnels!");
             return;
         }
-        if(getOrigin().equals(Node.self.getIdentity().getNetworkId())) {
+        if(side == MessageTunnelSide.ORIGIN || side == MessageTunnelSide.UNDEFINED) {
             //TO_DESTINATION
             UnderNet.router.networkMessageManager.sendMessage(content, getDestination());
-        } else {
+        } else if (side == MessageTunnelSide.DESTINATION){
             //TO_ORIGIN
             UnderNet.router.networkMessageManager.sendResponse(content, this);
         }

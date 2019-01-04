@@ -14,6 +14,8 @@ import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 
+import java.net.InetSocketAddress;
+
 /**
  * Handles data transfered over a channel.
  * Created by Mateusz Rębacz on 21.09.2017.
@@ -54,7 +56,7 @@ public class ClientNetworkMessageHandler extends ChannelInboundHandlerAdapter {
 
         //Adding a node object to the connection.
         Node serverNode = new Node();
-        serverNode.address = ctx.channel().remoteAddress(); //Setting the node's address.
+        serverNode.address = (InetSocketAddress) ctx.channel().remoteAddress(); //Setting the node's address.
         serverNode.channel = ctx.channel();
         ctx.channel().attr(ATTRIBUTE_KEY_SERVER_NODE).set(serverNode);
 

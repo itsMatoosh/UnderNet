@@ -8,6 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.ArrayList;
 
 /**
@@ -31,17 +34,20 @@ public class EntryNodeCache {
      * @param amount
      * @return
      */
-    public static ArrayList<Node> getMostReliable(int amount, ArrayList<Node> exclude) {
+    public static ArrayList<Node> getMostReliable(int amount, Node... exclude) {
         //Skipping if there are no cached nodes.
         if(cachedNodes == null || cachedNodes.size() == 0) {
-            return null;
+            return new ArrayList<>();
         }
 
         ArrayList<Node> resultList = (ArrayList<Node>) cachedNodes.clone();
 
         //Excluding nodes.
         if(exclude != null) {
-            resultList.removeAll(exclude);
+            for (Node n :
+                    exclude) {
+                resultList.remove(n);
+            }
         }
 
         //Adjusting the amount.
@@ -72,6 +78,10 @@ public class EntryNodeCache {
      * @param node
      */
     public static void addNode(Node node) {
+        if(isThisMyIpAddress(node.address)) {
+            logger.warn("Can't add a local address to Node Cache!");
+            return;
+        }
         cachedNodes.add(node);
         save();
         EventManager.callEvent(new NodeCacheAddedEvent(node));
@@ -85,6 +95,24 @@ public class EntryNodeCache {
         cachedNodes.remove(node);
         save();
         EventManager.callEvent(new NodeCacheRemovedEvent(node));
+    }
+
+    /**
+     * Checks if the given address is local.
+     * @param addr
+     * @return
+     */
+    public static boolean isThisMyIpAddress(InetSocketAddress addr) {
+        // Check if the address is a valid special local or loop back
+        if (addr.getAddress().isAnyLocalAddress()|| addr.getAddress().isLoopbackAddress())
+            return true;
+
+        // Check if the address is defined on any interface
+        try {
+            return NetworkInterface.getByInetAddress(addr.getAddress()) != null;
+        } catch (SocketException e) {
+            return false;
+        }
     }
 
     /**
@@ -125,7 +153,7 @@ public class EntryNodeCache {
             logger.error("Entry node cache corrupted, resetting...", e);
             clear();
         } catch (IOException e) {
-            logger.error("Exception occured while loading the entry node cache file!",e);
+            logger.error("Exception occured while loading the entry node cache file!", e);
         }
     }
 
@@ -151,7 +179,7 @@ public class EntryNodeCache {
             }
             save();
         } catch (IOException e) {
-            logger.error("An error occured while writing the entry node cache!",e);
+            logger.error("An error occured while writing the entry node cache!", e);
         }
     }
 

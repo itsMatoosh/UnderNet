@@ -17,7 +17,6 @@ public enum MsgType {
     RES_DATA((short)6), //Data of a resource.
     RES_DATA_REQUEST((short)7), //Confirm data of a resource.
     UNKNOWN((short)-1); //Unknown msg type.
-
     public short id;
 
     MsgType(short id) {

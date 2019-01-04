@@ -10,6 +10,8 @@ import org.cfg4j.provider.ConfigurationProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.security.SecureRandom;
 
 /**
@@ -72,6 +74,7 @@ public class UnderNet
 
         //Setting up the self node.
         Node.self = new Node();
+        Node.self.address = new InetSocketAddress(InetAddress.getLoopbackAddress(), UnderNet.networkConfig.listeningPort());
 
         //Setting up the router.
         router = new Router();

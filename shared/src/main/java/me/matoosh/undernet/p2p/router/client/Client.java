@@ -75,7 +75,8 @@ public class Client {
         EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STARTING));
 
         //Attempting to connect to each of the 5 most reliable nodes.
-        ArrayList<Node> nodesToConnectTo = EntryNodeCache.getMostReliable(5, null);
+        ArrayList<Node> nodesToConnectTo = EntryNodeCache.getMostReliable(5);
+        nodesToConnectTo.add(Node.self);
         if(nodesToConnectTo == null || nodesToConnectTo.size() == 0) {
             logger.warn("There are no cached nodes to connect to! The client will stop.");
             EventManager.callEvent(new ClientExceptionEvent(this, new ClientNoNodesCachedException(this)));
