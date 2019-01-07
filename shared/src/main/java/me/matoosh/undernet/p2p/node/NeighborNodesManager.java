@@ -104,7 +104,12 @@ public class NeighborNodesManager extends Manager {
             NetworkMessage netMsg = messageReceivedEvent.networkMessage;
             if (netMsg.getContent().getType() == MsgType.NODE_NEIGHBORS_REQUEST && netMsg.getDirection() == NetworkMessage.MessageDirection.TO_DESTINATION) {
                 //responding with neighbors.
-                int shareableNeighbors = (int) (this.router.connectedNodes.size() * NEIGHBOR_SHARE_PERCENT);
+                int localConnsOffset = 2;
+                if(this.router.connectedNodes.size() <= localConnsOffset) {
+                    logger.info("Too few neighbors to share!");
+                    return;
+                }
+                int shareableNeighbors = (int) ((this.router.connectedNodes.size() - localConnsOffset) * NEIGHBOR_SHARE_PERCENT);
                 if (shareableNeighbors == 0) shareableNeighbors = 1;
                 if (shareableNeighbors >= MAX_NEIGHBORS_MSG_LENGTH) shareableNeighbors = MAX_NEIGHBORS_MSG_LENGTH;
 
@@ -112,7 +117,7 @@ public class NeighborNodesManager extends Manager {
 
                 InetSocketAddress addresses[] = new InetSocketAddress[shareableNeighbors];
                 for (int i = 0; i < shareableNeighbors; i++) {
-                    addresses[i] = this.router.connectedNodes.get(i).address;
+                    addresses[i + localConnsOffset] = this.router.connectedNodes.get(i).address;
                 }
 
                 netMsg.getTunnel().sendMessage(new NodeNeighborsMessage(addresses));
