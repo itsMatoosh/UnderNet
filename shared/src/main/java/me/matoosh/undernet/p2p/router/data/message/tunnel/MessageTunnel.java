@@ -289,6 +289,7 @@ public class MessageTunnel {
             logger.warn("Can't send messages through hosted tunnels!");
             return;
         }
+        logger.info("Sending message, tunnel side {}", this.side);
         if(side == MessageTunnelSide.ORIGIN || side == MessageTunnelSide.UNDEFINED) {
             //TO_DESTINATION
             UnderNet.router.networkMessageManager.sendMessage(content, getDestination());

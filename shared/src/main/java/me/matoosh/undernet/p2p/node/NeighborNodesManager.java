@@ -129,13 +129,15 @@ public class NeighborNodesManager extends Manager {
                 for (int i = 0; i < shareableAmount; i++) {
                     Node n = shareableNeighbors.get(UnderNet.secureRandom.nextInt(shareableNeighbors.size()));
                     addresses[i] = n.address;
+                    logger.info("Sending {}", n.address);
                     shareableNeighbors.remove(n);
                 }
 
                 netMsg.getTunnel().sendMessage(new NodeNeighborsMessage(addresses));
-            } else if (netMsg.getContent().getType() == MsgType.NODE_NEIGHBORS && netMsg.getDirection() == NetworkMessage.MessageDirection.TO_ORIGIN) {
+            } else if (netMsg.getContent().getType() == MsgType.NODE_NEIGHBORS) {
                 //node infos received
                 NodeNeighborsMessage neighborsMessage = (NodeNeighborsMessage) netMsg.getContent();
+                logger.info("from {}", neighborsMessage.getNetworkMessage().getTunnel().getPreviousNode());
 
                 if (neighborsMessage.getAddresses() == null || neighborsMessage.getAddresses().length == 0) {
                     logger.info("No new node infos received...");
