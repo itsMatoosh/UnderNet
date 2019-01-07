@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 /**
  * Dialog for pulling resources from the network.
@@ -99,14 +100,13 @@ public class PullResourceDialog extends JDialog {
                                 //Copying the received file to dest.
                                 if(saveFile[0] != null) {
                                     try {
-                                        Files.copy(Paths.get(fileResource.file.getAbsolutePath()), Paths.get(saveFile[0].getAbsolutePath() + "/" + fileResource.file.getName()));
+                                        Files.copy(Paths.get(fileResource.file.getAbsolutePath()), Paths.get(saveFile[0].getAbsolutePath() + "/" + fileResource.file.getName()), StandardCopyOption.REPLACE_EXISTING);
                                     } catch (IOException e1) {
                                         e1.printStackTrace();
+                                    } finally {
+                                        //File dialog.
+                                        EventQueue.invokeLater(()->JOptionPane.showMessageDialog(PullResourceDialog.this, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.file.getName(), fileResource.getNetworkID().getStringValue(), saveFile[0]),"File Retrieved!",  JOptionPane.INFORMATION_MESSAGE));
                                     }
-
-
-                                    //File dialog.
-                                    EventQueue.invokeLater(()->JOptionPane.showMessageDialog(PullResourceDialog.this, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.file.getName(), fileResource.getNetworkID().getStringValue(), saveFile[0]),"File Retrieved!",  JOptionPane.INFORMATION_MESSAGE));
                                 } else {
                                     //File dialog.
                                     EventQueue.invokeLater(()->JOptionPane.showMessageDialog(PullResourceDialog.this, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.file.getName(), fileResource.getNetworkID().getStringValue(), UnderNet.fileManager.getContentFolder()), "File Retrieved!", JOptionPane.INFORMATION_MESSAGE));
