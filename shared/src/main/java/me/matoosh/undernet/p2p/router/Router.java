@@ -200,6 +200,7 @@ public class Router extends EventHandler {
 
         //Checking if enough nodes are connected.
         ArrayList<Node> remote = getRemoteNodes();
+
         if (remote.size() > 0 && remote.size() < UnderNet.networkConfig.optNeighbors()) {
             //Request more neighbors.
             int id = UnderNet.secureRandom.nextInt(remote.size());

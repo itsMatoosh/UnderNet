@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.security.interfaces.ECPublicKey;
 import java.util.Base64;
 
@@ -28,6 +29,12 @@ public class NetworkID implements Serializable {
      * The data of the network id.
      */
     private byte[] data;
+
+    /**
+     * The big integer value of data.
+     * Used for distance measurement.
+     */
+    private BigInteger bigIntegerValue;
 
     public NetworkID() {
     }
@@ -70,13 +77,11 @@ public class NetworkID implements Serializable {
      * @param other
      * @return
      */
-    public byte[] distanceTo(NetworkID other) {
-        byte[] output = new byte[NETWORK_ID_LENGTH];
-        int i = 0;
-        for (byte b : other.data) {
-            output[i] = (byte) (b ^ this.data[i++]);
-        }
-        return output;
+    public BigInteger distanceTo(NetworkID other) {
+        BigInteger selfValue = getBigIntegerValue();
+        BigInteger otherValue = other.getBigIntegerValue();
+
+        return selfValue.subtract(otherValue).abs();
     }
 
     /**
@@ -104,8 +109,7 @@ public class NetworkID implements Serializable {
 
     @Override
     public String toString() {
-        return "NID:{" + getStringValue(this.data) +
-                '}';
+        return "NID:{" + getStringValue() + '}';
     }
 
     /**
@@ -133,6 +137,18 @@ public class NetworkID implements Serializable {
      */
     public byte[] getData() {
         return this.data;
+    }
+
+    /**
+     * Returns the big integer value of the network id.
+     * Used for distance calculations.
+     * @return
+     */
+    public BigInteger getBigIntegerValue() {
+        if(bigIntegerValue == null) {
+            bigIntegerValue = new BigInteger(this.getData());
+        }
+        return bigIntegerValue;
     }
 
     /**
@@ -184,33 +200,6 @@ public class NetworkID implements Serializable {
 
         //Extract data from the public key.
         return new NetworkID(encoded);
-    }
-
-    /**
-     * Compares two byte arrays of the same size.
-     *
-     * @param a
-     * @param b
-     * @return result of comparation; -1 = less than, 0 = equal
-     */
-    public static int compare(byte[] a, byte[] b) {
-        int diff = 0; //How many bytes are different between these arrays.
-
-        //Checking length.
-        if (a.length != b.length) {
-            return 1;
-        }
-
-        //Checking bytes.
-        for (int i = 0; i < a.length; i++) {
-            if (b[i] < a[i]) {
-                diff--;
-            } else if (b[i] > a[i]) {
-                diff++;
-            }
-        }
-
-        return diff;
     }
 
     /**

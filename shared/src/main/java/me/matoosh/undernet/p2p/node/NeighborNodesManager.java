@@ -20,6 +20,7 @@ import me.matoosh.undernet.p2p.router.data.message.NodeNeighborsMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 
@@ -178,16 +179,16 @@ public class NeighborNodesManager extends Manager {
      */
     public Node getClosestTo(NetworkID id) {
         Node closest = Node.self;
-        byte[] closestDist = Node.self.getIdentity().getNetworkId().distanceTo(id);
-        for (int i = 0; i < router.getConnectedNodes().size(); i++) {
-            Node n = router.getConnectedNodes().get(i);
+        BigInteger closestDist = Node.self.getIdentity().getNetworkId().distanceTo(id);
+        for (int i = 0; i < router.getRemoteNodes().size(); i++) {
+            Node n = router.getRemoteNodes().get(i);
             if(n == null) continue;
             if(n.getIdentity() == null) {
                 continue;
             }
-            byte[] distance = n.getIdentity().getNetworkId().distanceTo(id);
+            BigInteger distance = n.getIdentity().getNetworkId().distanceTo(id);
 
-            if(NetworkID.compare(closestDist, distance) < 0) {
+            if(distance.compareTo(closestDist) == -1) {
                 closest = n;
                 closestDist = distance;
             }
