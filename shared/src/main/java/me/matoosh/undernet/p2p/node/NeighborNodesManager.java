@@ -107,7 +107,7 @@ public class NeighborNodesManager extends Manager {
                 //responding with neighbors.
                 ArrayList<Node> shareableNeighbors = new ArrayList<>();
                 for (int i = 0; i < router.connectedNodes.size(); i++) {
-                    if (!Node.isLocalAddress(router.connectedNodes.get(i).address)) {
+                    if (!Node.isLocalAddress(router.connectedNodes.get(i).address) && !router.connectedNodes.get(i).address.equals(netMsg.getTunnel().getPreviousNode().address)) {
                         shareableNeighbors.add(router.connectedNodes.get(i));
                     }
                 }
