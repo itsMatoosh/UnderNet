@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 
 /**
  * A single node within the network.
@@ -120,5 +122,23 @@ public class Node implements Serializable {
      */
     public NetworkIdentity getIdentity() {
         return identity;
+    }
+
+    /**
+     * Checks if the given address is local.
+     * @param addr
+     * @return
+     */
+    public static boolean isLocalAddress(InetSocketAddress addr) {
+        // Check if the address is a valid special local or loop back
+        if (addr.getAddress().isAnyLocalAddress()|| addr.getAddress().isLoopbackAddress())
+            return true;
+
+        // Check if the address is defined on any interface
+        try {
+            return NetworkInterface.getByInetAddress(addr.getAddress()) != null;
+        } catch (SocketException e) {
+            return false;
+        }
     }
 }

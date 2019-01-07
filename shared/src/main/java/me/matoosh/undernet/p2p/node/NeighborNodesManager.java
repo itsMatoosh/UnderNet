@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 
 /**
  * Manages neighboring nodes connected to the router.
@@ -104,20 +105,29 @@ public class NeighborNodesManager extends Manager {
             NetworkMessage netMsg = messageReceivedEvent.networkMessage;
             if (netMsg.getContent().getType() == MsgType.NODE_NEIGHBORS_REQUEST && netMsg.getDirection() == NetworkMessage.MessageDirection.TO_DESTINATION) {
                 //responding with neighbors.
-                int localConnsOffset = 2;
-                if(this.router.connectedNodes.size() <= localConnsOffset) {
+                ArrayList<Node> shareableNeighbors = new ArrayList<>();
+                for (int i = 0; i < router.connectedNodes.size(); i++) {
+                    if (!Node.isLocalAddress(router.connectedNodes.get(i).address)) {
+                        shareableNeighbors.add(router.connectedNodes.get(i));
+                    }
+                }
+                if(shareableNeighbors.size() == 0) {
                     logger.info("Too few neighbors to share!");
                     return;
                 }
-                int shareableNeighbors = (int) ((this.router.connectedNodes.size() - localConnsOffset) * NEIGHBOR_SHARE_PERCENT);
-                if (shareableNeighbors == 0) shareableNeighbors = 1;
-                if (shareableNeighbors >= MAX_NEIGHBORS_MSG_LENGTH) shareableNeighbors = MAX_NEIGHBORS_MSG_LENGTH;
 
-                logger.info("Sending {} neighbor infos...", shareableNeighbors);
+                //sharing only some neighbors (in case of many)
+                int shareableAmount = (int) (shareableNeighbors.size() * NEIGHBOR_SHARE_PERCENT);
+                if (shareableAmount == 0) shareableAmount = 1;
+                if (shareableAmount >= MAX_NEIGHBORS_MSG_LENGTH) shareableAmount = MAX_NEIGHBORS_MSG_LENGTH;
 
-                InetSocketAddress addresses[] = new InetSocketAddress[shareableNeighbors];
-                for (int i = 0; i < shareableNeighbors; i++) {
-                    addresses[i] = this.router.connectedNodes.get(i + localConnsOffset).address;
+                logger.info("Sending {} neighbor infos...", shareableAmount);
+
+                InetSocketAddress addresses[] = new InetSocketAddress[shareableAmount];
+                for (int i = 0; i < shareableAmount; i++) {
+                    Node n = shareableNeighbors.get(UnderNet.secureRandom.nextInt(shareableNeighbors.size()));
+                    addresses[i] = n.address;
+                    shareableNeighbors.remove(n);
                 }
 
                 netMsg.getTunnel().sendMessage(new NodeNeighborsMessage(addresses));
