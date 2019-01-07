@@ -117,7 +117,7 @@ public class NeighborNodesManager extends Manager {
 
                 InetSocketAddress addresses[] = new InetSocketAddress[shareableNeighbors];
                 for (int i = 0; i < shareableNeighbors; i++) {
-                    addresses[i + localConnsOffset] = this.router.connectedNodes.get(i).address;
+                    addresses[i] = this.router.connectedNodes.get(i + localConnsOffset).address;
                 }
 
                 netMsg.getTunnel().sendMessage(new NodeNeighborsMessage(addresses));
