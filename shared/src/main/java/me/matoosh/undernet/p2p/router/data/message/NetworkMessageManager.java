@@ -147,6 +147,10 @@ public class NetworkMessageManager extends Manager {
         } else {
             nextNode = tunnel.getPreviousNode();
         }
+        if(nextNode == null) {
+            logger.warn("Couldn't forward message: {}, next node unknown!", message);
+            return;
+        }
 
         if(forwarder == Node.self) {
             if(message.getDirection() == NetworkMessage.MessageDirection.TO_DESTINATION) {
@@ -164,10 +168,6 @@ public class NetworkMessageManager extends Manager {
         }
 
         //Checking if we are the last stop.
-        if(nextNode == null) {
-            logger.warn("Couldn't forward message: {}, next node unknown!", message);
-            return;
-        }
         if(nextNode == Node.self) {
             //Decrypting the message.
             //Checking if the message can be read by our node.
