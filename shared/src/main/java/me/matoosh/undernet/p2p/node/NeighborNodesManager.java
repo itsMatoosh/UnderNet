@@ -96,6 +96,7 @@ public class NeighborNodesManager extends Manager {
                         logger.debug("Received node info for {}", nodeInfoMessage.getNetworkMessage().getOrigin());
                         NetworkIdentity networkIdentity = new NetworkIdentity(nodeInfoMessage.getNetworkMessage().getOrigin());
                         messageReceivedEvent.remoteNode.setIdentity(networkIdentity);
+                        messageReceivedEvent.remoteNode.setPort(nodeInfoMessage.getConnectionPort());
 
                         EventManager.callEvent(new ConnectionEstablishedEvent(messageReceivedEvent.remoteNode));
                     }
@@ -109,7 +110,7 @@ public class NeighborNodesManager extends Manager {
                 ArrayList<Node> shareableNeighbors = router.getRemoteNodes();
                 for (Node n :
                         shareableNeighbors) {
-                    if (n.address.equals(netMsg.getTunnel().getPreviousNode().address)) {
+                    if (n.getAddress().equals(netMsg.getTunnel().getPreviousNode().getAddress())) {
                         shareableNeighbors.remove(n);
                         break;
                     }
@@ -129,8 +130,7 @@ public class NeighborNodesManager extends Manager {
                 InetSocketAddress addresses[] = new InetSocketAddress[shareableAmount];
                 for (int i = 0; i < shareableAmount; i++) {
                     Node n = shareableNeighbors.get(UnderNet.secureRandom.nextInt(shareableNeighbors.size()));
-                    addresses[i] = n.address;
-                    logger.info("Sending {}", n.address);
+                    addresses[i] = new InetSocketAddress(n.getAddress().getAddress(), n.getPort());
                     shareableNeighbors.remove(n);
                 }
 
@@ -138,7 +138,6 @@ public class NeighborNodesManager extends Manager {
             } else if (netMsg.getContent().getType() == MsgType.NODE_NEIGHBORS) {
                 //node infos received
                 NodeNeighborsMessage neighborsMessage = (NodeNeighborsMessage) netMsg.getContent();
-                logger.info("from {}", neighborsMessage.getNetworkMessage().getTunnel().getPreviousNode());
 
                 if (neighborsMessage.getAddresses() == null || neighborsMessage.getAddresses().length == 0) {
                     logger.info("No new node infos received...");
@@ -166,7 +165,7 @@ public class NeighborNodesManager extends Manager {
      */
     public void sendSelfNodeInfo(Node infoTo) {
         logger.info("Sending [self] node info to: {}", infoTo.toString());
-        NetworkMessage message = new NetworkMessage(Node.self.getIdentity().getNetworkId(), Node.self.getIdentity().getNetworkId(), new NodeInfoMessage(), NetworkMessage.MessageDirection.TO_DESTINATION);
+        NetworkMessage message = new NetworkMessage(Node.self.getIdentity().getNetworkId(), Node.self.getIdentity().getNetworkId(), new NodeInfoMessage(UnderNet.networkConfig.listeningPort()), NetworkMessage.MessageDirection.TO_DESTINATION);
         message.serialize();
         message.sign();
         infoTo.sendRaw(message);

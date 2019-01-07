@@ -56,7 +56,7 @@ public class ClientNetworkMessageHandler extends ChannelInboundHandlerAdapter {
 
         //Adding a node object to the connection.
         Node serverNode = new Node();
-        serverNode.address = (InetSocketAddress) ctx.channel().remoteAddress(); //Setting the node's address.
+        serverNode.setAddress((InetSocketAddress) ctx.channel().remoteAddress()); //Setting the node's address.
         serverNode.channel = ctx.channel();
         ctx.channel().attr(ATTRIBUTE_KEY_SERVER_NODE).set(serverNode);
 

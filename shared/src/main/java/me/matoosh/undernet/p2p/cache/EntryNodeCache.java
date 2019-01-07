@@ -90,11 +90,11 @@ public class EntryNodeCache {
                 if (!addressSplit[1].equals("")) {
                     //Custom port was provided.
                     port = Integer.parseInt(addressSplit[1]);
-                    node.port = port;
+                    node.setPort(port);
                 }
             }
         }
-        node.address = new InetSocketAddress(addressSplit[0], port);
+        node.setAddress(new InetSocketAddress(addressSplit[0], port));
 
         //Adding the node to the cache.
         EntryNodeCache.addNode(node);
@@ -106,7 +106,7 @@ public class EntryNodeCache {
      * @param node
      */
     public static void addNode(Node node) {
-        if(Node.isLocalAddress(node.address)) {
+        if(Node.isLocalAddress(node.getAddress())) {
             logger.warn("Can't add a local address to Node Cache!");
             return;
         }
@@ -114,8 +114,8 @@ public class EntryNodeCache {
         //checking duplicates
         for (Node cached :
                 cachedNodes) {
-            if (node.address.getHostString().equals(cached.address.getHostString())) {
-                logger.warn("Node {} is already in the Node Cache!", cached.address);
+            if (node.getAddress().getHostString().equals(cached.getAddress().getHostString())) {
+                logger.warn("Node {} is already in the Node Cache!", cached.getAddress());
                 return;
             }
         }

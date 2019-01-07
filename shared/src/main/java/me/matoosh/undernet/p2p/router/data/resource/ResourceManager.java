@@ -296,7 +296,7 @@ public class ResourceManager extends Manager {
 
             if(connectionEvent.other == null) return;
             if(connectionEvent.other == Node.self) return;
-            if(connectionEvent.other.address.equals(Node.self.address)) return;
+            if(connectionEvent.other.getAddress().equals(Node.self.getAddress())) return;
 
             //Push each available resource.
             for (FileResource file :

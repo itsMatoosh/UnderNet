@@ -168,7 +168,7 @@ public class NodesPanel extends JPanel {
             EntryNodeCache.cachedNodes) {
                 boolean canAdd = true;
                 for (Node connectedNode : UnderNet.router.getRemoteNodes()) {
-                    if(cachedNode.address.equals(connectedNode.address)) {
+                    if(cachedNode.getAddress().equals(connectedNode.getAddress())) {
                         canAdd = false;
                     }
                 }
@@ -214,7 +214,7 @@ class NodesListCellRenderer extends DefaultListCellRenderer
                 if (node.isConnected()) {
                     setBackground(Color.GREEN);
                     for (int i = 0; i < this.nodesPanel.receivedMsgFrom.size(); i++) {
-                        if (this.nodesPanel.receivedMsgFrom.get(i) != null && this.nodesPanel.receivedMsgFrom.get(i).address.equals(node.address)) {
+                        if (this.nodesPanel.receivedMsgFrom.get(i) != null && this.nodesPanel.receivedMsgFrom.get(i).getAddress().equals(node.getAddress())) {
                             setBackground(Color.CYAN);
                             this.nodesPanel.receivedMsgFrom.remove(node);
                         }

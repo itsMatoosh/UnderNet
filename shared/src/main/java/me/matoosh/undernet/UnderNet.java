@@ -74,7 +74,7 @@ public class UnderNet
 
         //Setting up the self node.
         Node.self = new Node();
-        Node.self.address = new InetSocketAddress(InetAddress.getLoopbackAddress(), UnderNet.networkConfig.listeningPort());
+        Node.self.setAddress(new InetSocketAddress(InetAddress.getLoopbackAddress(), UnderNet.networkConfig.listeningPort()));
 
         //Setting up the router.
         router = new Router();

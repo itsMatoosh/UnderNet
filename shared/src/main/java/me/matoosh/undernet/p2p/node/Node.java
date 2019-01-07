@@ -26,11 +26,11 @@ public class Node implements Serializable {
     /**
      * Connection address of this node.
      */
-    public InetSocketAddress address;
+    private InetSocketAddress address;
     /**
      * Connection port of the node.
      */
-    public int port = 2017;
+    private int port = 2017;
 
     /**
      * The channel used for connection to the node.
@@ -114,6 +114,38 @@ public class Node implements Serializable {
         } else {
             logger.error("Couldn't set {} node identity, the identity object is not correct!", toString());
         }
+    }
+
+    /**
+     * Gets the node address.
+     * @return
+     */
+    public InetSocketAddress getAddress() {
+        return address;
+    }
+
+    /**
+     * Sets the node address.
+     * @param address
+     */
+    public void setAddress(InetSocketAddress address) {
+        this.address = address;
+    }
+
+    /**
+     * Gets the node port.
+     * @return
+     */
+    public int getPort() {
+        return port;
+    }
+
+    /**
+     * Sets the node port.
+     * @param port
+     */
+    public void setPort(int port) {
+        this.port = port;
     }
 
     /**

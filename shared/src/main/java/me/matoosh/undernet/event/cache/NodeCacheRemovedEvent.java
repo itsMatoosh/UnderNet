@@ -23,6 +23,6 @@ public class NodeCacheRemovedEvent extends NodeCacheEvent {
      */
     @Override
     public void onCalled() {
-        EntryNodeCache.logger.info("Removed node " + node.address + " from cache");
+        EntryNodeCache.logger.info("Removed node " + node.getAddress() + " from cache");
     }
 }

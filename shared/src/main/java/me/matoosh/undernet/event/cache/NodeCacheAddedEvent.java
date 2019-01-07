@@ -23,6 +23,6 @@ public class NodeCacheAddedEvent extends NodeCacheEvent {
      */
     @Override
     public void onCalled() {
-        EntryNodeCache.logger.info("Added node " + node.address + " to cache");
+        EntryNodeCache.logger.info("Added node " + node.getAddress() + " to cache");
     }
 }

@@ -274,7 +274,7 @@ public class Router extends EventHandler {
         ArrayList<Node> remote = new ArrayList<>();
         for (Node n :
                 connectedNodes) {
-            if (!Node.isLocalAddress(n.address)) {
+            if (!Node.isLocalAddress(n.getAddress())) {
                 remote.add(n);
             }
         }

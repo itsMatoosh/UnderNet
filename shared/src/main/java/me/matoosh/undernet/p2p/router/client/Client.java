@@ -116,13 +116,13 @@ public class Client {
         //making sure node is not yet connected
         for (Node conn :
                 this.router.getConnectedNodes()) {
-            if (conn.address.getHostString().equals(node.address.getHostString())) {
+            if (conn.getAddress().getHostString().equals(node.getAddress().getHostString())) {
                 logger.warn("Node {} already connected!", conn);
                 return;
             }
         }
 
-        logger.info("Connecting to node: " + node.address);
+        logger.info("Connecting to node: " + node.getAddress());
 
         //Making sure the list of client futures exists.
         if(closeFutures == null) {
@@ -138,7 +138,7 @@ public class Client {
         .handler(new ClientChannelInitializer(this));
 
         //Connecting
-        ChannelFuture future = clientBootstrap.connect(node.address); //Connecting to the node.
+        ChannelFuture future = clientBootstrap.connect(node.getAddress()); //Connecting to the node.
         ChannelFuture closeFuture = future.channel().closeFuture();
         closeFuture.addListener(future1 -> {
             //Removing the future from future list.
