@@ -154,15 +154,15 @@ public class NetworkMessageManager extends Manager {
 
         if(forwarder == Node.self) {
             if(message.getDirection() == NetworkMessage.MessageDirection.TO_DESTINATION) {
-                logger.info("Forwarding message ({}), ({}) -> ({}) -> (...) -> ({})", message.getContent().getType(), Node.self, tunnel.getNextNode(), message.getDestination());
+                logger.info("Forwarding message, ({}) -> ({}) -> (...) -> ({})", Node.self, tunnel.getNextNode(), message.getDestination());
             } else {
-                logger.info("Forwarding message ({}), ({}) <- (...) <- ({}) <- ({})", message.getContent().getType(), message.getOrigin(), tunnel.getPreviousNode(), Node.self);
+                logger.info("Forwarding message, ({}) <- (...) <- ({}) <- ({})", message.getOrigin(), tunnel.getPreviousNode(), Node.self);
             }
         } else {
             if(message.getDirection() == NetworkMessage.MessageDirection.TO_DESTINATION) {
-                logger.info("Forwarding message ({}), ({}) -> (...) -> ({}) -> ({}) -> ({}) -> (...) -> ({})", message.getContent().getType(), message.getOrigin(), tunnel.getPreviousNode(), Node.self, tunnel.getNextNode(), message.getDestination());
+                logger.info("Forwarding message, ({}) -> (...) -> ({}) -> ({}) -> ({}) -> (...) -> ({})", message.getOrigin(), tunnel.getPreviousNode(), Node.self, tunnel.getNextNode(), message.getDestination());
             } else {
-                logger.info("Forwarding message ({}), ({}) <- (...) <- ({}) <- ({}) <- ({}) <- (...) <- ({})", message.getContent().getType(), message.getOrigin(), tunnel.getPreviousNode(), Node.self, forwarder, message.getDestination());
+                logger.info("Forwarding message, ({}) <- (...) <- ({}) <- ({}) <- ({}) <- (...) <- ({})", message.getOrigin(), tunnel.getPreviousNode(), Node.self, forwarder, message.getDestination());
             }
 
         }
