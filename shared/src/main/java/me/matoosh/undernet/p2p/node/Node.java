@@ -81,7 +81,7 @@ public class Node implements Serializable {
         boolean connected = false;
         if(this != Node.self) {
             //Checking if the node is connected.
-            for (Node n : UnderNet.router.connectedNodes) {
+            for (Node n : UnderNet.router.getConnectedNodes()) {
                 if(n.address.equals(this.address)) {
                     connected = true;
                 }

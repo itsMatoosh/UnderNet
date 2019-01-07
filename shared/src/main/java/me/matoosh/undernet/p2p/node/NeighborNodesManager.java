@@ -105,10 +105,12 @@ public class NeighborNodesManager extends Manager {
             NetworkMessage netMsg = messageReceivedEvent.networkMessage;
             if (netMsg.getContent().getType() == MsgType.NODE_NEIGHBORS_REQUEST && netMsg.getDirection() == NetworkMessage.MessageDirection.TO_DESTINATION) {
                 //responding with neighbors.
-                ArrayList<Node> shareableNeighbors = new ArrayList<>();
-                for (int i = 0; i < router.connectedNodes.size(); i++) {
-                    if (!Node.isLocalAddress(router.connectedNodes.get(i).address) && !router.connectedNodes.get(i).address.equals(netMsg.getTunnel().getPreviousNode().address)) {
-                        shareableNeighbors.add(router.connectedNodes.get(i));
+                ArrayList<Node> shareableNeighbors = router.getRemoteNodes();
+                for (Node n :
+                        shareableNeighbors) {
+                    if (n.address.equals(netMsg.getTunnel().getPreviousNode().address)) {
+                        shareableNeighbors.remove(n);
+                        break;
                     }
                 }
                 if(shareableNeighbors.size() == 0) {
@@ -175,8 +177,8 @@ public class NeighborNodesManager extends Manager {
     public Node getClosestTo(NetworkID id) {
         Node closest = Node.self;
         byte[] closestDist = Node.self.getIdentity().getNetworkId().distanceTo(id);
-        for (int i = 0; i < router.connectedNodes.size(); i++) {
-            Node n = router.connectedNodes.get(i);
+        for (int i = 0; i < router.getConnectedNodes().size(); i++) {
+            Node n = router.getConnectedNodes().get(i);
             if(n == null) continue;
             if(n.getIdentity() == null) {
                 continue;

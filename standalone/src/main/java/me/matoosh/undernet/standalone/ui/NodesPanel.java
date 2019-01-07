@@ -163,11 +163,11 @@ public class NodesPanel extends JPanel {
         if(UnderNet.router.status.equals(InterfaceStatus.STARTED)) {
             //Using connected and cached nodes if the router has started.
             ArrayList<Node> nodesToList = new ArrayList<>();
-            nodesToList.addAll(UnderNet.router.connectedNodes);
+            nodesToList.addAll(UnderNet.router.getRemoteNodes());
             for (Node cachedNode:
             EntryNodeCache.cachedNodes) {
                 boolean canAdd = true;
-                for (Node connectedNode : UnderNet.router.connectedNodes) {
+                for (Node connectedNode : UnderNet.router.getRemoteNodes()) {
                     if(cachedNode.address.equals(connectedNode.address)) {
                         canAdd = false;
                     }

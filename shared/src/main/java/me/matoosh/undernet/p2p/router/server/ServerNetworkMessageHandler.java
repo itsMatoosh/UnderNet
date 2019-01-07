@@ -58,7 +58,7 @@ public class ServerNetworkMessageHandler extends ChannelInboundHandlerAdapter {
         ctx.channel().attr(ATTRIBUTE_KEY_CLIENT_NODE).set(clientNode);
 
         //Adding the client node to the connectedNodes list.
-        server.router.connectedNodes.add(clientNode);
+        server.router.getConnectedNodes().add(clientNode);
 
         //Calling the channel created event.
         EventManager.callEvent(new ChannelCreatedEvent(ctx.channel(), true));
@@ -77,7 +77,7 @@ public class ServerNetworkMessageHandler extends ChannelInboundHandlerAdapter {
         //Removing the client from the connectedNodes list.
         Node clientNode = ctx.channel().attr(ATTRIBUTE_KEY_CLIENT_NODE).get();
         clientNode.channel = null;
-        server.router.connectedNodes.remove(clientNode);
+        server.router.getConnectedNodes().remove(clientNode);
 
         //Calling the channel closed event.
         EventManager.callEvent(new ChannelClosedEvent(ctx.channel(), true));

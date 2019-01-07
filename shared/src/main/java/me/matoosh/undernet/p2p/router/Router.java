@@ -91,7 +91,7 @@ public class Router extends EventHandler {
     /**
      * Nodes the router is connected to at the moment.
      */
-    public ArrayList<Node> connectedNodes = new ArrayList<>();
+    private ArrayList<Node> connectedNodes = new ArrayList<>();
 
     /**
      * The logger.
@@ -199,14 +199,12 @@ public class Router extends EventHandler {
         logger.info("Checking if everything is running smoothly...");
 
         //Checking if enough nodes are connected.
-        if (connectedNodes.size() > 2 && connectedNodes.size() < UnderNet.networkConfig.optNeighbors()) {
+        ArrayList<Node> remote = getRemoteNodes();
+        if (remote.size() > 0 && remote.size() < UnderNet.networkConfig.optNeighbors()) {
             //Request more neighbors.
-            int id = UnderNet.secureRandom.nextInt(this.connectedNodes.size());
-
-            Node neighbor = this.connectedNodes.get(id);
-            if (neighbor != Node.self) {
-                this.networkMessageManager.sendMessage(new NodeNeighborsRequest(), neighbor.getIdentity().getNetworkId());
-            }
+            int id = UnderNet.secureRandom.nextInt(remote.size());
+            Node neighbor = remote.get(id);
+            this.networkMessageManager.sendMessage(new NodeNeighborsRequest(), neighbor.getIdentity().getNetworkId());
         }
     }
 
@@ -256,6 +254,30 @@ public class Router extends EventHandler {
                 channel.close();
             }
         }
+    }
+
+    /**
+     * Gets all of the connected nodes.
+     * @return
+     */
+    public ArrayList<Node> getConnectedNodes() {
+        return connectedNodes;
+    }
+
+    /**
+     * Gets all of the remote connected nodes.
+     * Omits all of the local nodes.
+     * @return
+     */
+    public ArrayList<Node> getRemoteNodes() {
+        ArrayList<Node> remote = new ArrayList<>();
+        for (Node n :
+                connectedNodes) {
+            if (!Node.isLocalAddress(n.address)) {
+                remote.add(n);
+            }
+        }
+        return remote;
     }
 
     /**

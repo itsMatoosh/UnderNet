@@ -108,14 +108,14 @@ public class Client {
         if(status != InterfaceStatus.STARTED) {
             EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STARTED));
         }
-        if (this.router.connectedNodes.size() >= UnderNet.networkConfig.maxNeighbors()) {
+        if (this.router.getRemoteNodes().size() >= UnderNet.networkConfig.maxNeighbors()) {
             logger.warn("Can't connect to more nodes!");
             return;
         }
 
         //making sure node is not yet connected
         for (Node conn :
-                this.router.connectedNodes) {
+                this.router.getConnectedNodes()) {
             if (conn.address.getHostString().equals(node.address.getHostString())) {
                 logger.warn("Node {} already connected!", conn);
                 return;
