@@ -23,7 +23,6 @@ public class NetworkMessageEncoder extends MessageToByteEncoder<NetworkMessage> 
     @Override
     protected void encode(ChannelHandlerContext ctx, NetworkMessage msg, ByteBuf out) {
         //Setting message details.
-        msg.updateDetails();
         if(!msg.isValid()) {
             logger.warn("Message to {} is invalid!", ctx.channel().remoteAddress());
             ctx.flush();

@@ -53,10 +53,6 @@ public class NetworkMessage {
      * Used to see whether the message is unencrypted.
      */
     private byte[] signature;
-    /**
-     * The length of the message content data.
-     */
-    private short contentLength;
 
     /**
      * From origin to destination = 0
@@ -190,7 +186,7 @@ public class NetworkMessage {
      * @return
      */
     public int getContentLength() {
-        return this.contentLength;
+        return this.data.capacity();
     }
 
     /**
@@ -209,7 +205,6 @@ public class NetworkMessage {
      */
     public void setData(byte[] data) {
         this.data = ByteBuffer.wrap(data);
-        this.contentLength = (short) data.length;
     }
 
     public MsgBase getContent() {
@@ -235,7 +230,6 @@ public class NetworkMessage {
      * @return
      */
     public boolean isValid() {
-        updateDetails();
         if (origin == null || !origin.isValid()) {
             logger.warn("Origin of message {} missing or invalid!", this);
             return false;
@@ -252,8 +246,8 @@ public class NetworkMessage {
             logger.warn("Length of the message {} signature incorrect, {}!", this, signature.length);
             return false;
         }
-        if (contentLength <= 0) {
-            logger.warn("Content length of message {} less or equal to 0, {}", this, contentLength);
+        if (getContentLength() <= 0) {
+            logger.warn("Content length of message {} less or equal to 0, {}", this, getContentLength());
             return false;
         }
         /*if(!checkLength()) {
@@ -339,9 +333,9 @@ public class NetworkMessage {
      */
     public int getTotalLength() {
         if (signature != null) {
-            return NETWORK_MESSAGE_HEADER_LENGTH + contentLength + signature.length;
+            return NETWORK_MESSAGE_HEADER_LENGTH + getContentLength() + signature.length;
         } else {
-            return NETWORK_MESSAGE_HEADER_LENGTH + contentLength;
+            return NETWORK_MESSAGE_HEADER_LENGTH + getContentLength();
         }
     }
 
@@ -357,13 +351,6 @@ public class NetworkMessage {
     @Override
     public String toString() {
         return "netMsg{to=" + destination + "}";
-    }
-
-    /**
-     * Updates the message details.
-     */
-    public void updateDetails() {
-        this.contentLength = (short) data.array().length;
     }
 
     /**
