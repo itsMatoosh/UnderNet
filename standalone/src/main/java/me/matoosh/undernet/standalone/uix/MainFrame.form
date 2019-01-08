@@ -39,9 +39,7 @@
             <preferred-size width="-1" height="50"/>
           </grid>
         </constraints>
-        <properties>
-          <text value="Connect"/>
-        </properties>
+        <properties/>
       </component>
       <hspacer id="4c3c4">
         <constraints>

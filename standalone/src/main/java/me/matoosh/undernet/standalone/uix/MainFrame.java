@@ -6,6 +6,7 @@ import com.intellij.uiDesigner.core.Spacer;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventHandler;
+import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
 import me.matoosh.undernet.standalone.UnderNetStandalone;
@@ -46,6 +47,10 @@ public class MainFrame extends EventHandler {
     public static final int START_HEIGHT = 600;
     public static final int START_WIDTH = 950;
 
+    public MainFrame() {
+        mainButton.addActionListener(e -> onMainButtonClicked());
+    }
+
     public static void newInstance() {
         if (instance != null) {
             logger.warn("Can't open more than one Mainframe!");
@@ -65,21 +70,16 @@ public class MainFrame extends EventHandler {
     }
 
     private void initialize() {
-        registerButtons();
         addMenus();
-    }
-
-    private void registerButtons() {
-        this.mainButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                onMainButtonClicked();
-            }
-        });
+        registerListener();
     }
 
     private void addMenus() {
 
+    }
+
+    private void registerListener() {
+        EventManager.registerHandler(this, RouterStatusEvent.class);
     }
 
     /**
@@ -103,16 +103,23 @@ public class MainFrame extends EventHandler {
 
             switch (statusEvent.newStatus) {
                 case STOPPED:
-                    mainButton.setText(ResourceBundle.getBundle("language").getString("button_connect"));
+                    EventQueue.invokeLater(() -> {
+                        mainButton.setEnabled(true);
+                        mainButton.setText(ResourceBundle.getBundle("language").getString("button_connect"));
+                    });
                     break;
                 case STARTED:
-                    mainButton.setText(ResourceBundle.getBundle("language").getString("button_disconnect"));
+                    EventQueue.invokeLater(() -> {
+                        mainButton.setEnabled(true);
+                        mainButton.setText(ResourceBundle.getBundle("language").getString("button_disconnect"));
+                        System.out.println(statusEvent.newStatus);
+                    });
                     break;
                 case STOPPING:
-                    mainButton.setEnabled(false);
+                    EventQueue.invokeLater(() -> mainButton.setEnabled(false));
                     break;
                 case STARTING:
-                    mainButton.setEnabled(false);
+                    EventQueue.invokeLater(() -> mainButton.setEnabled(false));
                     new Thread(() -> drawLoop()).start();
                     break;
             }
