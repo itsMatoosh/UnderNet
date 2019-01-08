@@ -1,4 +1,4 @@
-package me.matoosh.undernet.standalone.ui.dialog;
+package me.matoosh.undernet.standalone.uix.dialog;
 
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.p2p.cache.EntryNodeCache;

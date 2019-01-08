@@ -3,6 +3,7 @@ apply plugin: 'application'
 dependencies {
     compile project(path: ':shared')
     compile 'com.esotericsoftware.yamlbeans:yamlbeans:1.12'
+    compile 'com.intellij:forms_rt:7.0.3'
     compile group: 'commons-io', name: 'commons-io', version: '2.4'
 }
 

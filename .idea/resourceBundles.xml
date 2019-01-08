@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ResourceBundleManager">
+    <file url="file://$PROJECT_DIR$/standalone/src/main/resources/language.properties" />
+    <file url="file://$PROJECT_DIR$/standalone/src/main/resources/language_Polish.properties" />
+    <file url="file://$PROJECT_DIR$/standalone/src/main/resources/language_Russian.properties" />
+    <custom-resource-bundle>
+      <file value="file://$PROJECT_DIR$/standalone/src/main/resources/language.properties" />
+      <file value="file://$PROJECT_DIR$/standalone/src/main/resources/language_Polish.properties" />
+      <file value="file://$PROJECT_DIR$/standalone/src/main/resources/language_Russian.properties" />
+      <base-name>language</base-name>
+    </custom-resource-bundle>
+  </component>
+</project>
