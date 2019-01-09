@@ -7,8 +7,12 @@ import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
+import me.matoosh.undernet.event.resource.transfer.ResourceTransferDataReceivedEvent;
+import me.matoosh.undernet.event.resource.transfer.ResourceTransferDataSentEvent;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
+import me.matoosh.undernet.p2p.router.data.resource.transfer.FileTransferHandler;
+import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferHandler;
 import me.matoosh.undernet.standalone.UnderNetStandalone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,16 +73,13 @@ public class MainFrame extends EventHandler {
     }
 
     private void initialize() {
-        addMenus();
         registerListener();
-    }
-
-    private void addMenus() {
-
     }
 
     private void registerListener() {
         EventManager.registerHandler(this, RouterStatusEvent.class);
+        EventManager.registerHandler(this, ResourceTransferDataReceivedEvent.class);
+        EventManager.registerHandler(this, ResourceTransferDataSentEvent.class);
     }
 
     /**
@@ -114,6 +115,24 @@ public class MainFrame extends EventHandler {
                     mainButton.setEnabled(false);
                     new Thread(() -> drawLoop()).start();
                     break;
+            }
+        } else if(e instanceof ResourceTransferDataReceivedEvent) {
+            ResourceTransferDataReceivedEvent dataReceivedEvent = (ResourceTransferDataReceivedEvent)e;
+            ResourceTransferHandler transferHandler = dataReceivedEvent.transferHandler;
+
+            if(transferHandler instanceof FileTransferHandler) {
+                FileTransferHandler fileTransferHandler = (FileTransferHandler) transferHandler;
+
+                progressBar.setValue((int) (((float)fileTransferHandler.getWritten())/((float) fileTransferHandler.getFileLength()) * 100f));
+            }
+        } else if(e instanceof ResourceTransferDataSentEvent) {
+            ResourceTransferDataSentEvent dataReceivedEvent = (ResourceTransferDataSentEvent)e;
+            ResourceTransferHandler transferHandler = dataReceivedEvent.transferHandler;
+
+            if(transferHandler instanceof FileTransferHandler) {
+                FileTransferHandler fileTransferHandler = (FileTransferHandler) transferHandler;
+
+                progressBar.setValue((int) (((float)fileTransferHandler.getSent())/((float) fileTransferHandler.getFileLength()) * 100f));
             }
         }
     }

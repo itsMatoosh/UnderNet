@@ -229,4 +229,16 @@ public class FileTransferHandler extends ResourceTransferHandler {
             }
         }
     }
+
+    public long getFileLength() {
+        return fileLength;
+    }
+
+    public int getWritten() {
+        return written;
+    }
+
+    public int getSent() {
+        return sent;
+    }
 }

@@ -288,8 +288,9 @@ public class Router extends EventHandler {
      */
     public ArrayList<Node> getRemoteNodes() {
         ArrayList<Node> remote = new ArrayList<>();
-        for (Node n :
-                connectedNodes) {
+        for (int i = 0; i < connectedNodes.size(); i++) {
+            Node n = connectedNodes.get(i);
+
             if (n.getAddress() != null && !Node.isLocalAddress(n.getAddress())) {
                 remote.add(n);
             }
