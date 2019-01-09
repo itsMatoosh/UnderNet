@@ -10,8 +10,6 @@ import me.matoosh.undernet.event.channel.ChannelErrorEvent;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
-import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnel;
-import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnelSide;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,19 +80,7 @@ public class ServerNetworkMessageHandler extends ChannelInboundHandlerAdapter {
         server.router.getConnectedNodes().remove(clientNode);
 
         //Removing tunnels with node.
-        for (int i = 0; i < server.router.messageTunnelManager.messageTunnels.size(); i++) {
-            MessageTunnel tunnel = server.router.messageTunnelManager.messageTunnels.get(i);
-            if(tunnel.getSide() == MessageTunnelSide.ORIGIN) {
-                if(tunnel.getDestination().equals(clientNode.getIdentity().getNetworkId())) {
-                    server.router.messageTunnelManager.closeTunnel(tunnel);
-                }
-            } else if(tunnel.getSide() == MessageTunnelSide.DESTINATION) {
-                if(tunnel.getOrigin().equals(clientNode.getIdentity().getNetworkId())) {
-                    server.router.messageTunnelManager.closeTunnel(tunnel);
-                }
-            }
-
-        }
+        server.router.messageTunnelManager.closeTunnelsOnDisconnect(clientNode);
 
         //Calling the channel closed event.
         EventManager.callEvent(new ChannelClosedEvent(ctx.channel(), true));

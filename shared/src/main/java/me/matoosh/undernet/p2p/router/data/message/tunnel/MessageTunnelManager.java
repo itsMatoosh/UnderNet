@@ -82,6 +82,19 @@ public class MessageTunnelManager extends Manager {
     }
 
     /**
+     * Closes tunnels when a node disconnects.
+     * @param disconnected
+     */
+    public void closeTunnelsOnDisconnect(Node disconnected) {
+        for (MessageTunnel tunnel :
+                messageTunnels) {
+            if (tunnel.getNextNode() == disconnected || tunnel.getPreviousNode() == disconnected) {
+                closeTunnel(tunnel);
+            }
+        }
+    }
+
+    /**
      * Closes the given message tunnel.
      * Doesn't send the close message, for that use the tunnel close() message.
      * @param tunnel

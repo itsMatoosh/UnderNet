@@ -1,10 +1,5 @@
 package me.matoosh.undernet.p2p.router.client;
 
-import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnel;
-import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnelSide;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.AttributeKey;
@@ -15,6 +10,8 @@ import me.matoosh.undernet.event.channel.ChannelErrorEvent;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 
@@ -85,19 +82,7 @@ public class ClientNetworkMessageHandler extends ChannelInboundHandlerAdapter {
         client.router.getConnectedNodes().remove(serverNode);
 
         //Removing tunnels with node.
-        for (int i = 0; i < client.router.messageTunnelManager.messageTunnels.size(); i++) {
-            MessageTunnel tunnel = client.router.messageTunnelManager.messageTunnels.get(i);
-            if(tunnel.getSide() == MessageTunnelSide.ORIGIN) {
-                if(tunnel.getDestination().equals(serverNode.getIdentity().getNetworkId())) {
-                    client.router.messageTunnelManager.closeTunnel(tunnel);
-                }
-            } else if(tunnel.getSide() == MessageTunnelSide.DESTINATION) {
-                if(tunnel.getOrigin().equals(serverNode.getIdentity().getNetworkId())) {
-                    client.router.messageTunnelManager.closeTunnel(tunnel);
-                }
-            }
-
-        }
+        client.router.messageTunnelManager.closeTunnelsOnDisconnect(serverNode);
 
         //Calling the channel closed event.
         EventManager.callEvent(new ChannelClosedEvent(ctx.channel(), false));

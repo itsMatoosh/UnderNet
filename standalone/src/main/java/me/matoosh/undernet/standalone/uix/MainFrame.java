@@ -116,23 +116,23 @@ public class MainFrame extends EventHandler {
                     new Thread(() -> drawLoop()).start();
                     break;
             }
-        } else if(e instanceof ResourceTransferDataReceivedEvent) {
-            ResourceTransferDataReceivedEvent dataReceivedEvent = (ResourceTransferDataReceivedEvent)e;
+        } else if (e instanceof ResourceTransferDataReceivedEvent) {
+            ResourceTransferDataReceivedEvent dataReceivedEvent = (ResourceTransferDataReceivedEvent) e;
             ResourceTransferHandler transferHandler = dataReceivedEvent.transferHandler;
 
-            if(transferHandler instanceof FileTransferHandler) {
+            if (transferHandler instanceof FileTransferHandler) {
                 FileTransferHandler fileTransferHandler = (FileTransferHandler) transferHandler;
 
-                progressBar.setValue((int) (((float)fileTransferHandler.getWritten())/((float) fileTransferHandler.getFileLength()) * 100f));
+                progressBar.setValue((int) (((float) fileTransferHandler.getWritten()) / ((float) fileTransferHandler.getFileLength()) * 100f));
             }
-        } else if(e instanceof ResourceTransferDataSentEvent) {
-            ResourceTransferDataSentEvent dataReceivedEvent = (ResourceTransferDataSentEvent)e;
+        } else if (e instanceof ResourceTransferDataSentEvent) {
+            ResourceTransferDataSentEvent dataReceivedEvent = (ResourceTransferDataSentEvent) e;
             ResourceTransferHandler transferHandler = dataReceivedEvent.transferHandler;
 
-            if(transferHandler instanceof FileTransferHandler) {
+            if (transferHandler instanceof FileTransferHandler) {
                 FileTransferHandler fileTransferHandler = (FileTransferHandler) transferHandler;
 
-                progressBar.setValue((int) (((float)fileTransferHandler.getSent())/((float) fileTransferHandler.getFileLength()) * 100f));
+                progressBar.setValue((int) (((float) fileTransferHandler.getSent()) / ((float) fileTransferHandler.getFileLength()) * 100f));
             }
         }
     }
