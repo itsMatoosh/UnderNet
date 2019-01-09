@@ -3,6 +3,7 @@ package me.matoosh.undernet.p2p.router.data.message.tunnel;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.p2p.crypto.KeyTools;
 import me.matoosh.undernet.p2p.node.Node;
+import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.message.MsgBase;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
@@ -99,6 +100,7 @@ public class MessageTunnel {
         this.destination = destination;
         this.origin = origin;
         this.side = MessageTunnelSide.UNDEFINED;
+        this.lastMessageTime = System.currentTimeMillis() + 2 * Router.controlLoopInterval;
     }
     /**
      * Creates a message tunnel.
@@ -109,6 +111,7 @@ public class MessageTunnel {
         this.destination = destination;
         this.origin = origin;
         this.side = side;
+        this.lastMessageTime = System.currentTimeMillis() + 2 * Router.controlLoopInterval;
     }
 
     public PublicKey getOtherPublicKey() {

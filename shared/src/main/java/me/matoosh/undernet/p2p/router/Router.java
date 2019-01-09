@@ -94,7 +94,7 @@ public class Router extends EventHandler {
     /**
      * The interval of the control loop.
      */
-    private final int controlLoopInterval = 30;
+    public static final int controlLoopInterval = 30;
 
     /**
      * Nodes the router is connected to at the moment.
@@ -218,7 +218,7 @@ public class Router extends EventHandler {
         //Sending control message to tunnels.
         for (MessageTunnel tunnel :
                 messageTunnelManager.messageTunnels) {
-            if((tunnel.getLastMessageTime() / 1000) > 2*controlLoopInterval) messageTunnelManager.closeTunnel(tunnel);
+            if(System.currentTimeMillis() > tunnel.getLastMessageTime() + 2*controlLoopInterval*1000) messageTunnelManager.closeTunnel(tunnel);
             else tunnel.sendMessage(new TunnelControlMessage());
         }
 
