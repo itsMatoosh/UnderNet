@@ -229,8 +229,6 @@ public class MessageTunnelManager extends Manager {
             } else if (messageReceivedEvent.networkMessage.getContent().getType() == MsgType.TUNNEL_CLOSE_REQUEST) {
                 TunnelCloseRequestMessage closeRequestMessage = (TunnelCloseRequestMessage) messageReceivedEvent.networkMessage.getContent();
                 closeTunnel(closeRequestMessage.getNetworkMessage().getTunnel());
-            } else if (messageReceivedEvent.networkMessage.getContent().getType() == MsgType.TUNNEL_CONTROL) {
-                messageReceivedEvent.networkMessage.getTunnel().sendMessage(new TunnelControlMessage());
             }
         }
     }
