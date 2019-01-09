@@ -35,6 +35,10 @@ public class NetworkID implements Serializable {
      * Used for distance measurement.
      */
     private BigInteger bigIntegerValue;
+    /**
+     * The string value of data.
+     */
+    private String stringValue;
 
     public NetworkID() {
     }
@@ -127,7 +131,10 @@ public class NetworkID implements Serializable {
      * @return
      */
     public String getStringValue() {
-        return getStringValue(this.data);
+        if(stringValue == null) {
+            stringValue = getStringValue(this.data);
+        }
+        return stringValue;
     }
 
     /**

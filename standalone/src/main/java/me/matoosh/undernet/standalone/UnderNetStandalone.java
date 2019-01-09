@@ -51,6 +51,11 @@ public class UnderNetStandalone {
     private static StandaloneFileManager tmpFileMgr;
 
     /**
+     * The undernet thread.
+     */
+    private static Thread unetThread;
+
+    /**
      * The logger of the class.
      */
     public static Logger logger = LoggerFactory.getLogger(UnderNetStandalone.class);
@@ -60,36 +65,34 @@ public class UnderNetStandalone {
         setup();
 
         //Starting the ui.
-        EventQueue.invokeLater(() -> {
-            MainFrame.newInstance();
+        EventQueue.invokeLater(() -> MainFrame.newInstance());
 
-            //Creating network identity.
-            if(standaloneConfig.identity() == null || standaloneConfig.identity().isEmpty() || standaloneConfig.identity().equals("empty")) {
-                logger.info("No identity cached, creating a new identity!");
-                UnderNetStandalone.setNetworkIdentity(null, null);
-            } else {
-                logger.info("Identity cached, loading identity {}!", standaloneConfig.identity());
-                File currentIdentityFile = new File(standaloneConfig.identity());
+        //Creating network identity.
+        if(standaloneConfig.identity() == null || standaloneConfig.identity().isEmpty() || standaloneConfig.identity().equals("empty")) {
+            logger.info("No identity cached, creating a new identity!");
+            UnderNetStandalone.setNetworkIdentity(null, null);
+        } else {
+            logger.info("Identity cached, loading identity {}!", standaloneConfig.identity());
+            File currentIdentityFile = new File(standaloneConfig.identity());
 
-                try {
-                    if (currentIdentityFile.exists()) {
-                        NetworkIdentity identity = (NetworkIdentity) SerializationTools.readObjectFromFile(currentIdentityFile);
-                        UnderNetStandalone.setNetworkIdentity(identity, currentIdentityFile);
-                    } else {
-                        logger.warn("Identity file: {}, doesn't exist! Creating a new identity!", currentIdentityFile);
-                    }
-                }
-                catch (NullPointerException e) {
-                    logger.warn("Error reading the identity file!", e);
-                    currentIdentityFile.delete();
-                }
-                finally {
-                    if(networkIdentity == null) {
-                        UnderNetStandalone.setNetworkIdentity(null, null);
-                    }
+            try {
+                if (currentIdentityFile.exists()) {
+                    NetworkIdentity identity = (NetworkIdentity) SerializationTools.readObjectFromFile(currentIdentityFile);
+                    UnderNetStandalone.setNetworkIdentity(identity, currentIdentityFile);
+                } else {
+                    logger.warn("Identity file: {}, doesn't exist! Creating a new identity!", currentIdentityFile);
                 }
             }
-        });
+            catch (NullPointerException e) {
+                logger.warn("Error reading the identity file!", e);
+                currentIdentityFile.delete();
+            }
+            finally {
+                if(networkIdentity == null) {
+                    UnderNetStandalone.setNetworkIdentity(null, null);
+                }
+            }
+        }
     }
 
     /**
@@ -146,7 +149,6 @@ public class UnderNetStandalone {
         //Setting the identity.
         logger.info("Setting the current UnderNet identity to: {}", identity.getNetworkId().getStringValue());
         UnderNetStandalone.networkIdentity = identity;
-        MainFrame.instance.frame.setTitle("UnderNet - " + UnderNetStandalone.networkIdentity.getNetworkId().getStringValue());
 
         //Save the changed identity.
         try {
@@ -174,5 +176,20 @@ public class UnderNetStandalone {
             e.printStackTrace();
         }
 
+    }
+
+    /**
+     * Connects to UnderNet.
+     */
+    public static void connect() {
+        unetThread = new Thread(() -> UnderNet.connect(networkIdentity));
+        unetThread.start();
+    }
+
+    /**
+     * Disconnects from UnderNet.
+     */
+    public static void disconnect() {
+        new Thread(() -> UnderNet.disconnect()).start();
     }
 }
