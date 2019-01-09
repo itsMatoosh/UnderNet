@@ -86,11 +86,17 @@ public class MessageTunnelManager extends Manager {
      * @param disconnected
      */
     public void closeTunnelsOnDisconnect(Node disconnected) {
-        for (MessageTunnel tunnel :
-                messageTunnels) {
+        ArrayList<MessageTunnel> toClose = new ArrayList<>();
+        for (int i = 0; i < messageTunnels.size(); i++) {
+            MessageTunnel tunnel = messageTunnels.get(i);
             if (tunnel.getNextNode() == disconnected || tunnel.getPreviousNode() == disconnected) {
-                closeTunnel(tunnel);
+                toClose.add(tunnel);
             }
+        }
+
+        for (MessageTunnel tunnel :
+                toClose) {
+            closeTunnel(tunnel);
         }
     }
 

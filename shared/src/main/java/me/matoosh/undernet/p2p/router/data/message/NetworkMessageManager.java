@@ -226,6 +226,7 @@ public class NetworkMessageManager extends Manager {
             ChannelMessageReceivedEvent messageReceivedEvent = (ChannelMessageReceivedEvent)e;
             NetworkMessage message = messageReceivedEvent.message;
 
+            System.out.println("DD " + messageReceivedEvent.remoteNode);
             forwardMessage(message, messageReceivedEvent.remoteNode);
         } else if (e instanceof MessageTunnelEstablishedEvent) {
             MessageTunnelEstablishedEvent messageTunnelEstablishedEvent = (MessageTunnelEstablishedEvent)e;
