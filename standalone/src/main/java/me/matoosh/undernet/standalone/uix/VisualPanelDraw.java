@@ -17,7 +17,7 @@ public class VisualPanelDraw extends JPanel {
     /**
      * The nodes that recently sent messages to self.
      */
-    private HashMap<Node, Long> recentlyReceived = new HashMap<>();
+    public static HashMap<Node, Long> recentlyReceived = new HashMap<>();
 
     public VisualPanelDraw() {
         registerCallbacks();
@@ -50,12 +50,8 @@ public class VisualPanelDraw extends JPanel {
         drawSelfNode(g);
     }
 
-    private void drawString(String str, int startIndex, int endIndex, int direction) {
-
-    }
-
     private void drawSelfNode(Graphics g) {
-        Color fill = Color.gray;
+        Color fill = Color.GRAY;
         if(UnderNet.router != null) {
             switch (UnderNet.router.status) {
                 case STOPPED:
@@ -94,11 +90,11 @@ public class VisualPanelDraw extends JPanel {
             //line
             Node n = UnderNet.router.getRemoteNodes().get(i);
             if(recentlyReceived.containsKey(n)) {
-                g.setColor(Color.green);
+                g.setColor(Color.CYAN);
 
                 if(System.currentTimeMillis() > recentlyReceived.get(n)) recentlyReceived.remove(n);
             } else {
-                g.setColor(Color.gray);
+                g.setColor(Color.GRAY);
             }
             g.drawLine(getWidth()/2, getHeight()/2, x, y);
 

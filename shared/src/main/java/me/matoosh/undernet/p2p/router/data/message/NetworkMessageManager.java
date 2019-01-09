@@ -176,6 +176,11 @@ public class NetworkMessageManager extends Manager {
             if(decryptMessage(message, tunnel)) {
                 //Message can be read.
                 message.deserialize();
+
+                //Set last message received on tunnel.
+                message.getTunnel().setLastMessageTime(System.currentTimeMillis());
+
+                //Calling received event.
                 EventManager.callEvent(new MessageReceivedEvent(message, forwarder));
             } else {
                 //Message can't be read.

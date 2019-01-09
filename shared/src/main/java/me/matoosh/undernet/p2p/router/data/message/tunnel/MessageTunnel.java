@@ -69,6 +69,11 @@ public class MessageTunnel {
      */
     private MessageTunnelSide side;
 
+    /**
+     * The time that the last message was received from the tunnel.
+     */
+    private long lastMessageTime;
+
     //Messages
     /**
      * The list of messages awaiting sending.
@@ -142,6 +147,14 @@ public class MessageTunnel {
         } catch (NoSuchProviderException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Closes the tunnel.
+     */
+    public void close() {
+        sendMessage(new TunnelCloseRequestMessage());
+        UnderNet.router.messageTunnelManager.closeTunnel(this);
     }
 
     /**
@@ -280,6 +293,14 @@ public class MessageTunnel {
         this.side = side;
     }
 
+    public long getLastMessageTime() {
+        return this.lastMessageTime;
+    }
+
+    public void setLastMessageTime(long currentTimeMillis) {
+        this.lastMessageTime = currentTimeMillis;
+    }
+
     /**
      * Sends the specified message.
      * @param content
@@ -302,13 +323,22 @@ public class MessageTunnel {
     @Override
     public String toString() {
         if(getTunnelState() == MessageTunnelState.HOSTED) {
-            return String.format("MT:{(%1$s) <-> (%2$s) <-> (%3$s)}", getOrigin(), Node.self, getDestination());
+            return String.format("{(%1$s) <-> (%2$s) <-> (%3$s)}", getOrigin(), Node.self, getDestination());
         }
-        if(getTunnelState() == MessageTunnelState.NOT_ESTABLISHED || getTunnelState() == MessageTunnelState.ESTABLISHING) {
-            return String.format("MT:{(%1$s) <x> (%2$s)}", getOrigin(), getDestination());
-        }
-        if(getTunnelState() == MessageTunnelState.ESTABLISHED) {
-            return String.format("MT:{(%1$s) <-> (%2$s)}", getOrigin(), getDestination());
+        if(getSide() == MessageTunnelSide.ORIGIN) {
+            if(getTunnelState() == MessageTunnelState.NOT_ESTABLISHED || getTunnelState() == MessageTunnelState.ESTABLISHING) {
+                return String.format("{(%1$s) <x> (%2$s)}", Node.self, getDestination());
+            }
+            if(getTunnelState() == MessageTunnelState.ESTABLISHED) {
+                return String.format("{(%1$s) <-> (%2$s)}", Node.self, getDestination());
+            }
+        } else {
+            if(getTunnelState() == MessageTunnelState.NOT_ESTABLISHED || getTunnelState() == MessageTunnelState.ESTABLISHING) {
+                return String.format("{(%1$s) <x> (%2$s)}", getOrigin(), Node.self);
+            }
+            if(getTunnelState() == MessageTunnelState.ESTABLISHED) {
+                return String.format("{(%1$s) <-> (%2$s)}", getOrigin(), Node.self);
+            }
         }
         return "MT:{UNKNOWN}";
     }

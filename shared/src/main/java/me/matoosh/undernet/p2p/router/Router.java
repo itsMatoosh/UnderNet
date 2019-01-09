@@ -11,6 +11,7 @@ import me.matoosh.undernet.event.channel.ChannelErrorEvent;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
 import me.matoosh.undernet.event.client.ClientExceptionEvent;
 import me.matoosh.undernet.event.client.ClientStatusEvent;
+import me.matoosh.undernet.event.router.RouterControlLoopEvent;
 import me.matoosh.undernet.event.router.RouterErrorEvent;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
 import me.matoosh.undernet.event.server.ServerExceptionEvent;
@@ -22,7 +23,9 @@ import me.matoosh.undernet.p2p.router.client.Client;
 import me.matoosh.undernet.p2p.router.client.ClientNetworkMessageHandler;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessageManager;
 import me.matoosh.undernet.p2p.router.data.message.NodeNeighborsRequest;
+import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnel;
 import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnelManager;
+import me.matoosh.undernet.p2p.router.data.message.tunnel.TunnelControlMessage;
 import me.matoosh.undernet.p2p.router.data.resource.ResourceManager;
 import me.matoosh.undernet.p2p.router.server.Server;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -87,6 +90,11 @@ public class Router extends EventHandler {
      * The number of reconnect attempts, the router attempted.
      */
     private int reconnectNum = 0;
+
+    /**
+     * The interval of the control loop.
+     */
+    private final int controlLoopInterval = 30;
 
     /**
      * Nodes the router is connected to at the moment.
@@ -200,13 +208,21 @@ public class Router extends EventHandler {
 
         //Checking if enough nodes are connected.
         ArrayList<Node> remote = getRemoteNodes();
-
         if (remote.size() > 0 && remote.size() < UnderNet.networkConfig.optNeighbors()) {
             //Request more neighbors.
             int id = UnderNet.secureRandom.nextInt(remote.size());
             Node neighbor = remote.get(id);
             this.networkMessageManager.sendMessage(new NodeNeighborsRequest(), neighbor.getIdentity().getNetworkId());
         }
+
+        //Sending control message to tunnels.
+        for (MessageTunnel tunnel :
+                messageTunnelManager.messageTunnels) {
+            if((tunnel.getLastMessageTime() / 1000) > 2*controlLoopInterval) messageTunnelManager.closeTunnel(tunnel);
+            else tunnel.sendMessage(new TunnelControlMessage());
+        }
+
+        EventManager.callEvent(new RouterControlLoopEvent(this));
     }
 
     /**
@@ -274,7 +290,7 @@ public class Router extends EventHandler {
         ArrayList<Node> remote = new ArrayList<>();
         for (Node n :
                 connectedNodes) {
-            if (!Node.isLocalAddress(n.getAddress())) {
+            if (n.getAddress() != null && !Node.isLocalAddress(n.getAddress())) {
                 remote.add(n);
             }
         }
@@ -287,6 +303,7 @@ public class Router extends EventHandler {
     private void registerEvents() {
         //Router events
         EventManager.registerEvent(RouterStatusEvent.class);
+        EventManager.registerEvent(RouterControlLoopEvent.class);
         EventManager.registerEvent(RouterErrorEvent.class);
 
         //Connection events
@@ -344,7 +361,7 @@ public class Router extends EventHandler {
                     break;
                 case STARTED:
                     //Starting the control loop.
-                    timerHandle = timer.scheduleAtFixedRate(() -> controlLoop(), 5, 30, TimeUnit.SECONDS);
+                    timerHandle = timer.scheduleAtFixedRate(() -> controlLoop(), 5, controlLoopInterval, TimeUnit.SECONDS);
                     break;
                 case STOPPING:
                     break;

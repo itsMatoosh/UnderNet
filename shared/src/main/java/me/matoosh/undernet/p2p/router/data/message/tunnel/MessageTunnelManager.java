@@ -3,6 +3,7 @@ package me.matoosh.undernet.p2p.router.data.message.tunnel;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.message.MessageReceivedEvent;
+import me.matoosh.undernet.event.channel.message.tunnel.MessageTunnelClosedEvent;
 import me.matoosh.undernet.event.channel.message.tunnel.MessageTunnelEstablishedEvent;
 import me.matoosh.undernet.p2p.Manager;
 import me.matoosh.undernet.p2p.crypto.KeyTools;
@@ -82,10 +83,35 @@ public class MessageTunnelManager extends Manager {
 
     /**
      * Closes the given message tunnel.
+     * Doesn't send the close message, for that use the tunnel close() message.
      * @param tunnel
      */
     public void closeTunnel(MessageTunnel tunnel) {
-        //TODO
+        logger.info("Closing tunnel: {}", tunnel);
+        tunnel.setPreviousNode(null);
+        tunnel.setNextNode(null);
+        messageTunnels.remove(tunnel);
+        if(tunnel.getSide() == MessageTunnelSide.ORIGIN) {
+            for (MessageTunnel tunn :
+                    messageTunnels) {
+                if(tunn.getDestination().equals(Node.self)) {
+                    tunn.setPreviousNode(null);
+                    tunn.setNextNode(null);
+                    messageTunnels.remove(tunn);
+                }
+            }
+        } else if(tunnel.getSide() == MessageTunnelSide.DESTINATION) {
+            for (MessageTunnel tunn :
+                    messageTunnels) {
+                if(tunn.getOrigin().equals(Node.self)) {
+                    tunn.setPreviousNode(null);
+                    tunn.setNextNode(null);
+                    messageTunnels.remove(tunn);
+                }
+            }
+        }
+
+        EventManager.callEvent(new MessageTunnelClosedEvent(tunnel));
     }
 
 
@@ -148,6 +174,7 @@ public class MessageTunnelManager extends Manager {
     @Override
     protected void registerEvents() {
         EventManager.registerEvent(MessageTunnelEstablishedEvent.class);
+        EventManager.registerEvent(MessageTunnelClosedEvent.class);
     }
 
     @Override
@@ -199,6 +226,11 @@ public class MessageTunnelManager extends Manager {
                 } catch (Exception e1) {
                     logger.error("Couldn't decode the received public key for tunnel!", e1);
                 }
+            } else if (messageReceivedEvent.networkMessage.getContent().getType() == MsgType.TUNNEL_CLOSE_REQUEST) {
+                TunnelCloseRequestMessage closeRequestMessage = (TunnelCloseRequestMessage) messageReceivedEvent.networkMessage.getContent();
+                closeTunnel(closeRequestMessage.getNetworkMessage().getTunnel());
+            } else if (messageReceivedEvent.networkMessage.getContent().getType() == MsgType.TUNNEL_CONTROL) {
+                messageReceivedEvent.networkMessage.getTunnel().sendMessage(new TunnelControlMessage());
             }
         }
     }
