@@ -41,33 +41,13 @@ public class MessageTunnelManager extends Manager {
     }
 
     /**
-     * Gets the message tunnel of a particular other.
-     * @param origin
-     * @param destination
+     * Creates a new message tunnel instance and adds it to the tunnel list.
      * @return
      */
-    public MessageTunnel getTunnel(NetworkID origin, NetworkID destination) {
-        for (int i = 0; i < messageTunnels.size(); i++) {
-            MessageTunnel tunnel = messageTunnels.get(i);
-            if(tunnel.getOrigin().equals(origin) && tunnel.getDestination().equals(destination)) {
-                return tunnel;
-            }
-        }
-        return null;
-    }
-    /**
-     * Gets the message tunnel of a particular origin.
-     * @param origin
-     * @return
-     */
-    public MessageTunnel getTunnelByOrigin(NetworkID origin) {
-        for (int i = 0; i < messageTunnels.size(); i++) {
-            MessageTunnel tunnel = messageTunnels.get(i);
-            if(tunnel.getOrigin().equals(origin)) {
-                return tunnel;
-            }
-        }
-        return null;
+    public MessageTunnel createTunnel(NetworkID origin, NetworkID destination, MessageTunnelSide side) {
+        MessageTunnel tunnel = new MessageTunnel(origin, destination, side);
+        messageTunnels.add(tunnel);
+        return tunnel;
     }
 
     /**
@@ -151,37 +131,18 @@ public class MessageTunnelManager extends Manager {
      * Gets or creates a message tunnel.
      * @return
      */
-    public MessageTunnel getOrCreateTunnel(NetworkID origin, NetworkID destination) {
+    public MessageTunnel getTunnel(NetworkID nodeA, NetworkID nodeB) {
         //Finding an existing tunnel.
         for (MessageTunnel tunnel :
                 messageTunnels) {
-            if (tunnel.getOrigin().equals(origin) && tunnel.getDestination().equals(destination)) {
+            if(tunnel.getOrigin().equals(nodeA) && tunnel.getDestination().equals(nodeB)) {
+                return tunnel;
+            }
+            if(tunnel.getOrigin().equals(nodeB) && tunnel.getDestination().equals(nodeA)) {
                 return tunnel;
             }
         }
-
-        //Creating a tunnel if doesn't exist already.
-        MessageTunnel tunnel = new MessageTunnel(origin, destination);
-        messageTunnels.add(tunnel);
-        return tunnel;
-    }
-    /**
-     * Gets or creates a message tunnel.
-     * @return
-     */
-    public MessageTunnel getOrCreateTunnel(NetworkID origin, NetworkID destination, MessageTunnelSide side) {
-        //Finding an existing tunnel.
-        for (MessageTunnel tunnel :
-                messageTunnels) {
-            if (tunnel.getOrigin().equals(origin) && tunnel.getDestination().equals(destination)) {
-                return tunnel;
-            }
-        }
-
-        //Creating a tunnel if doesn't exist already.
-        MessageTunnel tunnel = new MessageTunnel(origin, destination, side);
-        messageTunnels.add(tunnel);
-        return tunnel;
+        return null;
     }
 
     @Override
@@ -207,7 +168,7 @@ public class MessageTunnelManager extends Manager {
                 //Called on the destination of the tunnel.
                 TunnelEstablishRequestMessage tunnelEstablishRequestMessage = (TunnelEstablishRequestMessage) messageReceivedEvent.networkMessage.getContent();
                 //Creating a new tunnel object.
-                MessageTunnel tunnel = getOrCreateTunnel(tunnelEstablishRequestMessage.getNetworkMessage().getOrigin(), tunnelEstablishRequestMessage.getNetworkMessage().getDestination());
+                MessageTunnel tunnel = new MessageTunnel(tunnelEstablishRequestMessage.getNetworkMessage().getOrigin(), tunnelEstablishRequestMessage.getNetworkMessage().getDestination());
                 tunnel.setSide(MessageTunnelSide.DESTINATION);
 
                 //Setting the other's public key.
@@ -216,29 +177,30 @@ public class MessageTunnelManager extends Manager {
                 //Calculating the shared secret.
                 tunnel.calcSharedSecret();
 
-                //Calling the established event.
-                EventManager.callEvent(new MessageTunnelEstablishedEvent(messageReceivedEvent.networkMessage.getTunnel(), NetworkMessage.MessageDirection.TO_ORIGIN));
+                messageTunnels.add(tunnel);
 
                 //Sending response.
                 sendTunnelResponse(tunnel);
+
+                //Calling the established event.
+                EventManager.callEvent(new MessageTunnelEstablishedEvent(messageReceivedEvent.networkMessage.getTunnel(), NetworkMessage.MessageDirection.TO_ORIGIN));
             } else if(messageReceivedEvent.networkMessage.getContent().getType() == MsgType.TUNNEL_ESTABLISH_RESPONSE) {
                 //Called on the origin of the tunnel.
                 TunnelEstablishResponseMessage tunnelEstablishResponseMessage = (TunnelEstablishResponseMessage) messageReceivedEvent.networkMessage.getContent();
-                MessageTunnel tunnel = getOrCreateTunnel(tunnelEstablishResponseMessage.getNetworkMessage().getOrigin(), tunnelEstablishResponseMessage.getNetworkMessage().getDestination());
+                MessageTunnel tunnel = getTunnel(tunnelEstablishResponseMessage.getNetworkMessage().getOrigin(), tunnelEstablishResponseMessage.getNetworkMessage().getDestination());
                 tunnel.setSide(MessageTunnelSide.ORIGIN);
 
-                //Setting the other's public key.
                 try {
+                    //Setting the other's public key.
                     tunnel.setOtherPublicKey(KeyTools.fromUncompressedPoint(tunnelEstablishResponseMessage.publicKey));
-
                     //Calculating the shared secret.
                     tunnel.calcSharedSecret();
-
-                    //Calling the event.
-                    EventManager.callEvent(new MessageTunnelEstablishedEvent(tunnel, NetworkMessage.MessageDirection.TO_DESTINATION));
                 } catch (Exception e1) {
                     logger.error("Couldn't decode the received public key for tunnel!", e1);
                 }
+
+                //Calling the event.
+                EventManager.callEvent(new MessageTunnelEstablishedEvent(tunnel, NetworkMessage.MessageDirection.TO_DESTINATION));
             } else if (messageReceivedEvent.networkMessage.getContent().getType() == MsgType.TUNNEL_CLOSE_REQUEST) {
                 TunnelCloseRequestMessage closeRequestMessage = (TunnelCloseRequestMessage) messageReceivedEvent.networkMessage.getContent();
                 closeTunnel(closeRequestMessage.getNetworkMessage().getTunnel());

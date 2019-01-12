@@ -47,7 +47,11 @@ public class NetworkMessageManager extends Manager {
      */
     public void sendMessage(MsgBase content, NetworkID recipient) {
         //Getting the appropriate message tunnel.
-        MessageTunnel messageTunnel = router.messageTunnelManager.getOrCreateTunnel(Node.self.getIdentity().getNetworkId(), recipient, MessageTunnelSide.ORIGIN);
+        MessageTunnel messageTunnel = router.messageTunnelManager.getTunnel(Node.self.getIdentity().getNetworkId(), recipient);
+        if(messageTunnel == null) {
+            //Creating a tunnel if doesn't exist already.
+            messageTunnel = router.messageTunnelManager.createTunnel(Node.self.getIdentity().getNetworkId(), recipient, MessageTunnelSide.ORIGIN);
+        }
 
         //Constructing the message.
         NetworkMessage message = constructMessage(messageTunnel, content, NetworkMessage.MessageDirection.TO_DESTINATION);
@@ -136,9 +140,13 @@ public class NetworkMessageManager extends Manager {
         }
 
         //Getting the next node in the tunnel.
-        MessageTunnel tunnel = router.messageTunnelManager.getOrCreateTunnel(message.getOrigin(), message.getDestination());
-        Node nextNode;
+        MessageTunnel tunnel = router.messageTunnelManager.getTunnel(message.getOrigin(), message.getDestination());
+        if(tunnel == null) {
+            tunnel = router.messageTunnelManager.createTunnel(message.getOrigin(), message.getDestination(), MessageTunnelSide.UNDEFINED);
+        }
 
+        //Getting the next node.
+        Node nextNode;
         if(message.getDirection() == NetworkMessage.MessageDirection.TO_DESTINATION) {
             //Getting the closest neighbor to forward the message to.
             tunnel.setPreviousNode(forwarder);

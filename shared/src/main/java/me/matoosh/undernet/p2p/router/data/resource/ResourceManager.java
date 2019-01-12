@@ -81,7 +81,8 @@ public class ResourceManager extends Manager {
         logger.info("Publishing resource: {}...", resource);
 
         //Sending the resource info message.
-        startPush(resource, router.messageTunnelManager.getOrCreateTunnel(Node.self.getIdentity().getNetworkId(), resource.getNetworkID()));
+        MessageTunnel tunnel = router.messageTunnelManager.createTunnel(Node.self.getIdentity().getNetworkId(), resource.getNetworkID(), MessageTunnelSide.ORIGIN);
+        startPush(resource, tunnel);
     }
 
     /**
@@ -155,6 +156,16 @@ public class ResourceManager extends Manager {
             resources.add(res);
         }
         return resources;
+    }
+
+    /**
+     * Starts a push of a resource.
+     * @param resource
+     */
+    private void startPush(Resource resource) {
+        //Creating push tunnel
+        MessageTunnel tunnel = router.messageTunnelManager.createTunnel(Node.self.getIdentity().getNetworkId(), resource.getNetworkID(), MessageTunnelSide.ORIGIN);
+        startPush(resource, tunnel);
     }
 
     /**
@@ -303,13 +314,13 @@ public class ResourceManager extends Manager {
             for (FileResource file :
                     getStoredFileResources()) {
                 if(router.neighborNodesManager.getClosestTo(file.getNetworkID()) != Node.self) {
-                    startPush(file, router.messageTunnelManager.getOrCreateTunnel(Node.self.getIdentity().getNetworkId(), file.getNetworkID()));
+                    startPush(file);
                 }
             }
             for (FlagResource flag :
                     flagResources) {
                 if(router.neighborNodesManager.getClosestTo(flag.getNetworkID()) != Node.self) {
-                    startPush(flag, router.messageTunnelManager.getOrCreateTunnel(Node.self.getIdentity().getNetworkId(), flag.getNetworkID()));
+                    startPush(flag);
                 }
             }
         } else if(e instanceof ResourceTransferFinishedEvent) {
