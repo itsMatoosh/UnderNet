@@ -15,12 +15,16 @@
       </vspacer>
       <nested-form id="68a8d" form-file="me/matoosh/undernet/standalone/uix/ResourcePanel.form" binding="resourcePanel">
         <constraints>
-          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="2" indent="0" use-parent-layout="false">
+            <minimum-size width="200" height="-1"/>
+          </grid>
         </constraints>
       </nested-form>
       <nested-form id="55af2" form-file="me/matoosh/undernet/standalone/uix/NodePanel.form" binding="nodePanel">
         <constraints>
-          <grid row="0" column="4" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <grid row="0" column="4" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="2" indent="0" use-parent-layout="false">
+            <minimum-size width="300" height="-1"/>
+          </grid>
         </constraints>
       </nested-form>
       <nested-form id="5b3f8" form-file="me/matoosh/undernet/standalone/uix/TunnelPanel.form" binding="tunnelPanel">

@@ -10,6 +10,9 @@ import me.matoosh.undernet.event.resource.transfer.ResourceTransferErrorEvent;
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferFinishedEvent;
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferStartedEvent;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
+import me.matoosh.undernet.p2p.node.Node;
+import me.matoosh.undernet.p2p.router.InterfaceStatus;
+import me.matoosh.undernet.p2p.router.data.resource.FileResource;
 import me.matoosh.undernet.p2p.router.data.resource.Resource;
 import me.matoosh.undernet.standalone.uix.dialog.ResourcePublishDialog;
 import me.matoosh.undernet.standalone.uix.dialog.ResourcePullDialog;
@@ -106,6 +109,7 @@ public class ResourcePanel extends EventHandler {
 
     private void createUIComponents() {
         resourceList = new JList(new Resource[0]);
+        resourceList.setCellRenderer(new ResourceListCellRenderer());
     }
 
     /**
@@ -222,5 +226,33 @@ public class ResourcePanel extends EventHandler {
      */
     public JComponent $$$getRootComponent$$$() {
         return panel;
+    }
+}
+/**
+ * Renders elements within the resource list.
+ */
+class ResourceListCellRenderer extends DefaultListCellRenderer
+{
+    @Override
+    public Component getListCellRendererComponent(JList list, Object value, int index,
+                                                  boolean isSelected, boolean cellHasFocus) {
+        Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        if (value instanceof Resource) {
+            Resource resource = (Resource) value;
+
+            if(resource instanceof FileResource) {
+                FileResource file = (FileResource) resource;
+                setText(file.attributes.get(1));
+            } else {
+                setText(resource.toString());
+            }
+
+            if (isSelected) {
+                setBackground(getBackground().darker());
+            }
+        } else {
+            setText("UNKNOWN");
+        }
+        return c;
     }
 }
