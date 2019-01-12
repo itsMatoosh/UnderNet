@@ -45,6 +45,7 @@ public class MainFrame extends EventHandler {
     private JProgressBar progressBar;
     private JButton mainButton;
     private VisualPanel visualPanel;
+    private ControlIcon controlIcon1;
 
     public static final int START_HEIGHT = 600;
     public static final int START_WIDTH = 950;
@@ -203,6 +204,7 @@ public class MainFrame extends EventHandler {
     }
 
     private void createUIComponents() {
+        controlIcon1 = new ControlIcon();
         mainButton = new JButton(ResourceBundle.getBundle("language").getString("button_connect"));
     }
 }

@@ -15,13 +15,13 @@ import java.awt.event.ActionListener;
  * Created by Mateusz Rębacz on 11.09.2017.
  */
 
-public class AddNodeCacheDialog extends JDialog {
+public class NodeAddDialog extends JDialog {
     /**
      * The text field with the address of the node.
      */
     private JTextField nodeAddressField;
 
-    public AddNodeCacheDialog(JFrame parent) {
+    public NodeAddDialog(JFrame parent) {
         //Setting the title of the dialog.
         super(parent, "Add Node", true);
 
@@ -64,7 +64,7 @@ public class AddNodeCacheDialog extends JDialog {
             }
 
             //Closing the dialog.
-            AddNodeCacheDialog.this.dispose();
+            NodeAddDialog.this.dispose();
         });
         if(UnderNet.router.status.equals(InterfaceStatus.STARTED) || UnderNet.router.status.equals(InterfaceStatus.STARTING)) {
             saveButton.setText("Connect");
@@ -76,7 +76,7 @@ public class AddNodeCacheDialog extends JDialog {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 //Closing the dialog.
-                AddNodeCacheDialog.this.dispose();
+                NodeAddDialog.this.dispose();
             }
         });
 

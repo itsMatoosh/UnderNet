@@ -26,7 +26,7 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="1c9a0" class="javax.swing.JList" binding="resourceList">
+          <component id="1c9a0" class="javax.swing.JList" binding="resourceList" custom-create="true">
             <constraints/>
             <properties>
               <model/>

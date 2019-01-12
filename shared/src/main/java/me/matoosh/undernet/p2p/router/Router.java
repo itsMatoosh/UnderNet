@@ -25,6 +25,7 @@ import me.matoosh.undernet.p2p.router.data.message.NetworkMessageManager;
 import me.matoosh.undernet.p2p.router.data.message.NodeNeighborsRequest;
 import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnel;
 import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnelManager;
+import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnelSide;
 import me.matoosh.undernet.p2p.router.data.message.tunnel.TunnelControlMessage;
 import me.matoosh.undernet.p2p.router.data.resource.ResourceManager;
 import me.matoosh.undernet.p2p.router.server.Server;
@@ -218,7 +219,9 @@ public class Router extends EventHandler {
         //Sending control message to tunnels.
         for (MessageTunnel tunnel :
                 messageTunnelManager.messageTunnels) {
-            if(System.currentTimeMillis() > tunnel.getLastMessageTime() + 2*controlLoopInterval*1000) messageTunnelManager.closeTunnel(tunnel);
+            if(tunnel.getSide() == MessageTunnelSide.ORIGIN && tunnel.getNextNode() == Node.self) messageTunnelManager.closeTunnel(tunnel);
+            else if(tunnel.getSide() == MessageTunnelSide.DESTINATION && tunnel.getPreviousNode() == Node.self) messageTunnelManager.closeTunnel(tunnel);
+            else if(System.currentTimeMillis() > tunnel.getLastMessageTime() + 2*controlLoopInterval*1000) messageTunnelManager.closeTunnel(tunnel);
             else tunnel.sendMessage(new TunnelControlMessage());
         }
 

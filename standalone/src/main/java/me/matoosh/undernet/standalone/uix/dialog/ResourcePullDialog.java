@@ -25,8 +25,8 @@ import java.nio.file.StandardCopyOption;
  * Created by Mateusz Rębacz on 03.11.2017.
  */
 
-public class PullResourceDialog extends JDialog {
-    public PullResourceDialog(JFrame parent) {
+public class ResourcePullDialog extends JDialog {
+    public ResourcePullDialog(JFrame parent) {
         //Setting the title of the dialog.
         super(parent, "Pull Resource", true);
 
@@ -68,7 +68,7 @@ public class PullResourceDialog extends JDialog {
                 fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
                 fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                 fileChooser.setDialogTitle("Choose the save directory");
-                int result = fileChooser.showOpenDialog(PullResourceDialog.this);
+                int result = fileChooser.showOpenDialog(ResourcePullDialog.this);
                 if(result == JFileChooser.APPROVE_OPTION) {
                     saveFile[0] = fileChooser.getSelectedFile();
                 }
@@ -105,11 +105,11 @@ public class PullResourceDialog extends JDialog {
                                         e1.printStackTrace();
                                     } finally {
                                         //File dialog.
-                                        EventQueue.invokeLater(()->JOptionPane.showMessageDialog(PullResourceDialog.this, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.file.getName(), fileResource.getNetworkID().getStringValue(), saveFile[0]),"File Retrieved!",  JOptionPane.INFORMATION_MESSAGE));
+                                        EventQueue.invokeLater(()->JOptionPane.showMessageDialog(ResourcePullDialog.this, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.file.getName(), fileResource.getNetworkID().getStringValue(), saveFile[0]),"File Retrieved!",  JOptionPane.INFORMATION_MESSAGE));
                                     }
                                 } else {
                                     //File dialog.
-                                    EventQueue.invokeLater(()->JOptionPane.showMessageDialog(PullResourceDialog.this, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.file.getName(), fileResource.getNetworkID().getStringValue(), UnderNet.fileManager.getContentFolder()), "File Retrieved!", JOptionPane.INFORMATION_MESSAGE));
+                                    EventQueue.invokeLater(()->JOptionPane.showMessageDialog(ResourcePullDialog.this, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.file.getName(), fileResource.getNetworkID().getStringValue(), UnderNet.fileManager.getContentFolder()), "File Retrieved!", JOptionPane.INFORMATION_MESSAGE));
                                 }
                             }
 
@@ -118,9 +118,9 @@ public class PullResourceDialog extends JDialog {
                         }
                     }, ResourceTransferFinishedEvent.class);
 
-                    PullResourceDialog.this.dispose();
+                    ResourcePullDialog.this.dispose();
                 } else {
-                    JOptionPane.showMessageDialog(PullResourceDialog.this, "The Network ID you specified is invalid!", "Invalid Network ID", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(ResourcePullDialog.this, "The Network ID you specified is invalid!", "Invalid Network ID", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });

@@ -16,7 +16,7 @@ import java.io.File;
  * Created by Mateusz Rębacz on 20.10.2017.
  */
 
-public class UploadResourceDialog extends JDialog {
+public class ResourcePublishDialog extends JDialog {
     /**
      * The result of the last file choosing the user has done.
      */
@@ -24,7 +24,7 @@ public class UploadResourceDialog extends JDialog {
 
     private JFrame frame;
 
-    public UploadResourceDialog(JFrame parent) {
+    public ResourcePublishDialog(JFrame parent) {
         //Setting the title of the dialog.
         super(parent, "Publish Resource", true);
         this.frame = parent;
@@ -56,7 +56,7 @@ public class UploadResourceDialog extends JDialog {
                 //Button clicked.
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
-                int result = fileChooser.showOpenDialog(UploadResourceDialog.this);
+                int result = fileChooser.showOpenDialog(ResourcePublishDialog.this);
                 if(result == JFileChooser.APPROVE_OPTION) {
                     fileChooseResult = fileChooser.getSelectedFile();
                 }
@@ -73,12 +73,12 @@ public class UploadResourceDialog extends JDialog {
                     //Publishing resource on UnderNet.
                     FileResource fileResource = new FileResource(UnderNet.router, fileChooseResult);
                     if(!fileResource.copyToContent()) {
-                        JOptionPane.showMessageDialog(UploadResourceDialog.this.frame, String.format("There was a problem accessing file: \n%s.", fileChooseResult), "Can't publish resource!", JOptionPane.ERROR_MESSAGE);
-                        UploadResourceDialog.this.dispose();
+                        JOptionPane.showMessageDialog(ResourcePublishDialog.this.frame, String.format("There was a problem accessing file: \n%s.", fileChooseResult), "Can't publish resource!", JOptionPane.ERROR_MESSAGE);
+                        ResourcePublishDialog.this.dispose();
                         return;
                     }
                     UnderNet.router.resourceManager.publish(fileResource);
-                    UploadResourceDialog.this.dispose();
+                    ResourcePublishDialog.this.dispose();
 
                     //Copying the network to clipboard.
                     StringSelection stringSelection = new StringSelection(fileResource.getNetworkID().getStringValue());
@@ -86,7 +86,7 @@ public class UploadResourceDialog extends JDialog {
                     clipboard.setContents(stringSelection, null);
 
                     //Showing the published network id.
-                    JOptionPane.showMessageDialog(UploadResourceDialog.this.frame, String.format("Publishing %s, \nNetwork id: %s \nThe network id has been copied to your clipboard.", fileChooseResult, fileResource.getNetworkID().getStringValue()), "Publishing resource", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(ResourcePublishDialog.this.frame, String.format("Publishing %s, \nNetwork id: %s \nThe network id has been copied to your clipboard.", fileChooseResult, fileResource.getNetworkID().getStringValue()), "Publishing resource", JOptionPane.INFORMATION_MESSAGE);
                 }
             }
         });

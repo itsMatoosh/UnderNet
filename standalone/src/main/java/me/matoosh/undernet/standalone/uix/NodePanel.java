@@ -13,7 +13,7 @@ import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
 import me.matoosh.undernet.p2p.cache.EntryNodeCache;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
-import me.matoosh.undernet.standalone.uix.dialog.AddNodeCacheDialog;
+import me.matoosh.undernet.standalone.uix.dialog.NodeAddDialog;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,7 +31,7 @@ public class NodePanel extends EventHandler {
     public NodePanel() {
         //add node button clicked.
         $$$setupUI$$$();
-        addNodeButton.addActionListener(e -> new AddNodeCacheDialog(MainFrame.instance.frame).setVisible(true));
+        addNodeButton.addActionListener(e -> new NodeAddDialog(MainFrame.instance.frame).setVisible(true));
 
         //remove node button
         removeNodeButton.addActionListener(e -> {
