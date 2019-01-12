@@ -153,7 +153,7 @@ public class MainFrame extends EventHandler {
             sleep_time = next_game_tick - System.currentTimeMillis();
             if (sleep_time >= 0) {
                 try {
-                    frame.repaint();
+                    visualPanel.getPanel().repaint();
                     Thread.sleep(sleep_time);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -162,6 +162,11 @@ public class MainFrame extends EventHandler {
                 logger.warn("Can't keep up! Did the system time change, or is the node overloaded?");
             }
         }
+    }
+
+    private void createUIComponents() {
+        controlIcon1 = new ControlIcon();
+        mainButton = new JButton(ResourceBundle.getBundle("language").getString("button_connect"));
     }
 
     /**
@@ -201,10 +206,5 @@ public class MainFrame extends EventHandler {
      */
     public JComponent $$$getRootComponent$$$() {
         return panel;
-    }
-
-    private void createUIComponents() {
-        controlIcon1 = new ControlIcon();
-        mainButton = new JButton(ResourceBundle.getBundle("language").getString("button_connect"));
     }
 }

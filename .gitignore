@@ -42,3 +42,6 @@ standalone/random.id
 *.id
 *.resources
 .idea/modules.xml
+cache/entry.nodes
+standalone.yaml
+network.yaml

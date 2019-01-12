@@ -101,6 +101,10 @@ public class Router extends EventHandler {
      * Nodes the router is connected to at the moment.
      */
     private ArrayList<Node> connectedNodes = new ArrayList<>();
+    /**
+     * Remote nodes that the router is connected to at the moment.
+     */
+    private ArrayList<Node> remoteNodes = new ArrayList<>();
 
     /**
      * The logger.
@@ -290,15 +294,17 @@ public class Router extends EventHandler {
      * @return
      */
     public ArrayList<Node> getRemoteNodes() {
-        ArrayList<Node> remote = new ArrayList<>();
+        if(remoteNodes.size() + 2 == connectedNodes.size()) return remoteNodes;
+
+        remoteNodes = new ArrayList<>();
         for (int i = 0; i < connectedNodes.size(); i++) {
             Node n = connectedNodes.get(i);
 
             if (n.getAddress() != null && !Node.isLocalAddress(n.getAddress())) {
-                remote.add(n);
+                remoteNodes.add(n);
             }
         }
-        return remote;
+        return remoteNodes;
     }
 
     /**
