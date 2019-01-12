@@ -245,6 +245,7 @@ public class NodePanel extends EventHandler {
     public JComponent $$$getRootComponent$$$() {
         return panel;
     }
+
 }
 
 /**
