@@ -316,6 +316,7 @@ public class ResourceManager extends Manager {
 
             //Closing the streams.
             transferFinishedEvent.transferHandler.close();
+            transferFinishedEvent.transferHandler.getTunnel().close();
 
             //Removing from the list.
             if(transferFinishedEvent.transferHandler.getTransferType() == ResourceTransferType.INBOUND) {

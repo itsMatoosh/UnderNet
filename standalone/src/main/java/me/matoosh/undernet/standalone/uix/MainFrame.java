@@ -82,6 +82,7 @@ public class MainFrame extends EventHandler {
         EventManager.registerHandler(this, RouterStatusEvent.class);
         EventManager.registerHandler(this, ResourceTransferDataReceivedEvent.class);
         EventManager.registerHandler(this, ResourceTransferDataSentEvent.class);
+        EventManager.registerHandler(this, ResourceTransferFinishedEvent.class);
     }
 
     /**
