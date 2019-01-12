@@ -55,7 +55,7 @@ public class NodePanel extends EventHandler {
                     //Double-click detected
                     if (UnderNet.router.status.equals(InterfaceStatus.STARTED)) {
                         int index = list.locationToIndex(e.getPoint());
-                        if(index == -1) return;
+                        if (index == -1) return;
                         Node node = (Node) nodeList.getModel().getElementAt(index);
 
                         //Checking if the node is connected.
@@ -67,7 +67,7 @@ public class NodePanel extends EventHandler {
                 } else if (e.getClickCount() == 1) {
                     //Single click detected
                     int index = list.locationToIndex(e.getPoint());
-                    if(index == -1) return;
+                    if (index == -1) return;
                     Node node = (Node) nodeList.getModel().getElementAt(index);
 
                     //Checking if the node is connected.
