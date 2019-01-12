@@ -79,7 +79,7 @@ public class VisualPanelDraw extends JPanel {
     private void drawOtherNodes(Graphics g) {
         double angle = (2 * Math.PI) / UnderNet.router.getRemoteNodes().size();
         int distance = 100;
-        int rad = 30;
+        int diam = 30;
 
         double currAngle = ((double)(System.currentTimeMillis() % 5000) / 5000d) * (2 * Math.PI);
         for (int i = 0; i < UnderNet.router.getRemoteNodes().size(); i++) {
@@ -100,9 +100,14 @@ public class VisualPanelDraw extends JPanel {
 
             //circle
             g.setColor(Color.CYAN);
-            g.fillOval( x - rad/2, y - rad/2, rad, rad);
+            g.fillOval( x - diam/2, y - diam/2, diam, diam);
             g.setColor(Color.BLACK);
-            g.drawOval(getWidth()/2 + x - rad/2, getHeight()/2 + y - rad/2, rad, rad);
+            g.drawOval(getWidth()/2 + x - diam/2, getHeight()/2 + y - diam/2, diam, diam);
+
+            //net id
+            g.setColor(Color.WHITE);
+            String identity = n.getIdentity().getNetworkId().getStringValue().substring(0, 10) + "...";
+            g.drawString(identity, x - g.getFontMetrics().stringWidth(identity)/2, y + diam/2 + g.getFontMetrics().getHeight() + 5);
 
             currAngle += angle;
         }
