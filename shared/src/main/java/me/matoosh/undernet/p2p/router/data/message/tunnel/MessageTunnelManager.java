@@ -107,15 +107,11 @@ public class MessageTunnelManager extends Manager {
      */
     public void closeTunnel(MessageTunnel tunnel) {
         logger.info("Closing tunnel: {}", tunnel);
-        tunnel.setPreviousNode(null);
-        tunnel.setNextNode(null);
         messageTunnels.remove(tunnel);
         if(tunnel.getSide() == MessageTunnelSide.ORIGIN) {
             for (MessageTunnel tunn :
                     messageTunnels) {
                 if(tunn.getDestination().equals(Node.self)) {
-                    tunn.setPreviousNode(null);
-                    tunn.setNextNode(null);
                     messageTunnels.remove(tunn);
                 }
             }
@@ -123,8 +119,6 @@ public class MessageTunnelManager extends Manager {
             for (MessageTunnel tunn :
                     messageTunnels) {
                 if(tunn.getOrigin().equals(Node.self)) {
-                    tunn.setPreviousNode(null);
-                    tunn.setNextNode(null);
                     messageTunnels.remove(tunn);
                 }
             }
