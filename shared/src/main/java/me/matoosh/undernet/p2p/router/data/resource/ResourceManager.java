@@ -15,6 +15,7 @@ import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.message.*;
 import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnel;
+import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnelSide;
 import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferHandler;
 import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferType;
 import org.slf4j.Logger;
@@ -316,7 +317,8 @@ public class ResourceManager extends Manager {
 
             //Closing the streams.
             transferFinishedEvent.transferHandler.close();
-            transferFinishedEvent.transferHandler.getTunnel().close();
+            if(transferFinishedEvent.transferHandler.getTunnel().getSide() == MessageTunnelSide.ORIGIN)
+                transferFinishedEvent.transferHandler.getTunnel().close();
 
             //Removing from the list.
             if(transferFinishedEvent.transferHandler.getTransferType() == ResourceTransferType.INBOUND) {
