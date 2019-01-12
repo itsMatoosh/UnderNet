@@ -9,6 +9,7 @@ import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferDataReceivedEvent;
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferDataSentEvent;
+import me.matoosh.undernet.event.resource.transfer.ResourceTransferFinishedEvent;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
 import me.matoosh.undernet.p2p.router.data.resource.transfer.FileTransferHandler;
@@ -134,6 +135,13 @@ public class MainFrame extends EventHandler {
                 FileTransferHandler fileTransferHandler = (FileTransferHandler) transferHandler;
 
                 progressBar.setValue((int) (((float) fileTransferHandler.getSent()) / ((float) fileTransferHandler.getFileLength()) * 100f));
+            }
+        } else if(e instanceof ResourceTransferFinishedEvent) {
+            ResourceTransferFinishedEvent transferFinishedEvent = (ResourceTransferFinishedEvent) e;
+            ResourceTransferHandler transferHandler = transferFinishedEvent.transferHandler;
+
+            if (transferHandler instanceof FileTransferHandler) {
+                progressBar.setValue(0);
             }
         }
     }
