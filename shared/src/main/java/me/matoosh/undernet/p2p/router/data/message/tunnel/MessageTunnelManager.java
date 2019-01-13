@@ -88,21 +88,6 @@ public class MessageTunnelManager extends Manager {
     public void closeTunnel(MessageTunnel tunnel) {
         logger.info("Closing tunnel: {}", tunnel);
         messageTunnels.remove(tunnel);
-        if(tunnel.getSide() == MessageTunnelSide.ORIGIN) {
-            for (MessageTunnel tunn :
-                    messageTunnels) {
-                if(tunn.getDestination().equals(Node.self)) {
-                    messageTunnels.remove(tunn);
-                }
-            }
-        } else if(tunnel.getSide() == MessageTunnelSide.DESTINATION) {
-            for (MessageTunnel tunn :
-                    messageTunnels) {
-                if(tunn.getOrigin().equals(Node.self)) {
-                    messageTunnels.remove(tunn);
-                }
-            }
-        }
 
         EventManager.callEvent(new MessageTunnelClosedEvent(tunnel));
     }

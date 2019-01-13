@@ -309,7 +309,7 @@ public class MessageTunnel {
         logger.info("Sending message, tunnel side {}", this.side);
         if(side == MessageTunnelSide.ORIGIN || side == MessageTunnelSide.UNDEFINED) {
             //TO_DESTINATION
-            UnderNet.router.networkMessageManager.sendMessage(content, getDestination());
+            UnderNet.router.networkMessageManager.sendMessage(content, this);
         } else if (side == MessageTunnelSide.DESTINATION){
             //TO_ORIGIN
             UnderNet.router.networkMessageManager.sendResponse(content, this);

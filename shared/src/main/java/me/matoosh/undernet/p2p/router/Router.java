@@ -300,13 +300,20 @@ public class Router extends EventHandler {
      */
     public ArrayList<Node> getRemoteNodes() {
         if(remoteNodes.size() + 2 == connectedNodes.size()) return remoteNodes;
+        remoteNodes.clear();
 
-        remoteNodes = new ArrayList<>();
-        for (int i = 0; i < connectedNodes.size(); i++) {
-            Node n = connectedNodes.get(i);
-
+        for (Node n : getConnectedNodes()) {
             if (n.getAddress() != null && !Node.isLocalAddress(n.getAddress())) {
-                remoteNodes.add(n);
+                boolean duplicate = false;
+                for (Node no :
+                        remoteNodes) {
+                    if(no.getAddress().equals(n.getAddress())) {
+                        duplicate = true;
+                    }
+                }
+                if(!duplicate) {
+                    remoteNodes.add(n);
+                }
             }
         }
         return remoteNodes;

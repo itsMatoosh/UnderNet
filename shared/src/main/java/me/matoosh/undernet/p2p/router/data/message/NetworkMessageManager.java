@@ -52,7 +52,16 @@ public class NetworkMessageManager extends Manager {
             //Creating a tunnel if doesn't exist already.
             messageTunnel = router.messageTunnelManager.createTunnel(Node.self.getIdentity().getNetworkId(), recipient, MessageTunnelSide.ORIGIN);
         }
+        sendMessage(content, messageTunnel);
+    }
 
+    /**
+     * Constructs a message and starts the sending process to the other node.
+     * Uses the specified message tunnel.
+     * @param content
+     * @param messageTunnel
+     */
+    public void sendMessage(MsgBase content, MessageTunnel messageTunnel) {
         //Constructing the message.
         NetworkMessage message = constructMessage(messageTunnel, content, NetworkMessage.MessageDirection.TO_DESTINATION);
 
