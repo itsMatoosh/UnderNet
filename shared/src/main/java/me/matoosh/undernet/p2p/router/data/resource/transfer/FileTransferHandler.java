@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.file.Files;
 
 /**
  * Handles file transfers.
@@ -223,8 +224,11 @@ public class FileTransferHandler extends ResourceTransferHandler {
     @Override
     public void onError(Exception e) {
         //Removing file.
-        if(((FileResource)this.getResource()).file != null) {
-            ((FileResource)this.getResource()).file.delete();
+        File f = ((FileResource)this.getResource()).file;
+        if(f != null && f.exists()) {
+            try {
+                Files.delete(f.toPath());
+            } catch (IOException e1) {}
         }
     }
 
