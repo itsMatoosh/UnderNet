@@ -224,11 +224,14 @@ public class FileTransferHandler extends ResourceTransferHandler {
     @Override
     public void onError(Exception e) {
         //Removing file.
-        File f = ((FileResource)this.getResource()).file;
-        if(f != null && f.exists()) {
-            try {
-                Files.delete(f.toPath());
-            } catch (IOException e1) {}
+        if(getTransferType() == ResourceTransferType.INBOUND) {
+            File f = ((FileResource) this.getResource()).file;
+            if (f != null && f.exists()) {
+                try {
+                    Files.delete(f.toPath());
+                } catch (IOException e1) {
+                }
+            }
         }
     }
 
