@@ -22,14 +22,13 @@ import java.util.ArrayList;
  */
 public class MessageTunnelManager extends Manager {
     /**
-     * The currently active message tunnels.
-     */
-    public ArrayList<MessageTunnel> messageTunnels = new ArrayList<>();
-
-    /**
      * The class logger.
      */
     public static final Logger logger = LoggerFactory.getLogger(MessageTunnelManager.class);
+    /**
+     * The currently active message tunnels.
+     */
+    public ArrayList<MessageTunnel> messageTunnels = new ArrayList<>();
 
     /**
      * Router specification is mandatory.
@@ -42,6 +41,7 @@ public class MessageTunnelManager extends Manager {
 
     /**
      * Creates a new message tunnel instance and adds it to the tunnel list.
+     *
      * @return
      */
     public MessageTunnel createTunnel(NetworkID origin, NetworkID destination, MessageTunnelSide side) {
@@ -52,6 +52,7 @@ public class MessageTunnelManager extends Manager {
 
     /**
      * Establishes a tunnel.
+     *
      * @param tunnel
      */
     public void establishTunnel(MessageTunnel tunnel) {
@@ -63,6 +64,7 @@ public class MessageTunnelManager extends Manager {
 
     /**
      * Closes tunnels when a node disconnects.
+     *
      * @param disconnected
      */
     public void closeTunnelsOnDisconnect(Node disconnected) {
@@ -83,6 +85,7 @@ public class MessageTunnelManager extends Manager {
     /**
      * Closes the given message tunnel.
      * Doesn't send the close message, for that use the tunnel close() message.
+     *
      * @param tunnel
      */
     public void closeTunnel(MessageTunnel tunnel) {
@@ -95,6 +98,7 @@ public class MessageTunnelManager extends Manager {
 
     /**
      * Sends a tunnel creation request to the destination of the tunnel.
+     *
      * @param tunnel
      */
     public void sendTunnelRequest(MessageTunnel tunnel) {
@@ -105,6 +109,7 @@ public class MessageTunnelManager extends Manager {
 
     /**
      * Sends a tunnel creation response to the origin of the tunnel.
+     *
      * @param tunnel
      */
     public void sendTunnelResponse(MessageTunnel tunnel) {
@@ -113,15 +118,17 @@ public class MessageTunnelManager extends Manager {
         NetworkMessage tunnelRequest = router.networkMessageManager.constructMessage(tunnel, new TunnelEstablishResponseMessage(Node.self.getIdentity().getPublicKey()), NetworkMessage.MessageDirection.TO_ORIGIN);
         router.networkMessageManager.forwardMessage(tunnelRequest, Node.self);
     }
+
     /**
      * Gets or creates a message tunnel.
+     *
      * @return
      */
     public MessageTunnel getTunnel(NetworkID origin, NetworkID destination) {
         //Finding an existing tunnel.
         for (int i = 0; i < messageTunnels.size(); i++) {
             MessageTunnel tunnel = messageTunnels.get(i);
-            if(tunnel.getOrigin().equals(origin) && tunnel.getDestination().equals(destination)) {
+            if (tunnel.getOrigin().equals(origin) && tunnel.getDestination().equals(destination)) {
                 return tunnel;
             }
         }
@@ -141,13 +148,14 @@ public class MessageTunnelManager extends Manager {
 
     /**
      * Handles events.
+     *
      * @param e
      */
     @Override
     public void onEventCalled(Event e) {
-        if(e instanceof MessageReceivedEvent) {
-            MessageReceivedEvent messageReceivedEvent = (MessageReceivedEvent)e;
-            if(messageReceivedEvent.networkMessage.getContent().getType() == MsgType.TUNNEL_ESTABLISH_REQUEST) {
+        if (e instanceof MessageReceivedEvent) {
+            MessageReceivedEvent messageReceivedEvent = (MessageReceivedEvent) e;
+            if (messageReceivedEvent.networkMessage.getContent().getType() == MsgType.TUNNEL_ESTABLISH_REQUEST) {
                 //Called on the destination of the tunnel.
                 TunnelEstablishRequestMessage tunnelEstablishRequestMessage = (TunnelEstablishRequestMessage) messageReceivedEvent.networkMessage.getContent();
                 //Creating a new tunnel object.
@@ -165,7 +173,7 @@ public class MessageTunnelManager extends Manager {
 
                 //Calling the established event.
                 EventManager.callEvent(new MessageTunnelEstablishedEvent(messageReceivedEvent.networkMessage.getTunnel(), NetworkMessage.MessageDirection.TO_ORIGIN));
-            } else if(messageReceivedEvent.networkMessage.getContent().getType() == MsgType.TUNNEL_ESTABLISH_RESPONSE) {
+            } else if (messageReceivedEvent.networkMessage.getContent().getType() == MsgType.TUNNEL_ESTABLISH_RESPONSE) {
                 //Called on the origin of the tunnel.
                 TunnelEstablishResponseMessage tunnelEstablishResponseMessage = (TunnelEstablishResponseMessage) messageReceivedEvent.networkMessage.getContent();
                 MessageTunnel tunnel = getTunnel(tunnelEstablishResponseMessage.getNetworkMessage().getOrigin(), tunnelEstablishResponseMessage.getNetworkMessage().getDestination());

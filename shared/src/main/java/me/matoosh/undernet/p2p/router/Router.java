@@ -47,6 +47,14 @@ import java.util.concurrent.TimeUnit;
 
 public class Router extends EventHandler {
     /**
+     * The interval of the control loop.
+     */
+    public static final int controlLoopInterval = 30;
+    /**
+     * The logger.
+     */
+    public static Logger logger = LoggerFactory.getLogger(Router.class);
+    /**
      * The client of this router.
      * Used for establishing connections with other nodes.
      */
@@ -60,8 +68,6 @@ public class Router extends EventHandler {
      * The timer used for periodically running the control function.
      */
     public ScheduledExecutorService timer;
-    private ScheduledFuture<?> timerHandle;
-
     /**
      * The current status of the router.
      */
@@ -86,17 +92,11 @@ public class Router extends EventHandler {
      * The message tunnel manager.
      */
     public MessageTunnelManager messageTunnelManager;
-
+    private ScheduledFuture<?> timerHandle;
     /**
      * The number of reconnect attempts, the router attempted.
      */
     private int reconnectNum = 0;
-
-    /**
-     * The interval of the control loop.
-     */
-    public static final int controlLoopInterval = 30;
-
     /**
      * Nodes the router is connected to at the moment.
      */
@@ -107,16 +107,11 @@ public class Router extends EventHandler {
     private ArrayList<Node> remoteNodes = new ArrayList<>();
 
     /**
-     * The logger.
-     */
-    public static Logger logger = LoggerFactory.getLogger(Router.class);
-
-    /**
      * Sets up the router.
      */
     public void setup() {
         //Checking if the router is not running.
-        if(status != InterfaceStatus.STOPPED) {
+        if (status != InterfaceStatus.STOPPED) {
             logger.warn("Can't setup the router, while it's running!");
             return;
         }
@@ -182,7 +177,7 @@ public class Router extends EventHandler {
      */
     public void start(NetworkIdentity networkIdentity) {
         //Checking whether the router is already running.
-        if(status != InterfaceStatus.STOPPED) {
+        if (status != InterfaceStatus.STOPPED) {
             logger.warn("Can't start, because the router is already running!");
             return;
         }
@@ -191,7 +186,7 @@ public class Router extends EventHandler {
         Node.self.setIdentity(networkIdentity);
 
         //Checking whether the setup needs to be ran.
-        if(server == null || client == null) {
+        if (server == null || client == null) {
             setup();
         }
 
@@ -200,7 +195,7 @@ public class Router extends EventHandler {
 
         //Starting the client. Using a separate thread for blocking api.
         new Thread(() -> client.start()).start();
-        
+
         //Starting the server. Using a separate thread for blocking api.
         new Thread(() -> server.start()).start();
     }
@@ -224,10 +219,13 @@ public class Router extends EventHandler {
         for (int i = 0; i < messageTunnelManager.messageTunnels.size(); i++) {
             MessageTunnel tunnel = messageTunnelManager.messageTunnels.get(i);
 
-            if(tunnel.getSide() == MessageTunnelSide.ORIGIN && tunnel.getNextNode() == Node.self) messageTunnelManager.closeTunnel(tunnel);
-            else if(tunnel.getSide() == MessageTunnelSide.DESTINATION && tunnel.getPreviousNode() == Node.self) messageTunnelManager.closeTunnel(tunnel);
-            else if(System.currentTimeMillis() > tunnel.getLastMessageTime() + 2*controlLoopInterval*1000) messageTunnelManager.closeTunnel(tunnel);
-            else tunnel.sendMessage(new TunnelControlMessage());
+            if (tunnel.getSide() == MessageTunnelSide.ORIGIN && tunnel.getNextNode() == Node.self)
+                messageTunnelManager.closeTunnel(tunnel);
+            else if (tunnel.getSide() == MessageTunnelSide.DESTINATION && tunnel.getPreviousNode() == Node.self)
+                messageTunnelManager.closeTunnel(tunnel);
+            else if (System.currentTimeMillis() > tunnel.getLastMessageTime() + 2 * controlLoopInterval * 1000)
+                messageTunnelManager.closeTunnel(tunnel);
+            else if (tunnel.isKeepAlive()) tunnel.sendMessage(new TunnelControlMessage());
         }
 
         EventManager.callEvent(new RouterControlLoopEvent(this));
@@ -238,7 +236,7 @@ public class Router extends EventHandler {
      */
     public void stop() {
         //Checking if the server is running.
-        if(status == InterfaceStatus.STOPPED) {
+        if (status == InterfaceStatus.STOPPED) {
             logger.warn("Can't stop the router, as it is not running!");
             return;
         }
@@ -250,11 +248,11 @@ public class Router extends EventHandler {
         timerHandle.cancel(true);
 
         //Stops the client.
-        if(client != null) {
+        if (client != null) {
             client.stop();
         }
         //Stops the server.
-        if(server != null) {
+        if (server != null) {
             server.stop();
         }
 
@@ -266,6 +264,7 @@ public class Router extends EventHandler {
 
     /**
      * Connects directly to a node.
+     *
      * @param node
      */
     public void connectNode(Node node) {
@@ -274,13 +273,14 @@ public class Router extends EventHandler {
 
     /**
      * Disconnects from a node.
+     *
      * @param node
      */
     public void disconnectNode(Node node) {
-        for (Channel channel:
-             client.channels) {
+        for (Channel channel :
+                client.channels) {
             Node channelNode = channel.attr(ClientNetworkMessageHandler.ATTRIBUTE_KEY_SERVER_NODE).get();
-            if(channelNode != null && channelNode == node) {
+            if (channelNode != null && channelNode == node) {
                 channel.close();
             }
         }
@@ -288,6 +288,7 @@ public class Router extends EventHandler {
 
     /**
      * Gets all of the connected nodes.
+     *
      * @return
      */
     public ArrayList<Node> getConnectedNodes() {
@@ -297,10 +298,11 @@ public class Router extends EventHandler {
     /**
      * Gets all of the remote connected nodes.
      * Omits all of the local nodes.
+     *
      * @return
      */
     public ArrayList<Node> getRemoteNodes() {
-        if(remoteNodes.size() + 2 == connectedNodes.size()) return remoteNodes;
+        if (remoteNodes.size() + 2 == connectedNodes.size()) return remoteNodes;
         remoteNodes.clear();
 
         for (Node n : getConnectedNodes()) {
@@ -308,11 +310,11 @@ public class Router extends EventHandler {
                 boolean duplicate = false;
                 for (Node no :
                         remoteNodes) {
-                    if(no.getAddress().equals(n.getAddress())) {
+                    if (no.getAddress().equals(n.getAddress())) {
                         duplicate = true;
                     }
                 }
-                if(!duplicate) {
+                if (!duplicate) {
                     remoteNodes.add(n);
                 }
             }
@@ -354,6 +356,7 @@ public class Router extends EventHandler {
     }
 
     //EVENTS
+
     /**
      * Called when the handled event is called.
      *
@@ -362,21 +365,21 @@ public class Router extends EventHandler {
     @Override
     public void onEventCalled(Event e) {
         //Connection established.
-        if(e.getClass() == ChannelCreatedEvent.class) {
-            ChannelCreatedEvent establishedEvent = (ChannelCreatedEvent)e;
+        if (e.getClass() == ChannelCreatedEvent.class) {
+            ChannelCreatedEvent establishedEvent = (ChannelCreatedEvent) e;
             logger.debug("New connection established with: " + establishedEvent.other);
         }
         //Connection dropped.
-        else if(e.getClass() == ChannelClosedEvent.class) {
-            ChannelClosedEvent droppedEvent = (ChannelClosedEvent)e;
+        else if (e.getClass() == ChannelClosedEvent.class) {
+            ChannelClosedEvent droppedEvent = (ChannelClosedEvent) e;
         }
         //Connection error.
-        else if(e.getClass() == ChannelErrorEvent.class) {
-            ChannelErrorEvent errorEvent = (ChannelErrorEvent)e;
+        else if (e.getClass() == ChannelErrorEvent.class) {
+            ChannelErrorEvent errorEvent = (ChannelErrorEvent) e;
             //TODO: Handle the error.
-        } else if(e.getClass() == RouterStatusEvent.class) {
-            RouterStatusEvent statusEvent = (RouterStatusEvent)e;
-            switch(statusEvent.newStatus) {
+        } else if (e.getClass() == RouterStatusEvent.class) {
+            RouterStatusEvent statusEvent = (RouterStatusEvent) e;
+            switch (statusEvent.newStatus) {
                 case STOPPED:
                     onConnectionEnded();
                     break;
@@ -389,59 +392,61 @@ public class Router extends EventHandler {
                 case STOPPING:
                     break;
             }
-        } else if(e.getClass() == RouterErrorEvent.class) {
+        } else if (e.getClass() == RouterErrorEvent.class) {
             onRouterError((RouterErrorEvent) e);
-        } else if(e.getClass() == ServerStatusEvent.class) {
-            ServerStatusEvent statusEvent = (ServerStatusEvent)e;
-            if(statusEvent.newStatus.equals(InterfaceStatus.STARTED)) {
+        } else if (e.getClass() == ServerStatusEvent.class) {
+            ServerStatusEvent statusEvent = (ServerStatusEvent) e;
+            if (statusEvent.newStatus.equals(InterfaceStatus.STARTED)) {
                 //In this case client doesn't yet have to be started.
-                if(client.status.equals(InterfaceStatus.STARTED)) {
+                if (client.status.equals(InterfaceStatus.STARTED)) {
                     //Both parts of the router started successfully.
                     onRouterStarted();
                 }
-            } else if(statusEvent.newStatus.equals(InterfaceStatus.STOPPED)) {
-                if(client.status.equals(InterfaceStatus.STOPPED)) {
+            } else if (statusEvent.newStatus.equals(InterfaceStatus.STOPPED)) {
+                if (client.status.equals(InterfaceStatus.STOPPED)) {
                     //Both parts of the router stopped successfully.
                     onRouterStopped();
                 }
             }
-        } else if(e.getClass() == ClientStatusEvent.class) {
+        } else if (e.getClass() == ClientStatusEvent.class) {
             ClientStatusEvent statusEvent = (ClientStatusEvent) e;
-            if(statusEvent.newStatus.equals(InterfaceStatus.STARTED)) {
-                if(server.status.equals(InterfaceStatus.STARTED)) {
+            if (statusEvent.newStatus.equals(InterfaceStatus.STARTED)) {
+                if (server.status.equals(InterfaceStatus.STARTED)) {
                     //Both parts of the router started succesfully.
                     onRouterStarted();
                 }
-            } else if(statusEvent.newStatus.equals(InterfaceStatus.STOPPED)) {
-                if(server.status.equals(InterfaceStatus.STOPPED)) {
+            } else if (statusEvent.newStatus.equals(InterfaceStatus.STOPPED)) {
+                if (server.status.equals(InterfaceStatus.STOPPED)) {
                     //Both parts of the router stopped successfully.
                     onRouterStopped();
                 }
             }
         } else if (e.getClass() == ClientExceptionEvent.class) {
-            ClientExceptionEvent exceptionEvent = (ClientExceptionEvent)e;
+            ClientExceptionEvent exceptionEvent = (ClientExceptionEvent) e;
 
             logger.error("Exception occurred with the client!", exceptionEvent.exception);
-            if(!UnderNet.networkConfig.ignoreExceptions()) {
+            if (!UnderNet.networkConfig.ignoreExceptions()) {
                 this.stop();
             }
-        } else if(e.getClass() == ServerExceptionEvent.class) {
-            ServerExceptionEvent exceptionEvent = (ServerExceptionEvent)e;
+        } else if (e.getClass() == ServerExceptionEvent.class) {
+            ServerExceptionEvent exceptionEvent = (ServerExceptionEvent) e;
 
             logger.error("Exception occurred with the server!", exceptionEvent.exception);
-            if(!UnderNet.networkConfig.ignoreExceptions()) {
+            if (!UnderNet.networkConfig.ignoreExceptions()) {
                 this.stop();
             }
         }
     }
+
     /**
      * Called when a router error occurs.
      * This means we can't continue and have to restart the connection.
+     *
      * @param e
      */
     private void onRouterError(RouterErrorEvent e) {
         //Printing the error.
-        if(e.exception.getMessage() != null) {
+        if (e.exception.getMessage() != null) {
             logger.error("There was a problem with the UnderNet router: " + e.exception.getMessage());
         }
         e.exception.printStackTrace();
@@ -450,7 +455,7 @@ public class Router extends EventHandler {
         e.router.stop();
 
         //Reconnecting if possible.
-        if(e.router.status != InterfaceStatus.STOPPED && e.shouldReconnect) {
+        if (e.router.status != InterfaceStatus.STOPPED && e.shouldReconnect) {
             reconnectNum++;
             //Checking if we should reconnect.
             if (reconnectNum > UnderNet.networkConfig.maxReconnectCount()) {
@@ -467,16 +472,17 @@ public class Router extends EventHandler {
      */
     private void onRouterStarted() {
         //Setting the status to started.
-        if(status != InterfaceStatus.STARTED) {
-            EventManager.callEvent(new RouterStatusEvent(this,  InterfaceStatus.STARTED));
+        if (status != InterfaceStatus.STARTED) {
+            EventManager.callEvent(new RouterStatusEvent(this, InterfaceStatus.STARTED));
         }
     }
+
     /**
      * Called when the router stops.
      */
     private void onRouterStopped() {
         //Setting the status to stopped.
-        if(status != InterfaceStatus.STOPPED) {
+        if (status != InterfaceStatus.STOPPED) {
             EventManager.callEvent(new RouterStatusEvent(this, InterfaceStatus.STOPPED));
 
             //GC
@@ -484,6 +490,7 @@ public class Router extends EventHandler {
             System.gc();
         }
     }
+
     /**
      * Called when the connection to the network ends.
      */

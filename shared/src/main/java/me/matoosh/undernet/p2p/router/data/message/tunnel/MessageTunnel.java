@@ -29,14 +29,27 @@ import java.util.List;
 public class MessageTunnel {
     //This part is present on all the part taking nodes. Identifies the tunnel.
     /**
+     * The logger of the class.
+     */
+    public static Logger logger = LoggerFactory.getLogger(MessageTunnel.class);
+    /**
+     * The secure random generator.
+     */
+    private static SecureRandom secureRandom = new SecureRandom();
+    /**
+     * The list of messages awaiting sending.
+     */
+    public ArrayList<NetworkMessage> messageQueue = new ArrayList<NetworkMessage>();
+    /**
      * The network id of the origin node.
      */
     private NetworkID origin;
+
+    //This part is present only on the receiving ends of the tunnel.
     /**
      * The network id of the other.
      */
     private NetworkID destination;
-
     /**
      * The next neighboring node to the destination.
      */
@@ -45,54 +58,39 @@ public class MessageTunnel {
      * The next neighboring node to the origin.
      */
     private Node previousNode;
-
-    //This part is present only on the receiving ends of the tunnel.
     /**
      * The public key of the other.
      * Used by self to encrypt messages for the other side of the tunnel.
      */
     private PublicKey otherPublicKey;
-
     /**
      * The shared secret.
      * Calculated after the public keys are exchanged.
      */
     private byte[] sharedSecret;
-
     /**
      * The shared symmetric key used to encrypt messages.
      * Derived from the shared secret and self and other public keys.
      */
     private SecretKeySpec derivedSymmetricKey;
 
+    //Messages
     /**
      * The side of the tunnel.
      */
     private MessageTunnelSide side;
-
     /**
      * The time that the last message was received from the tunnel.
      */
     private long lastMessageTime;
-
-    //Messages
     /**
-     * The list of messages awaiting sending.
+     * Whether the tunnel should be kept alive.
      */
-    public ArrayList<NetworkMessage> messageQueue = new ArrayList<NetworkMessage>();
-
-    /**
-     * The secure random generator.
-     */
-    private static SecureRandom secureRandom = new SecureRandom();
-
-    /**
-     * The logger of the class.
-     */
-    public static Logger logger = LoggerFactory.getLogger(MessageTunnel.class);
+    private boolean keepAlive = false;
 
     /**
      * Creates a hosted message tunnel.
+     *
      * @param destination
      * @param origin
      */
@@ -102,8 +100,10 @@ public class MessageTunnel {
         this.side = MessageTunnelSide.UNDEFINED;
         this.lastMessageTime = System.currentTimeMillis() + 2 * Router.controlLoopInterval;
     }
+
     /**
      * Creates a message tunnel.
+     *
      * @param destination
      * @param origin
      */
@@ -117,10 +117,12 @@ public class MessageTunnel {
     public PublicKey getOtherPublicKey() {
         return otherPublicKey;
     }
+
     public void setOtherPublicKey(PublicKey publicKey) {
         logger.info("Set the other public key to: {}", publicKey);
         this.otherPublicKey = publicKey;
     }
+
     /**
      * Calculates the shared secret key of the tunnel.
      */
@@ -162,6 +164,7 @@ public class MessageTunnel {
 
     /**
      * Returns the shared secret of the tunnel.
+     *
      * @return
      */
     public SecretKeySpec getSymmetricKey() {
@@ -170,37 +173,77 @@ public class MessageTunnel {
 
     /**
      * Gets the other.
+     *
      * @return
      */
     public NetworkID getDestination() {
         return this.destination;
     }
+
     /**
      * Gets the origin.
+     *
      * @return
      */
-    public NetworkID getOrigin() {return this.origin;}
+    public NetworkID getOrigin() {
+        return this.origin;
+    }
 
     /**
      * Gets the previous node.
+     *
      * @return
      */
-    public Node getPreviousNode() {return this.previousNode; }
+    public Node getPreviousNode() {
+        return this.previousNode;
+    }
 
     /**
-     * Gets the next node.
-     * @return
+     * Sets the previous node.
+     *
+     * @param previousNode
      */
-    public Node getNextNode() {return this.nextNode; }
     public void setPreviousNode(Node previousNode) {
         this.previousNode = previousNode;
     }
+
+    /**
+     * Gets the next node.
+     *
+     * @return
+     */
+    public Node getNextNode() {
+        return this.nextNode;
+    }
+
+    /**
+     * Sets the next node.
+     *
+     * @param nextNode
+     */
     public void setNextNode(Node nextNode) {
         this.nextNode = nextNode;
     }
 
     /**
+     * Returns whether the tunnel should be kept alive.
+     * @return
+     */
+    public boolean isKeepAlive() {
+        return keepAlive;
+    }
+
+    /**
+     * Sets whether the tunnel should be kept alive.
+     * @param keepAlive
+     */
+    public void setKeepAlive(boolean keepAlive) {
+        this.keepAlive = keepAlive;
+    }
+
+    /**
      * Encrypts bytes with the shared symmetric key.
+     *
      * @param message
      */
     public void encryptMsgSymmetric(NetworkMessage message) {
@@ -231,11 +274,12 @@ public class MessageTunnel {
 
     /**
      * Decrypts bytes with the shared symmetric key.
+     *
      * @param message
      */
     public void decryptMsgSharedSecret(NetworkMessage message) {
         //Checking if the symmetric key exists.
-        if(getSymmetricKey() == null) {
+        if (getSymmetricKey() == null) {
             logger.warn("Missing symmetric key for tunnel: {}", this);
             return;
         }
@@ -267,51 +311,72 @@ public class MessageTunnel {
 
     /**
      * Gets the current tunnel state.
+     *
      * @return
      */
     public MessageTunnelState getTunnelState() {
-        if(getSymmetricKey() != null) {
+        if (getSymmetricKey() != null) {
             return MessageTunnelState.ESTABLISHED;
-        }
-        else if(side != MessageTunnelSide.UNDEFINED) {
+        } else if (side != MessageTunnelSide.UNDEFINED) {
             return MessageTunnelState.ESTABLISHING;
-        } else if(previousNode != null && nextNode != null) {
+        } else if (previousNode != null && nextNode != null) {
             return MessageTunnelState.HOSTED;
         } else {
             return MessageTunnelState.NOT_ESTABLISHED;
         }
     }
 
+    /**
+     * Gets the current side of the tunnel.
+     *
+     * @return
+     */
     public MessageTunnelSide getSide() {
         return side;
     }
 
+    /**
+     * Sets the current side of the tunnel.
+     *
+     * @param side
+     */
     public void setSide(MessageTunnelSide side) {
         this.side = side;
     }
 
+    /**
+     * Gets the time the last message was received on the tunnel.
+     *
+     * @return
+     */
     public long getLastMessageTime() {
         return this.lastMessageTime;
     }
 
+    /**
+     * Sets the time the last message was received on the tunnel.
+     *
+     * @param currentTimeMillis
+     */
     public void setLastMessageTime(long currentTimeMillis) {
         this.lastMessageTime = currentTimeMillis;
     }
 
     /**
      * Sends the specified message.
+     *
      * @param content
      */
     public void sendMessage(MsgBase content) {
-        if(getTunnelState() == MessageTunnelState.HOSTED) {
+        if (getTunnelState() == MessageTunnelState.HOSTED) {
             logger.warn("Can't send messages through hosted tunnels!");
             return;
         }
         logger.info("Sending message, tunnel side {}", this.side);
-        if(side == MessageTunnelSide.ORIGIN || side == MessageTunnelSide.UNDEFINED) {
+        if (side == MessageTunnelSide.ORIGIN || side == MessageTunnelSide.UNDEFINED) {
             //TO_DESTINATION
             UnderNet.router.networkMessageManager.sendMessage(content, this);
-        } else if (side == MessageTunnelSide.DESTINATION){
+        } else if (side == MessageTunnelSide.DESTINATION) {
             //TO_ORIGIN
             UnderNet.router.networkMessageManager.sendResponse(content, this);
         }
@@ -319,21 +384,21 @@ public class MessageTunnel {
 
     @Override
     public String toString() {
-        if(getTunnelState() == MessageTunnelState.HOSTED) {
+        if (getTunnelState() == MessageTunnelState.HOSTED) {
             return String.format("{(%1$s) <-> (%2$s) <-> (%3$s)}", getOrigin(), Node.self, getDestination());
         }
-        if(getSide() == MessageTunnelSide.ORIGIN) {
-            if(getTunnelState() == MessageTunnelState.NOT_ESTABLISHED || getTunnelState() == MessageTunnelState.ESTABLISHING) {
+        if (getSide() == MessageTunnelSide.ORIGIN) {
+            if (getTunnelState() == MessageTunnelState.NOT_ESTABLISHED || getTunnelState() == MessageTunnelState.ESTABLISHING) {
                 return String.format("{(%1$s) <x> (%2$s)}", Node.self, getDestination());
             }
-            if(getTunnelState() == MessageTunnelState.ESTABLISHED) {
+            if (getTunnelState() == MessageTunnelState.ESTABLISHED) {
                 return String.format("{(%1$s) <-> (%2$s)}", Node.self, getDestination());
             }
         } else {
-            if(getTunnelState() == MessageTunnelState.NOT_ESTABLISHED || getTunnelState() == MessageTunnelState.ESTABLISHING) {
+            if (getTunnelState() == MessageTunnelState.NOT_ESTABLISHED || getTunnelState() == MessageTunnelState.ESTABLISHING) {
                 return String.format("{(%1$s) <x> (%2$s)}", getOrigin(), Node.self);
             }
-            if(getTunnelState() == MessageTunnelState.ESTABLISHED) {
+            if (getTunnelState() == MessageTunnelState.ESTABLISHED) {
                 return String.format("{(%1$s) <-> (%2$s)}", getOrigin(), Node.self);
             }
         }
