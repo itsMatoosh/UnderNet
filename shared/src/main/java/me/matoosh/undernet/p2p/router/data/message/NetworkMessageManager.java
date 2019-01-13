@@ -142,6 +142,7 @@ public class NetworkMessageManager extends Manager {
         //Getting the next node in the tunnel.
         MessageTunnel tunnel = router.messageTunnelManager.getTunnel(message.getOrigin(), message.getDestination());
         if(tunnel == null) {
+            logger.info("Tunnel for message: {} not found, creating one...");
             tunnel = router.messageTunnelManager.createTunnel(message.getOrigin(), message.getDestination(), MessageTunnelSide.UNDEFINED);
         }
 
@@ -240,8 +241,7 @@ public class NetworkMessageManager extends Manager {
             MessageTunnel tunnel = messageTunnelEstablishedEvent.messageTunnel;
 
             if(messageTunnelEstablishedEvent.establishDirection == NetworkMessage.MessageDirection.TO_DESTINATION) {
-                logger.info("Sending {} queued messages through the established tunnel: \n{}", tunnel.messageQueue.size(),
-                        NetworkID.getStringValue(tunnel.getOtherPublicKey().getEncoded()));
+                logger.info("Sending {} queued messages through the established tunnel: \n{}", tunnel.messageQueue.size(), tunnel);
 
                 //Sending messages through the tunnel.
                 for (NetworkMessage msg :
