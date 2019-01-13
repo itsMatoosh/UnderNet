@@ -7,8 +7,10 @@ import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.message.MsgBase;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.security.util.KeyUtil;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
@@ -129,7 +131,18 @@ public class MessageTunnel {
     public void calcSharedSecret() {
         try {
             logger.info("Calculating the shared secret for tunnel: {}", this);
-            KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH", KeyTools.KEYGEN_ALGORITHM_PROVIDER);
+            KeyAgreement keyAgreement;
+            try {
+                keyAgreement = KeyAgreement.getInstance("ECDH", KeyTools.KEYGEN_ALGORITHM_PROVIDER );
+            } catch (NoSuchAlgorithmException e) {
+                logger.error("Problem getting key agreement instance!", e);
+                UnderNet.router.messageTunnelManager.closeTunnel(this);
+                return;
+            } catch (NoSuchProviderException e) {
+                logger.error("Problem getting key agreement instance!", e);
+                UnderNet.router.messageTunnelManager.closeTunnel(this);
+                return;
+            }
             keyAgreement.init(Node.self.getIdentity().getPrivateKey()); //Self private key.
             keyAgreement.doPhase(getOtherPublicKey(), true);
             sharedSecret = keyAgreement.generateSecret();
@@ -148,14 +161,12 @@ public class MessageTunnel {
 
             derivedSymmetricKey = new SecretKeySpec(derivedKey, 0, 16, "AES");
             if(sharedSecret == null)
-                logger.info("Shared secret couldn't be calculated for tunnel: {}", this);
+                logger.warn("Shared secret couldn't be calculated for tunnel: {}", this);
             if(derivedSymmetricKey == null)
-                logger.info("Symmetric key couldn't be calculated for tunnel: {}", this);
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+                logger.warn("Symmetric key couldn't be calculated for tunnel: {}", this);
         } catch (InvalidKeyException e) {
             e.printStackTrace();
-        } catch (NoSuchProviderException e) {
+        } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
     }
