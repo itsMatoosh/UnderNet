@@ -124,6 +124,7 @@ public class MessageTunnelManager extends Manager {
      */
     public void sendTunnelResponse(MessageTunnel tunnel) {
         //Sending a tunnel request.
+        System.out.println("Sending tunnel response");
         NetworkMessage tunnelRequest = router.networkMessageManager.constructMessage(tunnel, new TunnelEstablishResponseMessage(Node.self.getIdentity().getPublicKey()), NetworkMessage.MessageDirection.TO_ORIGIN);
         router.networkMessageManager.forwardMessage(tunnelRequest, Node.self);
     }
