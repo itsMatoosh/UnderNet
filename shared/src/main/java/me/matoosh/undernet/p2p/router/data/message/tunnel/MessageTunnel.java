@@ -147,8 +147,10 @@ public class MessageTunnel {
             byte[] derivedKey = hash.digest();
 
             derivedSymmetricKey = new SecretKeySpec(derivedKey, 0, 16, "AES");
-            if(derivedSymmetricKey != null && sharedSecret != null)
-                logger.info("Shared secret calculated for tunnel: {}", this);
+            if(sharedSecret == null)
+                logger.info("Shared secret couldn't be calculated for tunnel: {}", this);
+            if(derivedSymmetricKey == null)
+                logger.info("Symmetric key couldn't be calculated for tunnel: {}", this);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (InvalidKeyException e) {
