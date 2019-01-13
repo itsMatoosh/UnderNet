@@ -33,10 +33,10 @@ public abstract class ResourceTransferHandler {
     /**
      * The transfer id of the transfer.
      */
-    private byte transferId;
+    private int transferId;
 
 
-    public ResourceTransferHandler(Resource resource, ResourceTransferType transferType, MessageTunnel tunnel, byte transferId, Router router) {
+    public ResourceTransferHandler(Resource resource, ResourceTransferType transferType, MessageTunnel tunnel, int transferId, Router router) {
         this.resource = resource;
         this.transferType = transferType;
         this.tunnel = tunnel;
@@ -86,7 +86,7 @@ public abstract class ResourceTransferHandler {
         this.tunnel = tunnel;
     }
 
-    public byte getTransferId() {
+    public int getTransferId() {
         return transferId;
     }
 }

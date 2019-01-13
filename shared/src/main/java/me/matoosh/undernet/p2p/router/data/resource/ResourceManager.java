@@ -175,7 +175,7 @@ public class ResourceManager extends Manager {
      */
     private void startPush(Resource resource, MessageTunnel tunnel) {
         //Getting the transfer handler.
-        ResourceTransferHandler transferHandler = resource.getTransferHandler(ResourceTransferType.OUTBOUND, tunnel, (byte)0, this.router);
+        ResourceTransferHandler transferHandler = resource.getTransferHandler(ResourceTransferType.OUTBOUND, tunnel, -1, this.router);
         logger.info("Outbound {} resource transfer, transfer id: {}", resource.getResourceType(), transferHandler.getTransferId());
         outboundHandlers.add(transferHandler);
 
@@ -253,6 +253,7 @@ public class ResourceManager extends Manager {
         //Sending next chunk from handler.
         for (ResourceTransferHandler transferHandler :
                 outboundHandlers) {
+            System.out.println("TRANS: " + transferHandler.getTransferId() + ", " + transferHandler.getTunnel());
             if(transferHandler.getTunnel() == message.getNetworkMessage().getTunnel() && transferHandler.getTransferId() == message.getTransferId()) {
                 logger.info("Sending chunk: {}, of file transfer {}", message.getChunkId(), transferHandler.getResource().getNetworkID());
                 transferHandler.sendChunk(message.getChunkId());

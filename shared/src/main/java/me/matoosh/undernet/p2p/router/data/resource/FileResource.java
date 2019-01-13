@@ -133,9 +133,9 @@ public class FileResource extends Resource {
      * @return
      */
     @Override
-    public ResourceTransferHandler getTransferHandler(ResourceTransferType resourceTransferType, MessageTunnel tunnel, byte transferId, Router router) {
+    public ResourceTransferHandler getTransferHandler(ResourceTransferType resourceTransferType, MessageTunnel tunnel, int transferId, Router router) {
         if (resourceTransferType == ResourceTransferType.OUTBOUND) {
-            transferId = (byte) router.resourceManager.outboundHandlers.size();
+            transferId = router.resourceManager.outboundHandlers.size();
         }
         return new FileTransferHandler(this, resourceTransferType, tunnel, transferId, router);
     }

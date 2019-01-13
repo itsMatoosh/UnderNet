@@ -53,7 +53,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
      */
     public static Logger logger = LoggerFactory.getLogger(FileTransferHandler.class);
 
-    public FileTransferHandler(FileResource resource, ResourceTransferType fileTransferType, MessageTunnel tunnel, byte transferId, Router router) {
+    public FileTransferHandler(FileResource resource, ResourceTransferType fileTransferType, MessageTunnel tunnel, int transferId, Router router) {
         super(resource, fileTransferType, tunnel, transferId, router);
 
         this.fileLength = Long.parseLong(resource.getInfo().attributes.get(0));

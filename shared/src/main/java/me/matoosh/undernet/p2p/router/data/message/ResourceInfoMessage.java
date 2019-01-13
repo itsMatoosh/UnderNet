@@ -14,9 +14,9 @@ public class ResourceInfoMessage extends MsgBase {
     /**
      * The transfer id.
      */
-    private byte transferId;
+    private int transferId;
 
-    public ResourceInfoMessage(ResourceInfo resourceInfo, byte transferId) {
+    public ResourceInfoMessage(ResourceInfo resourceInfo, int transferId) {
         this.resourceInfo = resourceInfo;
         this.transferId = transferId;
     }
@@ -30,7 +30,7 @@ public class ResourceInfoMessage extends MsgBase {
         return resourceInfo;
     }
 
-    public byte getTransferId() {
+    public int getTransferId() {
         return transferId;
     }
 }
