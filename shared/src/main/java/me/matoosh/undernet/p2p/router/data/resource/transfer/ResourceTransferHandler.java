@@ -41,7 +41,7 @@ public abstract class ResourceTransferHandler {
 
 
     public ResourceTransferHandler(Resource resource, ResourceTransferType transferType, MessageTunnel tunnel, int transferId, Router router) {
-        System.out.println("Creeating resource transfer handler: " + transferId);
+        System.out.println("Creating resource transfer handler: " + transferId);
         this.resource = resource;
         this.transferType = transferType;
         this.tunnel = tunnel;
