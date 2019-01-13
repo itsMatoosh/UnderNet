@@ -42,13 +42,14 @@ public class NetworkMessageManager extends Manager {
      * Constructs a message and starts the sending process to the other node.
      * If a tunnel is not yet established with the other node, it will be established now.
      * If a tunnel is already active with the other node, the message will be sent through it.
+     *
      * @param content
      * @param recipient
      */
     public void sendMessage(MsgBase content, NetworkID recipient) {
         //Getting the appropriate message tunnel.
         MessageTunnel messageTunnel = router.messageTunnelManager.getTunnel(Node.self.getIdentity().getNetworkId(), recipient);
-        if(messageTunnel == null) {
+        if (messageTunnel == null) {
             //Creating a tunnel if doesn't exist already.
             messageTunnel = router.messageTunnelManager.createTunnel(Node.self.getIdentity().getNetworkId(), recipient, MessageTunnelSide.ORIGIN);
         }
@@ -58,6 +59,7 @@ public class NetworkMessageManager extends Manager {
     /**
      * Constructs a message and starts the sending process to the other node.
      * Uses the specified message tunnel.
+     *
      * @param content
      * @param messageTunnel
      */
@@ -66,7 +68,7 @@ public class NetworkMessageManager extends Manager {
         NetworkMessage message = constructMessage(messageTunnel, content, NetworkMessage.MessageDirection.TO_DESTINATION);
 
         //Checking if the tunnel has been created.
-        switch(messageTunnel.getTunnelState()) {
+        switch (messageTunnel.getTunnelState()) {
             case ESTABLISHED:
                 //Using an existing tunnel.
                 messageTunnel.encryptMsgSymmetric(message);
@@ -78,7 +80,7 @@ public class NetworkMessageManager extends Manager {
             default:
                 //Adding message to the queue.
                 messageTunnel.messageQueue.add(message);
-                if(messageTunnel.messageQueue.size() == 1) {
+                if (messageTunnel.messageQueue.size() == 1) {
                     //Establishing the tunnel.
                     router.messageTunnelManager.establishTunnel(messageTunnel);
                 }
@@ -90,16 +92,17 @@ public class NetworkMessageManager extends Manager {
      * Constructs a response message and starts the sending process to the origin node.
      * The response can only be sent as a response to the previously received message.
      * A message tunnel is needed for the message to be delivered.
+     *
      * @param content
      */
     public void sendResponse(MsgBase content, MessageTunnel tunnel) {
-        if(tunnel == null) {
+        if (tunnel == null) {
             logger.warn("Can't send a response, the tunnel is null!");
             return;
         }
 
         //Checking if the tunnel has been created.
-        switch(tunnel.getTunnelState()) {
+        switch (tunnel.getTunnelState()) {
             case ESTABLISHED:
                 //Using an existing tunnel.
                 NetworkMessage message = constructMessage(tunnel, content, NetworkMessage.MessageDirection.TO_ORIGIN);
@@ -117,9 +120,10 @@ public class NetworkMessageManager extends Manager {
 
     /**
      * Constructs a new network message.
+     *
      * @param direction the direction in which the message should be routed.
-     * @param content the content of the network message.
-     * @param tunnel the message tunnel of the message. Has the origin and destination parameters.
+     * @param content   the content of the network message.
+     * @param tunnel    the message tunnel of the message. Has the origin and destination parameters.
      */
     public NetworkMessage constructMessage(MessageTunnel tunnel, MsgBase content, NetworkMessage.MessageDirection direction) {
         NetworkMessage message;
@@ -132,36 +136,32 @@ public class NetworkMessageManager extends Manager {
     }
 
 
-
     /**
      * Forwards a message to the next closest node.
+     *
      * @param message the message to be forwarded.
      */
     public void forwardMessage(NetworkMessage message, Node forwarder) {
         //Ignore node info.
-        if(message.getContent() != null && message.getContent().getType() == MsgType.NODE_INFO) {
+        if (message.getContent() != null && message.getContent().getType() == MsgType.NODE_INFO) {
             return;
         }
 
-        if(!message.isValid()) {
+        if (!message.isValid()) {
             logger.warn("Message: {} is invalid, the message won't be forwarded!", message);
             return;
         }
 
         //Getting the next node in the tunnel.
         MessageTunnel tunnel = router.messageTunnelManager.getTunnel(message.getOrigin(), message.getDestination());
-        if(tunnel == null) {
-            if(message.getContent() != null)
-                logger.info("Tunnel for message: {} not found, creating one... {}", message, message.getContent().getType());
-            else
-                logger.info("Tunnel for message: {} not found, creating one...", message);
-            
+        if (tunnel == null) {
+            logger.info("Tunnel for message: {} not found, creating one...", message);
             tunnel = router.messageTunnelManager.createTunnel(message.getOrigin(), message.getDestination(), MessageTunnelSide.UNDEFINED);
         }
 
         //Getting the next node.
         Node nextNode;
-        if(message.getDirection() == NetworkMessage.MessageDirection.TO_DESTINATION) {
+        if (message.getDirection() == NetworkMessage.MessageDirection.TO_DESTINATION) {
             //Getting the closest neighbor to forward the message to.
             tunnel.setPreviousNode(forwarder);
             tunnel.setNextNode(router.neighborNodesManager.getClosestTo(message.getDestination()));
@@ -169,19 +169,19 @@ public class NetworkMessageManager extends Manager {
         } else {
             nextNode = tunnel.getPreviousNode();
         }
-        if(nextNode == null) {
+        if (nextNode == null) {
             logger.warn("Couldn't forward message: {}, next node unknown!", message);
             return;
         }
 
-        if(forwarder == Node.self) {
-            if(message.getDirection() == NetworkMessage.MessageDirection.TO_DESTINATION) {
+        if (forwarder == Node.self) {
+            if (message.getDirection() == NetworkMessage.MessageDirection.TO_DESTINATION) {
                 logger.debug("Forwarding message, ({}) -> ({}) -> (...) -> ({})", Node.self, tunnel.getNextNode(), message.getDestination());
             } else {
                 logger.debug("Forwarding message, ({}) <- (...) <- ({}) <- ({})", message.getOrigin(), tunnel.getPreviousNode(), Node.self);
             }
         } else {
-            if(message.getDirection() == NetworkMessage.MessageDirection.TO_DESTINATION) {
+            if (message.getDirection() == NetworkMessage.MessageDirection.TO_DESTINATION) {
                 logger.debug("Forwarding message, ({}) -> (...) -> ({}) -> ({}) -> ({}) -> (...) -> ({})", message.getOrigin(), tunnel.getPreviousNode(), Node.self, tunnel.getNextNode(), message.getDestination());
             } else {
                 logger.debug("Forwarding message, ({}) <- (...) <- ({}) <- ({}) <- ({}) <- (...) <- ({})", message.getOrigin(), tunnel.getPreviousNode(), Node.self, forwarder, message.getDestination());
@@ -190,12 +190,12 @@ public class NetworkMessageManager extends Manager {
         }
 
         //Checking if we are the last stop.
-        if(nextNode == Node.self) {
+        if (nextNode == Node.self) {
             //Decrypting the message.
             //Checking if the message can be read by our node.
             //If can be read, call message received event.
             //If can't be read, ignore.
-            if(decryptMessage(message, tunnel)) {
+            if (decryptMessage(message, tunnel)) {
                 //Message can be read.
                 message.deserialize();
 
@@ -216,11 +216,12 @@ public class NetworkMessageManager extends Manager {
 
     /**
      * Decrypts the received message.
+     *
      * @param message
      */
     private boolean decryptMessage(NetworkMessage message, MessageTunnel messageTunnel) {
         //Checking whether the message was encrypted at all.
-        if(message.verify()) {
+        if (message.verify()) {
             logger.info("Message: {}, doesn't need to be decrypted...", message);
             return true;
         }
@@ -244,16 +245,16 @@ public class NetworkMessageManager extends Manager {
 
     @Override
     public void onEventCalled(Event e) {
-        if(e instanceof ChannelMessageReceivedEvent) { //A network message was received.
-            ChannelMessageReceivedEvent messageReceivedEvent = (ChannelMessageReceivedEvent)e;
+        if (e instanceof ChannelMessageReceivedEvent) { //A network message was received.
+            ChannelMessageReceivedEvent messageReceivedEvent = (ChannelMessageReceivedEvent) e;
             NetworkMessage message = messageReceivedEvent.message;
 
             forwardMessage(message, messageReceivedEvent.remoteNode);
         } else if (e instanceof MessageTunnelEstablishedEvent) {
-            MessageTunnelEstablishedEvent messageTunnelEstablishedEvent = (MessageTunnelEstablishedEvent)e;
+            MessageTunnelEstablishedEvent messageTunnelEstablishedEvent = (MessageTunnelEstablishedEvent) e;
             MessageTunnel tunnel = messageTunnelEstablishedEvent.messageTunnel;
 
-            if(messageTunnelEstablishedEvent.establishDirection == NetworkMessage.MessageDirection.TO_DESTINATION) {
+            if (messageTunnelEstablishedEvent.establishDirection == NetworkMessage.MessageDirection.TO_DESTINATION) {
                 logger.info("Sending {} queued messages through the established tunnel: \n{}", tunnel.messageQueue.size(), tunnel);
 
                 //Sending messages through the tunnel.

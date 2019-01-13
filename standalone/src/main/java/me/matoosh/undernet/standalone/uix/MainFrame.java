@@ -121,7 +121,7 @@ public class MainFrame extends EventHandler {
             }
         } else if (e instanceof ResourceTransferDataReceivedEvent) {
             ResourceTransferDataReceivedEvent dataReceivedEvent = (ResourceTransferDataReceivedEvent) e;
-            ResourceTransferHandler transferHandler = dataReceivedEvent.transferHandler;
+            ResourceTransferHandler transferHandler = dataReceivedEvent.getTransferHandler();
 
             if (transferHandler instanceof FileTransferHandler) {
                 FileTransferHandler fileTransferHandler = (FileTransferHandler) transferHandler;
@@ -130,7 +130,7 @@ public class MainFrame extends EventHandler {
             }
         } else if (e instanceof ResourceTransferDataSentEvent) {
             ResourceTransferDataSentEvent dataReceivedEvent = (ResourceTransferDataSentEvent) e;
-            ResourceTransferHandler transferHandler = dataReceivedEvent.transferHandler;
+            ResourceTransferHandler transferHandler = dataReceivedEvent.getTransferHandler();
 
             if (transferHandler instanceof FileTransferHandler) {
                 FileTransferHandler fileTransferHandler = (FileTransferHandler) transferHandler;
@@ -139,7 +139,7 @@ public class MainFrame extends EventHandler {
             }
         } else if (e instanceof ResourceTransferFinishedEvent) {
             ResourceTransferFinishedEvent transferFinishedEvent = (ResourceTransferFinishedEvent) e;
-            ResourceTransferHandler transferHandler = transferFinishedEvent.transferHandler;
+            ResourceTransferHandler transferHandler = transferFinishedEvent.getTransferHandler();
 
             if (transferHandler instanceof FileTransferHandler) {
                 progressBar.setValue(0);

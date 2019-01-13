@@ -12,6 +12,7 @@ import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.message.MsgType;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
+import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

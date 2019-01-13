@@ -82,8 +82,8 @@ public class FileTransferHandler extends ResourceTransferHandler {
                 getResource().calcNetworkId();
                 if(getResource().getNetworkID().equals(getTunnel().getDestination())) {
                     //The file is already stored locally.
-                    EventManager.callEvent(new ResourceTransferFinishedEvent(this, "File exists already!"));
                     getTunnel().sendMessage(new ResourceDataChunkRequest(this.getTransferId(), -2));
+
                     return;
                 }
             }
@@ -110,7 +110,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
      * Closes the file streams.
      */
     @Override
-    public void close() {
+    public void onClose() {
         logger.info("Closing {} streams for file {}", this.getTransferType(), ((FileResource)this.getResource()).file);
         try {
             if (inputStream != null) {
@@ -134,14 +134,9 @@ public class FileTransferHandler extends ResourceTransferHandler {
         if(getTransferType().equals(ResourceTransferType.OUTBOUND) && inputStream != null) {
             //Stopping on request.
             if(chunkId < 0) {
-                if(chunkId == -1) {
-                    //File sent or error.
-                    EventManager.callEvent(new ResourceTransferFinishedEvent(FileTransferHandler.this, "File transfer complete!"));
-                    return;
-                }
                 if(chunkId == -2) {
                     //File sent or error.
-                    EventManager.callEvent(new ResourceTransferFinishedEvent(FileTransferHandler.this, "File transfer interrupted by destination!"));
+                    this.close();
                     return;
                 }
             }
@@ -164,19 +159,23 @@ public class FileTransferHandler extends ResourceTransferHandler {
                     //Finish if no more bytes available!
                     if(inputStream.available() <= 0) {
                         //File sent fully.
-                        EventManager.callEvent(new ResourceTransferFinishedEvent(FileTransferHandler.this, "File transfer complete!"));
-                        return;
+                        this.close();
                     }
                 } else {
                     //The file has no data. Sending an empty chunk.
                     sendData(new byte[0], chunkId);
                 }
             } catch (IOException e) {
-                EventManager.callEvent(new ResourceTransferErrorEvent(FileTransferHandler.this, e));
+                callError(e);
             }
         }
     }
 
+    /**
+     * Sends file chunk.
+     * @param data
+     * @param chunkId
+     */
     private void sendData(byte[] data, int chunkId) {
         ResourceDataMessage message = new ResourceDataMessage(data, getTransferId(), chunkId);
         getTunnel().sendMessage(message);
@@ -204,29 +203,28 @@ public class FileTransferHandler extends ResourceTransferHandler {
                     logger.info("File chunk received for: {} | {}%", this.getResource().getNetworkID(), ((float)written/(float)fileLength)*100f);
                     if(written >= fileLength) {
                         //File fully received.
-                        getTunnel().sendMessage(new ResourceDataChunkRequest(this.getTransferId(), -1));
-                        EventManager.callEvent(new ResourceTransferFinishedEvent(this, "File transfer complete!"));
+                        this.close();
                     } else {
                         getTunnel().sendMessage(new ResourceDataChunkRequest(this.getTransferId(), dataMessage.getChunkId() + 1));
                     }
                 } catch (IOException e) {
-                    //Error
-                    EventManager.callEvent(new ResourceTransferErrorEvent(this, e));
-
-                    //Closing the input stream.
-                    try {
-                        this.outputStream.close();
-                    } catch (IOException f) {
-                        f.printStackTrace();
-                    }
+                    callError(e);
                 }
             } else {
                 //Empty chunk, ending the transfer and closing the file.
                 logger.info("Empty chunk received for: {}, ending the transfer...");
 
                 //File fully received.
-                EventManager.callEvent(new ResourceTransferFinishedEvent(this, "Empty file transfer!"));
+                this.close();
             }
+        }
+    }
+
+    @Override
+    public void onError(Exception e) {
+        //Removing file.
+        if(((FileResource)this.getResource()).file != null) {
+            ((FileResource)this.getResource()).file.delete();
         }
     }
 

@@ -69,7 +69,7 @@ public class ResourcePullDialog extends JDialog {
                 fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                 fileChooser.setDialogTitle("Choose the save directory");
                 int result = fileChooser.showOpenDialog(ResourcePullDialog.this);
-                if(result == JFileChooser.APPROVE_OPTION) {
+                if (result == JFileChooser.APPROVE_OPTION) {
                     saveFile[0] = fileChooser.getSelectedFile();
                 }
             }
@@ -83,8 +83,8 @@ public class ResourcePullDialog extends JDialog {
         pullButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                final NetworkID netId = new NetworkID(networkIdField.getText().replaceAll("\\s+",""));
-                if(netId.isValid()) {
+                final NetworkID netId = new NetworkID(networkIdField.getText().replaceAll("\\s+", ""));
+                if (netId.isValid()) {
                     //Starting the pull.
                     UnderNet.router.resourceManager.pull(netId); //Use inputted network id.
 
@@ -94,22 +94,22 @@ public class ResourcePullDialog extends JDialog {
                         public void onEventCalled(Event e) {
                             ResourceTransferFinishedEvent transferFinishedEvent = (ResourceTransferFinishedEvent) e;
 
-                            if(transferFinishedEvent.transferHandler.getTransferType() == ResourceTransferType.INBOUND && transferFinishedEvent.transferHandler.getResource().getNetworkID().equals(netId) && transferFinishedEvent.transferHandler.getResource().getInfo().resourceType == ResourceType.FILE) {
-                                FileResource fileResource = (FileResource)transferFinishedEvent.transferHandler.getResource();
+                            if (transferFinishedEvent.getTransferHandler().getTransferType() == ResourceTransferType.INBOUND && transferFinishedEvent.getTransferHandler().getResource().getNetworkID().equals(netId) && transferFinishedEvent.getTransferHandler().getResource().getInfo().resourceType == ResourceType.FILE) {
+                                FileResource fileResource = (FileResource) transferFinishedEvent.getTransferHandler().getResource();
 
                                 //Copying the received file to dest.
-                                if(saveFile[0] != null) {
+                                if (saveFile[0] != null) {
                                     try {
                                         Files.copy(Paths.get(fileResource.file.getAbsolutePath()), Paths.get(saveFile[0].getAbsolutePath() + "/" + fileResource.file.getName()), StandardCopyOption.REPLACE_EXISTING);
                                     } catch (IOException e1) {
                                         e1.printStackTrace();
                                     } finally {
                                         //File dialog.
-                                        EventQueue.invokeLater(()->JOptionPane.showMessageDialog(ResourcePullDialog.this, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.file.getName(), fileResource.getNetworkID().getStringValue(), saveFile[0]),"File Retrieved!",  JOptionPane.INFORMATION_MESSAGE));
+                                        EventQueue.invokeLater(() -> JOptionPane.showMessageDialog(ResourcePullDialog.this, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.file.getName(), fileResource.getNetworkID().getStringValue(), saveFile[0]), "File Retrieved!", JOptionPane.INFORMATION_MESSAGE));
                                     }
                                 } else {
                                     //File dialog.
-                                    EventQueue.invokeLater(()->JOptionPane.showMessageDialog(ResourcePullDialog.this, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.file.getName(), fileResource.getNetworkID().getStringValue(), UnderNet.fileManager.getContentFolder()), "File Retrieved!", JOptionPane.INFORMATION_MESSAGE));
+                                    EventQueue.invokeLater(() -> JOptionPane.showMessageDialog(ResourcePullDialog.this, String.format("Retrieved file %s! \nNetwork id: %s \nSaved to: %s", fileResource.file.getName(), fileResource.getNetworkID().getStringValue(), UnderNet.fileManager.getContentFolder()), "File Retrieved!", JOptionPane.INFORMATION_MESSAGE));
                                 }
                             }
 
@@ -132,6 +132,6 @@ public class ResourcePullDialog extends JDialog {
      */
     private void centerDialogOnMouse() {
         Point mousePoint = MouseInfo.getPointerInfo().getLocation();
-        setLocation(mousePoint.x - getSize().width/2, mousePoint.y - getSize().height/2);
+        setLocation(mousePoint.x - getSize().width / 2, mousePoint.y - getSize().height / 2);
     }
 }

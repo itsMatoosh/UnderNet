@@ -5,6 +5,7 @@ import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.ConnectionEstablishedEvent;
 import me.matoosh.undernet.event.channel.message.MessageReceivedEvent;
+import me.matoosh.undernet.event.resource.ResourceErrorEvent;
 import me.matoosh.undernet.event.resource.pull.ResourcePullReceivedEvent;
 import me.matoosh.undernet.event.resource.pull.ResourcePullSentEvent;
 import me.matoosh.undernet.event.resource.transfer.*;
@@ -331,19 +332,6 @@ public class ResourceManager extends Manager {
                     startPush(flag);
                 }
             }
-        } else if(e instanceof ResourceTransferFinishedEvent) {
-            ResourceTransferFinishedEvent transferFinishedEvent = (ResourceTransferFinishedEvent)e;
-
-            //Closing the streams.
-            transferFinishedEvent.transferHandler.close();
-            router.messageTunnelManager.closeTunnel(transferFinishedEvent.transferHandler.getTunnel());
-
-            //Removing from the list.
-            if(transferFinishedEvent.transferHandler.getTransferType() == ResourceTransferType.INBOUND) {
-                inboundHandlers.remove(transferFinishedEvent.transferHandler);
-            } else {
-                outboundHandlers.remove(transferFinishedEvent.transferHandler);
-            }
         }
     }
 
@@ -368,6 +356,5 @@ public class ResourceManager extends Manager {
     protected void registerHandlers() {
         EventManager.registerHandler(this, MessageReceivedEvent.class);
         EventManager.registerHandler(this, ConnectionEstablishedEvent.class);
-        EventManager.registerHandler(this, ResourceTransferFinishedEvent.class);
     }
 }
