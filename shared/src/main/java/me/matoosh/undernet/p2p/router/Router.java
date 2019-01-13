@@ -221,8 +221,9 @@ public class Router extends EventHandler {
         }
 
         //Sending control message to tunnels.
-        for (MessageTunnel tunnel :
-                messageTunnelManager.messageTunnels) {
+        for (int i = 0; i < messageTunnelManager.messageTunnels.size(); i++) {
+            MessageTunnel tunnel = messageTunnelManager.messageTunnels.get(i);
+
             if(tunnel.getSide() == MessageTunnelSide.ORIGIN && tunnel.getNextNode() == Node.self) messageTunnelManager.closeTunnel(tunnel);
             else if(tunnel.getSide() == MessageTunnelSide.DESTINATION && tunnel.getPreviousNode() == Node.self) messageTunnelManager.closeTunnel(tunnel);
             else if(System.currentTimeMillis() > tunnel.getLastMessageTime() + 2*controlLoopInterval*1000) messageTunnelManager.closeTunnel(tunnel);

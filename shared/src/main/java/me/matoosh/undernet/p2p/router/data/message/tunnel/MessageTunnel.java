@@ -186,6 +186,7 @@ public class MessageTunnel {
      * @return
      */
     public Node getPreviousNode() {return this.previousNode; }
+
     /**
      * Gets the next node.
      * @return
