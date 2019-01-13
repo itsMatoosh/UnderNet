@@ -168,7 +168,7 @@ public class MessageTunnelManager extends Manager {
                 //Called on the destination of the tunnel.
                 TunnelEstablishRequestMessage tunnelEstablishRequestMessage = (TunnelEstablishRequestMessage) messageReceivedEvent.networkMessage.getContent();
                 //Creating a new tunnel object.
-                MessageTunnel tunnel = new MessageTunnel(tunnelEstablishRequestMessage.getNetworkMessage().getOrigin(), tunnelEstablishRequestMessage.getNetworkMessage().getDestination());
+                MessageTunnel tunnel = getTunnel(tunnelEstablishRequestMessage.getNetworkMessage().getOrigin(), tunnelEstablishRequestMessage.getNetworkMessage().getDestination());
                 tunnel.setSide(MessageTunnelSide.DESTINATION);
 
                 //Setting the other's public key.
@@ -176,8 +176,6 @@ public class MessageTunnelManager extends Manager {
 
                 //Calculating the shared secret.
                 tunnel.calcSharedSecret();
-
-                messageTunnels.add(tunnel);
 
                 //Sending response.
                 sendTunnelResponse(tunnel);
