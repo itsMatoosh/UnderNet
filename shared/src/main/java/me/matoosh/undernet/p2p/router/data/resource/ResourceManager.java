@@ -275,9 +275,11 @@ public class ResourceManager extends Manager {
      * @param message
      */
     private void handleResourceRetrieve(ResourceDataMessage message) {
+        logger.info("Handling resource data retrieve, transId: {}", message.getTransferId());
         //Checking if the resource push is already being received.
         for (ResourceTransferHandler transferHandler :
                 inboundHandlers) {
+            System.out.println("TRANS: " + transferHandler.getTransferId() + ", " + transferHandler.getTunnel());
             if(transferHandler.getTunnel() == message.getNetworkMessage().getTunnel() && message.getTransferId() == transferHandler.getTransferId()) {
                 transferHandler.onDataReceived(message);
             }
