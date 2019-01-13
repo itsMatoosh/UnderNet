@@ -306,6 +306,7 @@ public class Router extends EventHandler {
         remoteNodes.clear();
 
         for (Node n : getConnectedNodes()) {
+            if(n == null) continue;
             if (n.getAddress() != null && !Node.isLocalAddress(n.getAddress())) {
                 boolean duplicate = false;
                 for (Node no :
