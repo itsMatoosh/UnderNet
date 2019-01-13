@@ -328,8 +328,7 @@ public class ResourceManager extends Manager {
 
             //Closing the streams.
             transferFinishedEvent.transferHandler.close();
-            if(transferFinishedEvent.transferHandler.getTunnel().getSide() == MessageTunnelSide.ORIGIN)
-                transferFinishedEvent.transferHandler.getTunnel().close();
+            router.messageTunnelManager.closeTunnel(transferFinishedEvent.transferHandler.getTunnel());
 
             //Removing from the list.
             if(transferFinishedEvent.transferHandler.getTransferType() == ResourceTransferType.INBOUND) {
