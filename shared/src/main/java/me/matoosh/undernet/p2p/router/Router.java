@@ -28,6 +28,7 @@ import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnelManager;
 import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnelSide;
 import me.matoosh.undernet.p2p.router.data.message.tunnel.TunnelControlMessage;
 import me.matoosh.undernet.p2p.router.data.resource.ResourceManager;
+import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferHandler;
 import me.matoosh.undernet.p2p.router.server.Server;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
@@ -35,10 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import java.security.Security;
 import java.util.ArrayList;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * The network router.
@@ -215,15 +213,23 @@ public class Router extends EventHandler {
             this.networkMessageManager.sendMessage(new NodeNeighborsRequest(), neighbor.getIdentity().getNetworkId());
         }
 
-        //Sending control message to tunnels.
+        //Checking resource transfer activity.
+        for (int i = 0; i < resourceManager.inboundHandlers.size(); i++) {
+            ResourceTransferHandler transferHandler = resourceManager.inboundHandlers.get(i);
+            if (System.currentTimeMillis() > transferHandler.getLastMessageTime() + 2 * controlLoopInterval * 1000)
+                transferHandler.callError(new TimeoutException());
+        }
+        for (int i = 0; i < resourceManager.outboundHandlers.size(); i++) {
+            ResourceTransferHandler transferHandler = resourceManager.outboundHandlers.get(i);
+            if (System.currentTimeMillis() > transferHandler.getLastMessageTime() + 2 * controlLoopInterval * 1000)
+                transferHandler.callError(new TimeoutException());
+        }
+
+        //Checking tunnel activity.
         for (int i = 0; i < messageTunnelManager.messageTunnels.size(); i++) {
             MessageTunnel tunnel = messageTunnelManager.messageTunnels.get(i);
 
-            if (tunnel.getSide() == MessageTunnelSide.ORIGIN && tunnel.getNextNode() == Node.self)
-                messageTunnelManager.closeTunnel(tunnel);
-            else if (tunnel.getSide() == MessageTunnelSide.DESTINATION && tunnel.getPreviousNode() == Node.self)
-                messageTunnelManager.closeTunnel(tunnel);
-            else if (System.currentTimeMillis() > tunnel.getLastMessageTime() + 2 * controlLoopInterval * 1000)
+            if (System.currentTimeMillis() > tunnel.getLastMessageTime() + 2 * controlLoopInterval * 1000)
                 messageTunnelManager.closeTunnel(tunnel);
             else if (tunnel.isKeepAlive()) tunnel.sendMessage(new TunnelControlMessage());
         }

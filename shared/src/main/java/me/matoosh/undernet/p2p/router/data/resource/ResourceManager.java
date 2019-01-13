@@ -262,7 +262,7 @@ public class ResourceManager extends Manager {
             System.out.println("TRANS: " + transferHandler.getTransferId() + ", " + transferHandler.getTunnel());
             if(transferHandler.getTunnel() == message.getNetworkMessage().getTunnel() && transferHandler.getTransferId() == message.getTransferId()) {
                 logger.info("Sending chunk: {}, of file transfer {}", message.getChunkId(), transferHandler.getResource().getNetworkID());
-                transferHandler.sendChunk(message.getChunkId());
+                transferHandler.callSendChunk(message.getChunkId());
             }
             return;
         }
@@ -279,7 +279,7 @@ public class ResourceManager extends Manager {
                 inboundHandlers) {
             System.out.println("TRANS: " + transferHandler.getTransferId() + ", " + transferHandler.getTunnel());
             if(transferHandler.getTunnel() == message.getNetworkMessage().getTunnel() && message.getTransferId() == transferHandler.getTransferId()) {
-                transferHandler.onDataReceived(message);
+                transferHandler.callDataReceived(message);
             }
             return;
         }

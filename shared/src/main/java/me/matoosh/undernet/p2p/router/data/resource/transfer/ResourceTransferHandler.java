@@ -1,7 +1,6 @@
 package me.matoosh.undernet.p2p.router.data.resource.transfer;
 
 import me.matoosh.undernet.event.EventManager;
-import me.matoosh.undernet.event.resource.ResourceErrorEvent;
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferErrorEvent;
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferFinishedEvent;
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferStartedEvent;
@@ -40,6 +39,11 @@ public abstract class ResourceTransferHandler {
      */
     private int transferId;
 
+    /**
+     * Time of the last message.
+     */
+    private long lastMessageTime;
+
 
     public ResourceTransferHandler(Resource resource, ResourceTransferType transferType, MessageTunnel tunnel, int transferId, Router router) {
         this.resource = resource;
@@ -61,6 +65,16 @@ public abstract class ResourceTransferHandler {
      * Prepares the transfer.
      */
     public abstract void prepare();
+
+    /**
+     * Sends chunk with id chunk id.
+     *
+     * @param chunkId
+     */
+    public void callSendChunk(int chunkId) {
+        lastMessageTime = System.currentTimeMillis();
+        sendChunk(chunkId);
+    }
 
     /**
      * Sends chunk with id chunk id.
@@ -95,7 +109,16 @@ public abstract class ResourceTransferHandler {
     public abstract void onClose();
 
     /**
-     * Called when a resource data message is sent.
+     * Called when a resource data message is received.
+     * @param dataMessage
+     */
+    public void callDataReceived(ResourceDataMessage dataMessage) {
+        lastMessageTime = System.currentTimeMillis();
+        onDataReceived(dataMessage);
+    }
+
+    /**
+     * Called when a resource data message is received.
      *
      * @param dataMessage
      */
@@ -141,6 +164,14 @@ public abstract class ResourceTransferHandler {
 
     public int getTransferId() {
         return transferId;
+    }
+
+    public long getLastMessageTime() {
+        return lastMessageTime;
+    }
+
+    public void setLastMessageTime(long lastMessageTime) {
+        this.lastMessageTime = lastMessageTime;
     }
 
     @Override
