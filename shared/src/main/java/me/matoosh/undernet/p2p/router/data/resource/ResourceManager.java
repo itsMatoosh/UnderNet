@@ -184,7 +184,6 @@ public class ResourceManager extends Manager {
         //Getting the transfer handler.
         ResourceTransferHandler transferHandler = resource.getTransferHandler(ResourceTransferType.OUTBOUND, tunnel, -1, this.router);
         logger.info("Outbound {} resource transfer, transfer id: {}", resource.getResourceType(), transferHandler.getTransferId());
-        outboundHandlers.add(transferHandler);
 
         //Sending the resource info message.
         transferHandler.prepare();
@@ -227,7 +226,6 @@ public class ResourceManager extends Manager {
         //Getting a new resource handler.
         ResourceTransferHandler transferHandler = resource.getTransferHandler(ResourceTransferType.INBOUND, message.getNetworkMessage().getTunnel(), message.getTransferId(), this.router);
         logger.info("Inbound {} resource transfer, transfer id: {}", message.getResourceInfo().resourceType, transferHandler.getTransferId());
-        inboundHandlers.add(transferHandler);
 
         //Preparing for incoming resource.
         transferHandler.prepare();

@@ -73,7 +73,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
                 inputStream = new FileInputStream(saveFile);
             } catch (FileNotFoundException e) { //File doesn't exist.
                 //Calling a transfer error.
-                EventManager.callEvent(new ResourceTransferErrorEvent(this, e));
+                callError(e);
                 return;
             }
         } else { //Receiving
@@ -83,7 +83,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
                 if(getResource().getNetworkID().equals(getTunnel().getDestination())) {
                     //The file is already stored locally.
                     getTunnel().sendMessage(new ResourceDataChunkRequest(this.getTransferId(), -2));
-
+                    this.close();
                     return;
                 }
             }
@@ -97,8 +97,8 @@ public class FileTransferHandler extends ResourceTransferHandler {
                 outputStream = new FileOutputStream(saveFile);
             } catch (IOException e) {
                 //Calling a transfer error.
-                EventManager.callEvent(new ResourceTransferErrorEvent(this, e));
-                return;
+               callError(e);
+               return;
             }
 
             //Requesting the first chunk.

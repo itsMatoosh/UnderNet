@@ -47,6 +47,12 @@ public abstract class ResourceTransferHandler {
         this.tunnel = tunnel;
         this.router = router;
         this.transferId = transferId;
+
+        if(transferType == ResourceTransferType.OUTBOUND) {
+            router.resourceManager.outboundHandlers.add(this);
+        } else {
+            router.resourceManager.inboundHandlers.add(this);
+        }
     }
 
     /**
