@@ -47,7 +47,7 @@ public class ResourceManager extends Manager {
     /**
      * The last transfer id.
      */
-    public int lastTransferId = -1;
+    public int lastTransferId;
 
     /**
      * The logger of the class.
@@ -61,6 +61,7 @@ public class ResourceManager extends Manager {
      */
     public ResourceManager(Router router) {
         super(router);
+        this.lastTransferId = -1;
     }
 
     /**
