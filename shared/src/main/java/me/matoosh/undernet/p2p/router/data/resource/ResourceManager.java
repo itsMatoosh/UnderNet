@@ -45,6 +45,11 @@ public class ResourceManager extends Manager {
     public ArrayList<ResourceTransferHandler> inboundHandlers = new ArrayList<>();
 
     /**
+     * The last transfer id.
+     */
+    public int lastTransferId = -1;
+
+    /**
      * The logger of the class.
      */
     public static Logger logger = LoggerFactory.getLogger(ResourceManager.class);
