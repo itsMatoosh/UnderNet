@@ -128,11 +128,13 @@ public class MessageTunnel {
      */
     public void calcSharedSecret() {
         try {
+            logger.info("Calculating the shared secret for tunnel: {}", this);
             KeyAgreement keyAgreement = KeyAgreement.getInstance("ECDH", KeyTools.KEYGEN_ALGORITHM_PROVIDER);
             keyAgreement.init(Node.self.getIdentity().getPrivateKey()); //Self private key.
             keyAgreement.doPhase(getOtherPublicKey(), true);
             sharedSecret = keyAgreement.generateSecret();
 
+            logger.info("Calculating the symmetric key for tunnel: {}", this);
             // Derive a key from the shared secret and both public keys
             MessageDigest hash = MessageDigest.getInstance("SHA-256");
             hash.update(sharedSecret);
@@ -145,6 +147,8 @@ public class MessageTunnel {
             byte[] derivedKey = hash.digest();
 
             derivedSymmetricKey = new SecretKeySpec(derivedKey, 0, 16, "AES");
+            if(derivedSymmetricKey != null && sharedSecret != null)
+                logger.info("Shared secret calculated for tunnel: {}", this);
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         } catch (InvalidKeyException e) {

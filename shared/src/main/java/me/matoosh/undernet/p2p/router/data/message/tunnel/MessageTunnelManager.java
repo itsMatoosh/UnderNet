@@ -182,6 +182,7 @@ public class MessageTunnelManager extends Manager {
                 try {
                     //Setting the other's public key.
                     tunnel.setOtherPublicKey(KeyTools.fromUncompressedPoint(tunnelEstablishResponseMessage.publicKey));
+
                     //Calculating the shared secret.
                     tunnel.calcSharedSecret();
                 } catch (Exception e1) {
