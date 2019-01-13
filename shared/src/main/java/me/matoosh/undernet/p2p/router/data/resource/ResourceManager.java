@@ -255,16 +255,16 @@ public class ResourceManager extends Manager {
      * @param message
      */
     private void handlerResourceDataRequest(ResourceDataChunkRequest message) {
-        logger.info("Handling resource data request, transId: {}", message.getTransferId());
         //Sending next chunk from handler.
         for (ResourceTransferHandler transferHandler :
                 outboundHandlers) {
             if(transferHandler.getTransferId() == message.getTransferId()) {
                 logger.info("Sending chunk: {}, of file transfer {}", message.getChunkId(), transferHandler.getResource().getNetworkID());
                 transferHandler.callSendChunk(message.getChunkId());
+                return;
             }
-            return;
         }
+
     }
 
     /**
@@ -278,8 +278,8 @@ public class ResourceManager extends Manager {
                 inboundHandlers) {
             if(message.getTransferId() == transferHandler.getTransferId()) {
                 transferHandler.callDataReceived(message);
+                return;
             }
-            return;
         }
     }
 
