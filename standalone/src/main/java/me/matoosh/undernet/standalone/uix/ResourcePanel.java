@@ -9,6 +9,7 @@ import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferErrorEvent;
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferFinishedEvent;
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferStartedEvent;
+import me.matoosh.undernet.event.router.RouterControlLoopEvent;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
@@ -65,6 +66,7 @@ public class ResourcePanel extends EventHandler {
         EventManager.registerHandler(this, ResourceTransferStartedEvent.class);
         EventManager.registerHandler(this, ResourceTransferFinishedEvent.class);
         EventManager.registerHandler(this, ResourceTransferErrorEvent.class);
+        EventManager.registerHandler(this, RouterControlLoopEvent.class);
     }
 
     private void refreshList() {
@@ -104,6 +106,8 @@ public class ResourcePanel extends EventHandler {
         } else if (e instanceof ResourceTransferErrorEvent) {
             publishButton.setEnabled(true);
             pullButton.setEnabled(true);
+        } else if (e instanceof RouterControlLoopEvent) {
+            refreshList();
         }
     }
 
