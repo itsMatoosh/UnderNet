@@ -3,7 +3,7 @@
   <grid id="27dc6" binding="panel" layout-manager="GridLayoutManager" row-count="6" column-count="5" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="645" height="400"/>
+      <xy x="20" y="20" width="952" height="400"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -25,11 +25,6 @@
           <grid row="0" column="4" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="2" indent="0" use-parent-layout="false">
             <minimum-size width="300" height="-1"/>
           </grid>
-        </constraints>
-      </nested-form>
-      <nested-form id="5b3f8" form-file="me/matoosh/undernet/standalone/uix/TunnelPanel.form" binding="tunnelPanel">
-        <constraints>
-          <grid row="2" column="0" row-span="1" col-span="5" vsize-policy="3" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
       </nested-form>
       <component id="c1a4f" class="javax.swing.JButton" binding="mainButton" custom-create="true">
@@ -68,6 +63,26 @@
           </grid>
         </constraints>
       </nested-form>
+      <grid id="e36b3" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="5" bottom="0" right="5"/>
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="5" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <nested-form id="28fb9" form-file="me/matoosh/undernet/standalone/uix/TransferPanel.form" binding="transferPanel">
+            <constraints>
+              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+            </constraints>
+          </nested-form>
+          <nested-form id="5b3f8" form-file="me/matoosh/undernet/standalone/uix/TunnelPanel.form" binding="tunnelPanel">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+            </constraints>
+          </nested-form>
+        </children>
+      </grid>
     </children>
   </grid>
 </form>

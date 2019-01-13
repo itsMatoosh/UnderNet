@@ -4,6 +4,7 @@ import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.resource.ResourceErrorEvent;
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferErrorEvent;
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferFinishedEvent;
+import me.matoosh.undernet.event.resource.transfer.ResourceTransferStartedEvent;
 import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.data.message.ResourceDataMessage;
 import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnel;
@@ -41,7 +42,6 @@ public abstract class ResourceTransferHandler {
 
 
     public ResourceTransferHandler(Resource resource, ResourceTransferType transferType, MessageTunnel tunnel, int transferId, Router router) {
-        System.out.println("Creating resource transfer handler: " + transferId);
         this.resource = resource;
         this.transferType = transferType;
         this.tunnel = tunnel;
@@ -53,6 +53,8 @@ public abstract class ResourceTransferHandler {
         } else {
             router.resourceManager.inboundHandlers.add(this);
         }
+
+        EventManager.callEvent(new ResourceTransferStartedEvent(this));
     }
 
     /**
@@ -139,5 +141,10 @@ public abstract class ResourceTransferHandler {
 
     public int getTransferId() {
         return transferId;
+    }
+
+    @Override
+    public String toString() {
+        return transferType + " transfer (" + transferId + ") -> " + getResource().getNetworkID().getStringValue();
     }
 }
