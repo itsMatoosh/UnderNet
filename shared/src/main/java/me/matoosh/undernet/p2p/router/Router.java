@@ -216,12 +216,12 @@ public class Router extends EventHandler {
         //Checking resource transfer activity.
         for (int i = 0; i < resourceManager.inboundHandlers.size(); i++) {
             ResourceTransferHandler transferHandler = resourceManager.inboundHandlers.get(i);
-            if (System.currentTimeMillis() > transferHandler.getLastMessageTime() + 2 * controlLoopInterval * 1000)
+            if (System.currentTimeMillis() > transferHandler.getLastMessageTime() + controlLoopInterval * 1000)
                 transferHandler.callError(new TimeoutException());
         }
         for (int i = 0; i < resourceManager.outboundHandlers.size(); i++) {
             ResourceTransferHandler transferHandler = resourceManager.outboundHandlers.get(i);
-            if (System.currentTimeMillis() > transferHandler.getLastMessageTime() + 2 * controlLoopInterval * 1000)
+            if (System.currentTimeMillis() > transferHandler.getLastMessageTime() + controlLoopInterval * 1000)
                 transferHandler.callError(new TimeoutException());
         }
 
@@ -260,6 +260,14 @@ public class Router extends EventHandler {
         //Stops the server.
         if (server != null) {
             server.stop();
+        }
+
+        //Closes all remaining transfers.
+        for (int i = 0; i < resourceManager.inboundHandlers.size(); i++) {
+            resourceManager.inboundHandlers.get(i).close();
+        }
+        for (int i = 0; i < resourceManager.outboundHandlers.size(); i++) {
+            resourceManager.outboundHandlers.get(i).close();
         }
 
         //Closes all remaining tunnels.

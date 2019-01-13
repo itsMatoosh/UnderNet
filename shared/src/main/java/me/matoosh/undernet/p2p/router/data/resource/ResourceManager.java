@@ -259,8 +259,7 @@ public class ResourceManager extends Manager {
         //Sending next chunk from handler.
         for (ResourceTransferHandler transferHandler :
                 outboundHandlers) {
-            System.out.println("TRANS: " + transferHandler.getTransferId() + ", " + transferHandler.getTunnel());
-            if(transferHandler.getTunnel() == message.getNetworkMessage().getTunnel() && transferHandler.getTransferId() == message.getTransferId()) {
+            if(transferHandler.getTransferId() == message.getTransferId()) {
                 logger.info("Sending chunk: {}, of file transfer {}", message.getChunkId(), transferHandler.getResource().getNetworkID());
                 transferHandler.callSendChunk(message.getChunkId());
             }
@@ -277,8 +276,7 @@ public class ResourceManager extends Manager {
         //Checking if the resource push is already being received.
         for (ResourceTransferHandler transferHandler :
                 inboundHandlers) {
-            System.out.println("TRANS: " + transferHandler.getTransferId() + ", " + transferHandler.getTunnel());
-            if(transferHandler.getTunnel() == message.getNetworkMessage().getTunnel() && message.getTransferId() == transferHandler.getTransferId()) {
+            if(message.getTransferId() == transferHandler.getTransferId()) {
                 transferHandler.callDataReceived(message);
             }
             return;
