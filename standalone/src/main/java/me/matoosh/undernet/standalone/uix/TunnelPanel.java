@@ -8,6 +8,7 @@ import me.matoosh.undernet.event.EventHandler;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.message.tunnel.MessageTunnelClosedEvent;
 import me.matoosh.undernet.event.channel.message.tunnel.MessageTunnelEstablishedEvent;
+import me.matoosh.undernet.event.router.RouterControlLoopEvent;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
 import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnel;
@@ -36,6 +37,7 @@ public class TunnelPanel extends EventHandler {
         EventManager.registerHandler(this, MessageTunnelEstablishedEvent.class);
         EventManager.registerHandler(this, MessageTunnelClosedEvent.class);
         EventManager.registerHandler(this, RouterStatusEvent.class);
+        EventManager.registerHandler(this, RouterControlLoopEvent.class);
     }
 
     private void createUIComponents() {
