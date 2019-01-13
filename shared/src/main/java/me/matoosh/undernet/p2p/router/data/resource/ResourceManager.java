@@ -250,6 +250,7 @@ public class ResourceManager extends Manager {
      * @param message
      */
     private void handlerResourceDataRequest(ResourceDataChunkRequest message) {
+        logger.info("Handling resource data request, transId: {}", message.getTransferId());
         //Sending next chunk from handler.
         for (ResourceTransferHandler transferHandler :
                 outboundHandlers) {
