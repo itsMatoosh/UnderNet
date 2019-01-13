@@ -132,14 +132,11 @@ public class MessageTunnelManager extends Manager {
      * Gets or creates a message tunnel.
      * @return
      */
-    public MessageTunnel getTunnel(NetworkID nodeA, NetworkID nodeB) {
+    public MessageTunnel getTunnel(NetworkID origin, NetworkID destination) {
         //Finding an existing tunnel.
-        for (MessageTunnel tunnel :
-                messageTunnels) {
-            if(tunnel.getOrigin().equals(nodeA) && tunnel.getDestination().equals(nodeB)) {
-                return tunnel;
-            }
-            if(tunnel.getOrigin().equals(nodeB) && tunnel.getDestination().equals(nodeA)) {
+        for (int i = 0; i < messageTunnels.size(); i++) {
+            MessageTunnel tunnel = messageTunnels.get(i);
+            if(tunnel.getOrigin().equals(origin) && tunnel.getDestination().equals(destination)) {
                 return tunnel;
             }
         }

@@ -269,23 +269,16 @@ public class MessageTunnel {
      * @return
      */
     public MessageTunnelState getTunnelState() {
-        if(nextNode == null && previousNode == null) {
-            return MessageTunnelState.NOT_ESTABLISHED;
-        }
-        if(nextNode != Node.self && previousNode != Node.self) {
-            return MessageTunnelState.HOSTED;
-        }
-        if(origin.equals(Node.self.getIdentity().getNetworkId())) {
-            if(getSymmetricKey() != null) {
-                return MessageTunnelState.ESTABLISHED;
-            } else {
-                return MessageTunnelState.ESTABLISHING;
-            }
-        }
         if(getSymmetricKey() != null) {
             return MessageTunnelState.ESTABLISHED;
         }
-        return MessageTunnelState.NOT_ESTABLISHED;
+        else if(side != MessageTunnelSide.UNDEFINED) {
+            return MessageTunnelState.ESTABLISHING;
+        } else if(previousNode != null && nextNode != null) {
+            return MessageTunnelState.HOSTED;
+        } else {
+            return MessageTunnelState.NOT_ESTABLISHED;
+        }
     }
 
     public MessageTunnelSide getSide() {
