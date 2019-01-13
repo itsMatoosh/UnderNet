@@ -256,6 +256,11 @@ public class Router extends EventHandler {
         if(server != null) {
             server.stop();
         }
+
+        //Closes all remaining tunnels.
+        for (int i = 0; i < messageTunnelManager.messageTunnels.size(); i++) {
+            messageTunnelManager.closeTunnel(messageTunnelManager.messageTunnels.get(i));
+        }
     }
 
     /**

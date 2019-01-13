@@ -66,11 +66,18 @@ public class VisualPanelDraw extends JPanel {
             }
         }
 
-        int rad = 40;
+        int diam = 40;
         g.setColor(fill);
-        g.fillOval(getWidth()/2 - rad/2, getHeight()/2 - rad/2, rad, rad);
+        g.fillOval(getWidth()/2 - diam/2, getHeight()/2 - diam/2, diam, diam);
         g.setColor(Color.BLACK);
-        g.drawOval(getWidth()/2 - rad/2, getHeight()/2 - rad/2, rad, rad);    }
+        g.drawOval(getWidth()/2 - diam/2, getHeight()/2 - diam/2, diam, diam);
+
+        if(Node.self.getIdentity() != null) {
+            g.setColor(Color.WHITE);
+            String identity = Node.self.getIdentity().getNetworkId().getStringValue().substring(0, 12) + "...";
+            g.drawString(identity, getWidth()/2 - g.getFontMetrics().stringWidth(identity) / 2, getHeight()/2 + diam / 2 + g.getFontMetrics().getHeight() + 5);
+        }
+    }
 
     /**
      * Draws representations of other nodes.

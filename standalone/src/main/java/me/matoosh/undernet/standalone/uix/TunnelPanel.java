@@ -11,6 +11,7 @@ import me.matoosh.undernet.event.channel.message.tunnel.MessageTunnelEstablished
 import me.matoosh.undernet.event.router.RouterStatusEvent;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
 import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnel;
+import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnelState;
 
 import javax.swing.*;
 import java.awt.*;
@@ -93,7 +94,20 @@ class TunnelListCellRenderer extends DefaultListCellRenderer
         if (value instanceof MessageTunnel) {
             MessageTunnel tunnel = (MessageTunnel) value;
             setText(tunnel.toString());
-            setBackground(Color.GREEN);
+            switch(tunnel.getTunnelState()) {
+                case ESTABLISHED:
+                    setBackground(Color.GREEN);
+                    break;
+                case HOSTED:
+                    setBackground(Color.GRAY);
+                    break;
+                case ESTABLISHING:
+                    setBackground(Color.ORANGE);
+                    break;
+                case NOT_ESTABLISHED:
+                    setBackground(Color.RED);
+                    break;
+            }
 
             if (isSelected) {
                 setBackground(getBackground().darker());
