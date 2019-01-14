@@ -1,4 +1,5 @@
 apply plugin: 'application'
+apply plugin: 'java-library-distribution'
 
 dependencies {
     compile project(path: ':shared')
@@ -10,15 +11,18 @@ dependencies {
 // Include dependent libraries in archive.
 mainClassName = "me.matoosh.undernet.standalone.UnderNetStandalone"
 
+// Task "distZip" added by plugin "java-library-distribution":
+distZip.shouldRunAfter(build)
+
 jar {
     // Keep jar clean:
     exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.MF'
 
     manifest {
-        attributes "Main-Class": "$mainClassName"
+        attributes 'Main-Class': 'me.matoosh.undernet.standalone.UnderNetStandalone',
+                'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
     }
-
-    from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-    }
+    // How-to add class path:
+    //     http://stackoverflow.com/questions/22659463/add-classpath-in-manifest-using-gradle
+    //     https://gist.github.com/simon04/6865179
 }

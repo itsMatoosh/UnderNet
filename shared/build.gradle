@@ -1,5 +1,5 @@
 dependencies {
     implementation group: 'io.netty', name: 'netty-all', version: '4.1.22.Final'
     implementation group: 'org.apache.commons', name: 'commons-crypto', version: '1.0.0'
-    compileClasspath group: 'org.bouncycastle', name: 'bcprov-jdk16', version: '1.45'
+    implementation group: 'org.bouncycastle', name: 'bcprov-jdk16', version: '1.45'
 }

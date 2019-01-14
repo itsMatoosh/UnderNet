@@ -5,7 +5,6 @@ import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.ConnectionEstablishedEvent;
 import me.matoosh.undernet.event.channel.message.MessageReceivedEvent;
-import me.matoosh.undernet.event.resource.ResourceErrorEvent;
 import me.matoosh.undernet.event.resource.pull.ResourcePullReceivedEvent;
 import me.matoosh.undernet.event.resource.pull.ResourcePullSentEvent;
 import me.matoosh.undernet.event.resource.transfer.*;
