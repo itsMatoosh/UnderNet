@@ -17,6 +17,7 @@ distZip.shouldRunAfter(build)
 jar {
     // Keep jar clean:
     exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.MF'
+    baseName = 'UnderNet'
 
     manifest {
         attributes 'Main-Class': 'me.matoosh.undernet.standalone.UnderNetStandalone',
@@ -25,4 +26,10 @@ jar {
     // How-to add class path:
     //     http://stackoverflow.com/questions/22659463/add-classpath-in-manifest-using-gradle
     //     https://gist.github.com/simon04/6865179
+}
+distZip {
+    baseName = 'UnderNet'
+}
+distTar {
+    baseName = 'UnderNet'
 }

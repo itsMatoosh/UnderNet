@@ -3,3 +3,7 @@ dependencies {
     implementation group: 'org.apache.commons', name: 'commons-crypto', version: '1.0.0'
     implementation group: 'org.bouncycastle', name: 'bcprov-jdk16', version: '1.45'
 }
+
+jar {
+    baseName = 'UnderNet-base'
+}

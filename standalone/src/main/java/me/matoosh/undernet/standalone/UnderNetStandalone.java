@@ -6,6 +6,7 @@ import com.esotericsoftware.yamlbeans.YamlWriter;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.file.StandaloneFileManager;
 import me.matoosh.undernet.identity.NetworkIdentity;
+import me.matoosh.undernet.p2p.router.InterfaceStatus;
 import me.matoosh.undernet.standalone.config.StandaloneConfig;
 import me.matoosh.undernet.standalone.config.StandaloneConfigManager;
 import me.matoosh.undernet.standalone.serialization.SerializationTools;
@@ -139,6 +140,10 @@ public class UnderNetStandalone {
      * @param identity
      */
     public static void setNetworkIdentity(NetworkIdentity identity, File identityFile) {
+        if(UnderNet.router.status != InterfaceStatus.STOPPED) {
+            logger.warn("Can't change identity while the router is running!");
+            return;
+        }
         if(identity == null || identityFile == null || !identity.isCorrect()) {
             logger.warn("Network Identity incorrect, creating a new identity!");
             identity = new NetworkIdentity();
@@ -149,6 +154,9 @@ public class UnderNetStandalone {
         //Setting the identity.
         logger.info("Setting the current UnderNet identity to: {}", identity.getNetworkId().getStringValue());
         UnderNetStandalone.networkIdentity = identity;
+        if(MainFrame.instance != null && MainFrame.instance.frame != null) {
+            MainFrame.instance.frame.repaint();
+        }
 
         //Save the changed identity.
         try {

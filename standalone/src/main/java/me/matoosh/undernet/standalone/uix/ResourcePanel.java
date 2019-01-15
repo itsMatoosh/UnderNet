@@ -64,7 +64,13 @@ public class ResourcePanel extends EventHandler {
     }
 
     private void refreshList() {
-        resourceList.setListData(UnderNet.router.resourceManager.getStoredFileResources().toArray());
+        if (resourceList.getModel().getSize() == 0) {
+            resourceList.setListData(new String[]{ResourceBundle.getBundle("language").getString("string_empty")});
+        }
+        new Thread(() -> {
+            Object[] resources = UnderNet.router.resourceManager.getStoredFileResources().toArray();
+            EventQueue.invokeLater(() -> resourceList.setListData(resources));
+        }).start();
     }
 
     @Override
@@ -225,6 +231,7 @@ public class ResourcePanel extends EventHandler {
     public JComponent $$$getRootComponent$$$() {
         return panel;
     }
+
 }
 /**
  * Renders elements within the resource list.
@@ -248,6 +255,8 @@ class ResourceListCellRenderer extends DefaultListCellRenderer
             if (isSelected) {
                 setBackground(getBackground().darker());
             }
+        } else if (value instanceof String) {
+            setText((String) value);
         } else {
             setText("UNKNOWN");
         }

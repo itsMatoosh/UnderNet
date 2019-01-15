@@ -58,6 +58,8 @@ public abstract class ResourceTransferHandler {
             router.resourceManager.inboundHandlers.add(this);
         }
 
+        setLastMessageTime(System.currentTimeMillis() - 10000);
+
         EventManager.callEvent(new ResourceTransferStartedEvent(this));
     }
 
@@ -113,7 +115,7 @@ public abstract class ResourceTransferHandler {
      * @param dataMessage
      */
     public void callDataReceived(ResourceDataMessage dataMessage) {
-        lastMessageTime = System.currentTimeMillis();
+        setLastMessageTime(System.currentTimeMillis());
         onDataReceived(dataMessage);
     }
 
