@@ -15,6 +15,7 @@ import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.message.*;
 import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnel;
+import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnelSide;
 import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferHandler;
 import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferType;
 import org.slf4j.Logger;
@@ -44,6 +45,11 @@ public class ResourceManager extends Manager {
     public ArrayList<ResourceTransferHandler> inboundHandlers = new ArrayList<>();
 
     /**
+     * The last transfer id.
+     */
+    public int lastTransferId;
+
+    /**
      * The logger of the class.
      */
     public static Logger logger = LoggerFactory.getLogger(ResourceManager.class);
@@ -55,6 +61,7 @@ public class ResourceManager extends Manager {
      */
     public ResourceManager(Router router) {
         super(router);
+        this.lastTransferId = -1;
     }
 
     /**
@@ -80,7 +87,8 @@ public class ResourceManager extends Manager {
         logger.info("Publishing resource: {}...", resource);
 
         //Sending the resource info message.
-        startPush(resource, router.messageTunnelManager.getOrCreateTunnel(Node.self.getIdentity().getNetworkId(), resource.getNetworkID()));
+        MessageTunnel tunnel = router.messageTunnelManager.createTunnel(Node.self.getIdentity().getNetworkId(), resource.getNetworkID(), MessageTunnelSide.ORIGIN);
+        startPush(resource, tunnel);
     }
 
     /**
@@ -159,13 +167,22 @@ public class ResourceManager extends Manager {
     /**
      * Starts a push of a resource.
      * @param resource
+     */
+    private void startPush(Resource resource) {
+        //Creating push tunnel
+        MessageTunnel tunnel = router.messageTunnelManager.createTunnel(Node.self.getIdentity().getNetworkId(), resource.getNetworkID(), MessageTunnelSide.ORIGIN);
+        startPush(resource, tunnel);
+    }
+
+    /**
+     * Starts a push of a resource.
+     * @param resource
      * @param tunnel
      */
     private void startPush(Resource resource, MessageTunnel tunnel) {
         //Getting the transfer handler.
-        ResourceTransferHandler transferHandler = resource.getTransferHandler(ResourceTransferType.OUTBOUND, tunnel, (byte)0, this.router);
+        ResourceTransferHandler transferHandler = resource.getTransferHandler(ResourceTransferType.OUTBOUND, tunnel, -1, this.router);
         logger.info("Outbound {} resource transfer, transfer id: {}", resource.getResourceType(), transferHandler.getTransferId());
-        outboundHandlers.add(transferHandler);
 
         //Sending the resource info message.
         transferHandler.prepare();
@@ -208,7 +225,6 @@ public class ResourceManager extends Manager {
         //Getting a new resource handler.
         ResourceTransferHandler transferHandler = resource.getTransferHandler(ResourceTransferType.INBOUND, message.getNetworkMessage().getTunnel(), message.getTransferId(), this.router);
         logger.info("Inbound {} resource transfer, transfer id: {}", message.getResourceInfo().resourceType, transferHandler.getTransferId());
-        inboundHandlers.add(transferHandler);
 
         //Preparing for incoming resource.
         transferHandler.prepare();
@@ -241,12 +257,13 @@ public class ResourceManager extends Manager {
         //Sending next chunk from handler.
         for (ResourceTransferHandler transferHandler :
                 outboundHandlers) {
-            if(transferHandler.getTunnel() == message.getNetworkMessage().getTunnel() && transferHandler.getTransferId() == message.getTransferId()) {
+            if(transferHandler.getTransferId() == message.getTransferId()) {
                 logger.info("Sending chunk: {}, of file transfer {}", message.getChunkId(), transferHandler.getResource().getNetworkID());
-                transferHandler.sendChunk(message.getChunkId());
+                transferHandler.callSendChunk(message.getChunkId());
+                return;
             }
-            return;
         }
+
     }
 
     /**
@@ -254,13 +271,14 @@ public class ResourceManager extends Manager {
      * @param message
      */
     private void handleResourceRetrieve(ResourceDataMessage message) {
+        logger.info("Handling resource data retrieve, transId: {}", message.getTransferId());
         //Checking if the resource push is already being received.
         for (ResourceTransferHandler transferHandler :
                 inboundHandlers) {
-            if(transferHandler.getTunnel() == message.getNetworkMessage().getTunnel() && message.getTransferId() == transferHandler.getTransferId()) {
-                transferHandler.onDataReceived(message);
+            if(message.getTransferId() == transferHandler.getTransferId()) {
+                transferHandler.callDataReceived(message);
+                return;
             }
-            return;
         }
     }
 
@@ -302,26 +320,14 @@ public class ResourceManager extends Manager {
             for (FileResource file :
                     getStoredFileResources()) {
                 if(router.neighborNodesManager.getClosestTo(file.getNetworkID()) != Node.self) {
-                    startPush(file, router.messageTunnelManager.getOrCreateTunnel(Node.self.getIdentity().getNetworkId(), file.getNetworkID()));
+                    startPush(file);
                 }
             }
             for (FlagResource flag :
                     flagResources) {
                 if(router.neighborNodesManager.getClosestTo(flag.getNetworkID()) != Node.self) {
-                    startPush(flag, router.messageTunnelManager.getOrCreateTunnel(Node.self.getIdentity().getNetworkId(), flag.getNetworkID()));
+                    startPush(flag);
                 }
-            }
-        } else if(e instanceof ResourceTransferFinishedEvent) {
-            ResourceTransferFinishedEvent transferFinishedEvent = (ResourceTransferFinishedEvent)e;
-
-            //Closing the streams.
-            transferFinishedEvent.transferHandler.close();
-
-            //Removing from the list.
-            if(transferFinishedEvent.transferHandler.getTransferType() == ResourceTransferType.INBOUND) {
-                inboundHandlers.remove(transferFinishedEvent.transferHandler);
-            } else {
-                outboundHandlers.remove(transferFinishedEvent.transferHandler);
             }
         }
     }
@@ -347,6 +353,5 @@ public class ResourceManager extends Manager {
     protected void registerHandlers() {
         EventManager.registerHandler(this, MessageReceivedEvent.class);
         EventManager.registerHandler(this, ConnectionEstablishedEvent.class);
-        EventManager.registerHandler(this, ResourceTransferFinishedEvent.class);
     }
 }

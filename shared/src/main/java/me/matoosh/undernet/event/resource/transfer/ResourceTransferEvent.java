@@ -12,9 +12,13 @@ public abstract class ResourceTransferEvent extends Event {
     /**
      * The file transfer.
      */
-    public ResourceTransferHandler transferHandler;
+    private ResourceTransferHandler transferHandler;
 
     public ResourceTransferEvent(ResourceTransferHandler transferHandler) {
         this.transferHandler = transferHandler;
+    }
+
+    public ResourceTransferHandler getTransferHandler() {
+        return transferHandler;
     }
 }

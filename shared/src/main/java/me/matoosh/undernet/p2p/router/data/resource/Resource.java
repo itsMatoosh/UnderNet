@@ -120,7 +120,7 @@ public abstract class Resource implements Serializable {
     /**
      * Gets the resource transfer handler.
      */
-    public abstract ResourceTransferHandler getTransferHandler(ResourceTransferType resourceTransferType, MessageTunnel tunnel, byte transferId, Router router);
+    public abstract ResourceTransferHandler getTransferHandler(ResourceTransferType resourceTransferType, MessageTunnel tunnel, int transferId, Router router);
 
     /**
      * Gets the router.
@@ -146,7 +146,7 @@ public abstract class Resource implements Serializable {
      * @param tunnel
      * @param transferId
      */
-    public void sendInfo(MessageTunnel tunnel, byte transferId) {
+    public void sendInfo(MessageTunnel tunnel, int transferId) {
         tunnel.sendMessage(new ResourceInfoMessage(getInfo(), transferId));
     }
 

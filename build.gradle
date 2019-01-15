@@ -1,15 +1,13 @@
 allprojects {
-
-}
-subprojects {
     apply plugin: "java"
     sourceCompatibility = "1.8"
     targetCompatibility = "1.8"
     group 'me.matoosh.undernet'
     version '0.3'
-
+}
+subprojects {
     repositories {
-        mavenCentral()
+        jcenter()
     }
 
     dependencies {

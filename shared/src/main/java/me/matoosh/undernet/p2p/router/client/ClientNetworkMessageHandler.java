@@ -1,8 +1,5 @@
 package me.matoosh.undernet.p2p.router.client;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.AttributeKey;
@@ -13,6 +10,8 @@ import me.matoosh.undernet.event.channel.ChannelErrorEvent;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 
@@ -51,6 +50,15 @@ public class ClientNetworkMessageHandler extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        //Checking if connected already.
+        for (Node n :
+                client.router.getRemoteNodes()) {
+            if (n.getAddress().equals(ctx.channel().remoteAddress())) {
+                ctx.disconnect();
+                return;
+            }
+        }
+
         //Adding the channel to the client list.
         client.channels.add(ctx.channel());
 
@@ -81,6 +89,9 @@ public class ClientNetworkMessageHandler extends ChannelInboundHandlerAdapter {
         Node serverNode = ctx.channel().attr(ATTRIBUTE_KEY_SERVER_NODE).get();
         serverNode.channel = null;
         client.router.getConnectedNodes().remove(serverNode);
+
+        //Removing tunnels with node.
+        client.router.messageTunnelManager.closeTunnelsOnDisconnect(serverNode);
 
         //Calling the channel closed event.
         EventManager.callEvent(new ChannelClosedEvent(ctx.channel(), false));

@@ -95,7 +95,11 @@ public class Node implements Serializable {
      * @param msg
      */
     public void sendRaw(NetworkMessage msg) {
-        logger.info("Sending a {} message to: {}", msg.getContent().getType(), address);
+        if(msg.getContent() != null)
+            logger.info("Sending a {} message to: {}", msg.getContent().getType(), address);
+        else
+            logger.info("Sending a message to: {}", address);
+
         if(channel == null) {
             logger.error("Node {} is not a neighboring node, can't send the message!", this);
         } else {

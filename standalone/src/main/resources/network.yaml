@@ -2,6 +2,6 @@ network:
   listeningPort: 2017
   backlogCapacity: 16
   ignoreExceptions: false
-  maxNeighbors: 20
-  optNeighbors: 13
+  maxNeighbors: 8
+  optNeighbors: 5
   maxReconnectCount: 5

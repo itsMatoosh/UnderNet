@@ -7,14 +7,14 @@ public class ResourceDataChunkRequest extends MsgBase {
     /**
      * The transfer id of the data.
      */
-    private byte transferId;
+    private int transferId;
 
     /**
      * The id of the chunk requested.
      */
     private int chunkId;
 
-    public ResourceDataChunkRequest(byte transferId, int chunkId) {
+    public ResourceDataChunkRequest(int transferId, int chunkId) {
         this.transferId = transferId;
         this.chunkId = chunkId;
     }
@@ -24,7 +24,7 @@ public class ResourceDataChunkRequest extends MsgBase {
         return MsgType.RES_DATA_REQUEST;
     }
 
-    public byte getTransferId() {
+    public int getTransferId() {
         return transferId;
     }
 

@@ -6,11 +6,10 @@ import com.esotericsoftware.yamlbeans.YamlWriter;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.file.StandaloneFileManager;
 import me.matoosh.undernet.identity.NetworkIdentity;
-import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.standalone.config.StandaloneConfig;
 import me.matoosh.undernet.standalone.config.StandaloneConfigManager;
 import me.matoosh.undernet.standalone.serialization.SerializationTools;
-import me.matoosh.undernet.standalone.ui.AppFrame;
+import me.matoosh.undernet.standalone.uix.MainFrame;
 import org.cfg4j.provider.ConfigurationProvider;
 import org.cfg4j.provider.ConfigurationProviderBuilder;
 import org.cfg4j.source.ConfigurationSource;
@@ -25,7 +24,6 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.io.*;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Map;
@@ -37,11 +35,6 @@ import java.util.concurrent.TimeUnit;
  */
 
 public class UnderNetStandalone {
-    /**
-     * The main frame of the app.
-     */
-    public static AppFrame mainAppFrame;
-
     /**
      * The network identity to use when connecting.
      */
@@ -58,6 +51,11 @@ public class UnderNetStandalone {
     private static StandaloneFileManager tmpFileMgr;
 
     /**
+     * The undernet thread.
+     */
+    private static Thread unetThread;
+
+    /**
      * The logger of the class.
      */
     public static Logger logger = LoggerFactory.getLogger(UnderNetStandalone.class);
@@ -67,40 +65,34 @@ public class UnderNetStandalone {
         setup();
 
         //Starting the ui.
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                mainAppFrame = new AppFrame();
-                mainAppFrame.setVisible(true);
+        EventQueue.invokeLater(() -> MainFrame.newInstance());
 
-                //Creating network identity.
-                if(standaloneConfig.identity() == null || standaloneConfig.identity().isEmpty() || standaloneConfig.identity().equals("empty")) {
-                    logger.info("No identity cached, creating a new identity!");
-                    UnderNetStandalone.setNetworkIdentity(null, null);
+        //Creating network identity.
+        if(standaloneConfig.identity() == null || standaloneConfig.identity().isEmpty() || standaloneConfig.identity().equals("empty")) {
+            logger.info("No identity cached, creating a new identity!");
+            UnderNetStandalone.setNetworkIdentity(null, null);
+        } else {
+            logger.info("Identity cached, loading identity {}!", standaloneConfig.identity());
+            File currentIdentityFile = new File(standaloneConfig.identity());
+
+            try {
+                if (currentIdentityFile.exists()) {
+                    NetworkIdentity identity = (NetworkIdentity) SerializationTools.readObjectFromFile(currentIdentityFile);
+                    UnderNetStandalone.setNetworkIdentity(identity, currentIdentityFile);
                 } else {
-                    logger.info("Identity cached, loading identity {}!", standaloneConfig.identity());
-                    File currentIdentityFile = new File(standaloneConfig.identity());
-
-                    try {
-                        if (currentIdentityFile.exists()) {
-                            NetworkIdentity identity = (NetworkIdentity) SerializationTools.readObjectFromFile(currentIdentityFile);
-                            UnderNetStandalone.setNetworkIdentity(identity, currentIdentityFile);
-                        } else {
-                            logger.warn("Identity file: {}, doesn't exist! Creating a new identity!", currentIdentityFile);
-                        }
-                    }
-                    catch (NullPointerException e) {
-                        logger.warn("Error reading the identity file!", e);
-                        currentIdentityFile.delete();
-                    }
-                    finally {
-                        if(networkIdentity == null) {
-                            UnderNetStandalone.setNetworkIdentity(null, null);
-                        }
-                    }
+                    logger.warn("Identity file: {}, doesn't exist! Creating a new identity!", currentIdentityFile);
                 }
             }
-        });
+            catch (NullPointerException e) {
+                logger.warn("Error reading the identity file!", e);
+                currentIdentityFile.delete();
+            }
+            finally {
+                if(networkIdentity == null) {
+                    UnderNetStandalone.setNetworkIdentity(null, null);
+                }
+            }
+        }
     }
 
     /**
@@ -116,12 +108,7 @@ public class UnderNetStandalone {
         //Getting the file configuration source.
         //Specify which files to load. Configuration from both files will be merged.
         logger.info("Loading configuration from: {}", tmpFileMgr.getAppFolder());
-        ConfigFilesProvider configFilesProvider = new ConfigFilesProvider() {
-            @Override
-            public Iterable<Path> getConfigFiles() {
-                return Arrays.asList(Paths.get("network.yaml"), Paths.get("standalone.yaml"));
-            }
-        };
+        ConfigFilesProvider configFilesProvider = () -> Arrays.asList(Paths.get("network.yaml"), Paths.get("standalone.yaml"));
 
         //Use local files as configuration store
         ConfigurationSource source = new FilesConfigurationSource(configFilesProvider);
@@ -162,7 +149,6 @@ public class UnderNetStandalone {
         //Setting the identity.
         logger.info("Setting the current UnderNet identity to: {}", identity.getNetworkId().getStringValue());
         UnderNetStandalone.networkIdentity = identity;
-        mainAppFrame.setTitle("UnderNet - " + UnderNetStandalone.networkIdentity.getNetworkId().getStringValue());
 
         //Save the changed identity.
         try {
@@ -190,5 +176,20 @@ public class UnderNetStandalone {
             e.printStackTrace();
         }
 
+    }
+
+    /**
+     * Connects to UnderNet.
+     */
+    public static void connect() {
+        unetThread = new Thread(() -> UnderNet.connect(networkIdentity));
+        unetThread.start();
+    }
+
+    /**
+     * Disconnects from UnderNet.
+     */
+    public static void disconnect() {
+        new Thread(() -> UnderNet.disconnect()).start();
     }
 }

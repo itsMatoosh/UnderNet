@@ -9,8 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.InetSocketAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.ArrayList;
 
 /**
@@ -95,6 +93,7 @@ public class EntryNodeCache {
             }
         }
         node.setAddress(new InetSocketAddress(addressSplit[0], port));
+        if(node.getAddress() == null || node.getAddress().getAddress() == null) return null;
 
         //Adding the node to the cache.
         EntryNodeCache.addNode(node);
@@ -106,7 +105,7 @@ public class EntryNodeCache {
      * @param node
      */
     public static void addNode(Node node) {
-        if(Node.isLocalAddress(node.getAddress())) {
+        if(node == null || Node.isLocalAddress(node.getAddress())) {
             logger.warn("Can't add a local address to Node Cache!");
             return;
         }

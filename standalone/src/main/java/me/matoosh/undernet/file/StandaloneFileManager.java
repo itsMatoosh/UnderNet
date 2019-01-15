@@ -9,9 +9,9 @@ import java.io.File;
 
 public class StandaloneFileManager extends FileManager {
     /**
-     * Returns the main app folder.
+     * Returns the panel app folder.
      *
-     * @return the main app folder.
+     * @return the panel app folder.
      */
     @Override
     public File getAppFolder() {
