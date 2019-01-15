@@ -11,12 +11,10 @@ import me.matoosh.undernet.event.resource.transfer.ResourceTransferFinishedEvent
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferStartedEvent;
 import me.matoosh.undernet.event.router.RouterControlLoopEvent;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
-import me.matoosh.undernet.p2p.node.Node;
-import me.matoosh.undernet.p2p.router.InterfaceStatus;
 import me.matoosh.undernet.p2p.router.data.resource.FileResource;
 import me.matoosh.undernet.p2p.router.data.resource.Resource;
-import me.matoosh.undernet.standalone.uix.dialog.ResourcePublishDialog;
-import me.matoosh.undernet.standalone.uix.dialog.ResourcePullDialog;
+import me.matoosh.undernet.standalone.uix.dialog.PublishResourceDialog;
+import me.matoosh.undernet.standalone.uix.dialog.PullResourceDialog;
 
 import javax.swing.*;
 import java.awt.*;
@@ -35,12 +33,8 @@ public class ResourcePanel extends EventHandler {
     public ResourcePanel() {
         $$$setupUI$$$();
         registerListeners();
-        publishButton.addActionListener(e -> {
-            new ResourcePublishDialog(MainFrame.instance.frame).setVisible(true);
-        });
-        pullButton.addActionListener(e -> {
-            new ResourcePullDialog(MainFrame.instance.frame).setVisible(true);
-        });
+        publishButton.addActionListener(e -> PublishResourceDialog.newInstance());
+        pullButton.addActionListener(e -> PullResourceDialog.newInstance());
         resourceList.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {

@@ -29,6 +29,7 @@ public class VisualPanel {
      */
     private void $$$setupUI$$$() {
         createUIComponents();
+        panel.setDoubleBuffered(true);
     }
 
     /**
@@ -37,4 +38,5 @@ public class VisualPanel {
     public JComponent $$$getRootComponent$$$() {
         return panel;
     }
+
 }
