@@ -11,7 +11,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.ResourceBundle;
 
@@ -59,21 +62,29 @@ public class PublishResourceDialog extends JDialog {
     private void onPublish() {
         //Button clicked. Checking whether a correct path has been chosen.
         if (filePathField.getText() != null && !filePathField.getText().trim().equals("")) {
-            //Publishing resource on UnderNet.
-            FileResource fileResource = new FileResource(UnderNet.router, new File(filePathField.getText()));
-            if (!fileResource.copyToContent()) {
-                JOptionPane.showMessageDialog(MainFrame.instance.frame, String.format(ResourceBundle.getBundle("language").getString("dialog_publishResource_cantPublishMessage"), fileResource.file), ResourceBundle.getBundle("language").getString("dialog_publishResource_cantPublishTitle"), JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            UnderNet.router.resourceManager.publish(fileResource);
+            new Thread(() -> {
+                //Publishing resource on UnderNet.
+                FileResource fileResource = new FileResource(UnderNet.router, new File(filePathField.getText()));
 
-            //Copying the network to clipboard.
-            StringSelection stringSelection = new StringSelection(fileResource.getNetworkID().getStringValue());
-            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-            clipboard.setContents(stringSelection, null);
+                //Copying the network to clipboard.
+                StringSelection stringSelection = new StringSelection(fileResource.getNetworkID().getStringValue());
+                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                clipboard.setContents(stringSelection, null);
 
-            //Showing the published network id.
-            JOptionPane.showMessageDialog(MainFrame.instance.frame, String.format(ResourceBundle.getBundle("language").getString("dialog_publishResource_publishingMessage"), fileResource.file, fileResource.getNetworkID().getStringValue()), ResourceBundle.getBundle("language").getString("dialog_publishResource_publishingTitle"), JOptionPane.INFORMATION_MESSAGE);
+                //Showing the published network id.
+                EventQueue.invokeLater(() -> JOptionPane.showMessageDialog(MainFrame.instance.frame, String.format(ResourceBundle.getBundle("language").getString("dialog_publishResource_publishingMessage"), fileResource.file, fileResource.getNetworkID().getStringValue()), ResourceBundle.getBundle("language").getString("dialog_publishResource_publishingTitle"), JOptionPane.INFORMATION_MESSAGE));
+
+                if (!fileResource.copyToContent()) {
+                    EventQueue.invokeLater(() -> JOptionPane.showMessageDialog(MainFrame.instance.frame, String.format(ResourceBundle.getBundle("language").getString("dialog_publishResource_cantPublishMessage"), fileResource.file), ResourceBundle.getBundle("language").getString("dialog_publishResource_cantPublishTitle"), JOptionPane.ERROR_MESSAGE));
+                    return;
+                }
+                try {
+                    UnderNet.router.resourceManager.publish(fileResource);
+                } catch (Exception e) {
+                    EventQueue.invokeLater(() -> JOptionPane.showMessageDialog(MainFrame.instance.frame, String.format(ResourceBundle.getBundle("language").getString("dialog_publishResource_cantPublishMessage"), fileResource.file), ResourceBundle.getBundle("language").getString("dialog_publishResource_cantPublishTitle"), JOptionPane.ERROR_MESSAGE));
+                    return;
+                }
+            }).start();
 
             dispose();
         } else {

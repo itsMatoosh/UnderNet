@@ -11,15 +11,20 @@ import me.matoosh.undernet.event.resource.transfer.ResourceTransferDataReceivedE
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferDataSentEvent;
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferFinishedEvent;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
+import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
 import me.matoosh.undernet.p2p.router.data.resource.transfer.FileTransferHandler;
 import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferHandler;
 import me.matoosh.undernet.standalone.UnderNetStandalone;
+import me.matoosh.undernet.standalone.serialization.SerializationTools;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.io.File;
 import java.util.ResourceBundle;
 
 public class MainFrame extends EventHandler {
@@ -48,8 +53,19 @@ public class MainFrame extends EventHandler {
     private VisualPanel visualPanel;
     private TransferPanel transferPanel;
 
+    //top menu
+    JMenuBar menuBar;
+    JMenu identityMenu;
+    JMenuItem newIdentityOption;
+    JMenuItem changeIdentityOption;
+
     public static final int START_HEIGHT = 600;
     public static final int START_WIDTH = 950;
+
+    /**
+     * Whether the app is running on mac.
+     */
+    public static boolean IS_MAC;
 
     public MainFrame() {
         $$$setupUI$$$();
@@ -69,13 +85,38 @@ public class MainFrame extends EventHandler {
         instance.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         instance.initialize();
         instance.frame.pack();
+        instance.frame.setLocationRelativeTo(null);
         instance.frame.setSize(START_WIDTH, START_HEIGHT);
 
         instance.frame.setVisible(true);
     }
 
     private void initialize() {
+        //Check if running on a mac.
+        String lcOSName = System.getProperty("os.name").toLowerCase();
+        IS_MAC = lcOSName.startsWith("mac os x");
+
+        setLook();
         registerListener();
+        addMenus();
+    }
+
+    private void setLook() {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
+        if (IS_MAC) {
+            System.setProperty("com.apple.mrj.application.apple.menu.about.name", "UnderNet");
+            System.setProperty("apple.laf.useScreenMenuBar", "true");
+        }
     }
 
     private void registerListener() {
@@ -83,6 +124,60 @@ public class MainFrame extends EventHandler {
         EventManager.registerHandler(this, ResourceTransferDataReceivedEvent.class);
         EventManager.registerHandler(this, ResourceTransferDataSentEvent.class);
         EventManager.registerHandler(this, ResourceTransferFinishedEvent.class);
+    }
+
+    private void addMenus() {
+        menuBar = new JMenuBar();
+        identityMenu = new JMenu(ResourceBundle.getBundle("language").getString("menu_identity"));
+        newIdentityOption = new JMenuItem(ResourceBundle.getBundle("language").getString("menu_identity_new"));
+        newIdentityOption.addActionListener(e -> newIdentityPressed());
+        changeIdentityOption = new JMenuItem(ResourceBundle.getBundle("language").getString("menu_identity_change"));
+        changeIdentityOption.addActionListener(e -> changeIdentityPressed());
+        identityMenu.add(newIdentityOption);
+        identityMenu.add(changeIdentityOption);
+        menuBar.add(identityMenu);
+        frame.setJMenuBar(menuBar);
+    }
+
+    private void newIdentityPressed() {
+        NetworkIdentity identity = new NetworkIdentity();
+
+        //Open file choose dialog
+        File saveFile = null;
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Identity Files", "id", "identity");
+        fileChooser.setFileFilter(filter);
+        int result = fileChooser.showSaveDialog(frame);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            saveFile = fileChooser.getSelectedFile();
+            if (FilenameUtils.getExtension(saveFile.getPath()) != ".id") {
+                saveFile = new File(saveFile.getPath() + ".id");
+            }
+        }
+
+        if (saveFile == null) return;
+
+        SerializationTools.writeObjectToFile(identity, saveFile);
+        UnderNetStandalone.setNetworkIdentity(identity, saveFile);
+    }
+
+    private void changeIdentityPressed() {
+        //Open file choose dialog
+        File openFile = null;
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Identity Files", "id", "identity");
+        fileChooser.setFileFilter(filter);
+        int result = fileChooser.showOpenDialog(frame);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            openFile = fileChooser.getSelectedFile();
+        }
+
+        if (openFile == null || !openFile.exists()) return;
+
+        NetworkIdentity identity = (NetworkIdentity) SerializationTools.readObjectFromFile(openFile);
+        UnderNetStandalone.setNetworkIdentity(identity, openFile);
     }
 
     /**
@@ -104,18 +199,22 @@ public class MainFrame extends EventHandler {
             switch (statusEvent.newStatus) {
                 case STOPPED:
                     mainButton.setEnabled(true);
+                    identityMenu.setEnabled(true);
                     mainButton.setText(ResourceBundle.getBundle("language").getString("button_connect"));
                     this.frame.repaint();
                     break;
                 case STARTED:
                     instance.mainButton.setEnabled(true);
+                    instance.identityMenu.setEnabled(false);
                     instance.mainButton.setText(ResourceBundle.getBundle("language").getString("button_disconnect"));
                     break;
                 case STOPPING:
                     mainButton.setEnabled(false);
+                    identityMenu.setEnabled(false);
                     break;
                 case STARTING:
                     mainButton.setEnabled(false);
+                    identityMenu.setEnabled(false);
                     new Thread(() -> drawLoop()).start();
                     break;
             }
@@ -220,4 +319,5 @@ public class MainFrame extends EventHandler {
     public JComponent $$$getRootComponent$$$() {
         return panel;
     }
+
 }
