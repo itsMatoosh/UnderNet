@@ -3,8 +3,6 @@ package me.matoosh.undernet.p2p.router.data.resource.transfer;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferDataReceivedEvent;
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferDataSentEvent;
-import me.matoosh.undernet.event.resource.transfer.ResourceTransferErrorEvent;
-import me.matoosh.undernet.event.resource.transfer.ResourceTransferFinishedEvent;
 import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.data.message.ResourceDataChunkRequest;
 import me.matoosh.undernet.p2p.router.data.message.ResourceDataMessage;
@@ -35,9 +33,9 @@ public class FileTransferHandler extends ResourceTransferHandler {
     private long fileLength;
 
     /**
-     * The standard buffer size for file chunks (100kb)
+     * The standard buffer size for file chunks (1MB)
      */
-    public static final int BUFFER_SIZE = Short.MAX_VALUE;
+    public static final int BUFFER_SIZE = 1048576;
 
     /**
      * The amount of bytes written from the received chunks.

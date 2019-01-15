@@ -25,8 +25,8 @@ import me.matoosh.undernet.p2p.router.data.message.NetworkMessageManager;
 import me.matoosh.undernet.p2p.router.data.message.NodeNeighborsRequest;
 import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnel;
 import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnelManager;
-import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnelSide;
 import me.matoosh.undernet.p2p.router.data.message.tunnel.TunnelControlMessage;
+import me.matoosh.undernet.p2p.router.data.resource.Resource;
 import me.matoosh.undernet.p2p.router.data.resource.ResourceManager;
 import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferHandler;
 import me.matoosh.undernet.p2p.router.server.Server;
@@ -47,7 +47,7 @@ public class Router extends EventHandler {
     /**
      * The interval of the control loop.
      */
-    public static final int controlLoopInterval = 30;
+    public static final int controlLoopInterval = 15;
     /**
      * The logger.
      */
@@ -199,7 +199,7 @@ public class Router extends EventHandler {
     }
 
     /**
-     * Control loop running every 30 seconds.
+     * Control loop running every 15 seconds.
      */
     private void controlLoop() {
         logger.info("Checking if everything is running smoothly...");
@@ -216,12 +216,12 @@ public class Router extends EventHandler {
         //Checking resource transfer activity.
         for (int i = 0; i < resourceManager.inboundHandlers.size(); i++) {
             ResourceTransferHandler transferHandler = resourceManager.inboundHandlers.get(i);
-            if (System.currentTimeMillis() > transferHandler.getLastMessageTime() + controlLoopInterval * 1000)
+            if (System.currentTimeMillis() > transferHandler.getLastMessageTime() + 2 * controlLoopInterval * 1000)
                 transferHandler.callError(new TimeoutException());
         }
         for (int i = 0; i < resourceManager.outboundHandlers.size(); i++) {
             ResourceTransferHandler transferHandler = resourceManager.outboundHandlers.get(i);
-            if (System.currentTimeMillis() > transferHandler.getLastMessageTime() + controlLoopInterval * 1000)
+            if (System.currentTimeMillis() > transferHandler.getLastMessageTime() + 2 * controlLoopInterval * 1000)
                 transferHandler.callError(new TimeoutException());
         }
 
@@ -229,9 +229,23 @@ public class Router extends EventHandler {
         for (int i = 0; i < messageTunnelManager.messageTunnels.size(); i++) {
             MessageTunnel tunnel = messageTunnelManager.messageTunnels.get(i);
 
-            if (System.currentTimeMillis() > tunnel.getLastMessageTime() + 2 * controlLoopInterval * 1000)
+            if (System.currentTimeMillis() > tunnel.getLastMessageTime() + 4 * controlLoopInterval * 1000)
                 messageTunnelManager.closeTunnel(tunnel);
             else if (tunnel.isKeepAlive()) tunnel.sendMessage(new TunnelControlMessage());
+        }
+
+        //Sending pending transfers.
+        if(resourceManager.outboundHandlers.size() == 0) {
+            for (int i = 0; i < resourceManager.queuedResources.size(); i++) {
+                Resource r = resourceManager.queuedResources.get(i);
+                if (neighborNodesManager.getClosestTo(r.getNetworkID()) != Node.self) {
+                    resourceManager.queuedResources.remove(i);
+                    resourceManager.startPush(r);
+                    break;
+                } else {
+                    resourceManager.queuedResources.remove(i);
+                }
+            }
         }
 
         EventManager.callEvent(new RouterControlLoopEvent(this));

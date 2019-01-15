@@ -45,9 +45,9 @@ public class ResourceManager extends Manager {
     public ArrayList<ResourceTransferHandler> inboundHandlers = new ArrayList<>();
 
     /**
-     * The last transfer id.
+     * The queued resources that need to be sent.
      */
-    public int lastTransferId;
+    public ArrayList<Resource> queuedResources = new ArrayList<>();
 
     /**
      * The logger of the class.
@@ -61,7 +61,6 @@ public class ResourceManager extends Manager {
      */
     public ResourceManager(Router router) {
         super(router);
-        this.lastTransferId = -1;
     }
 
     /**
@@ -168,7 +167,7 @@ public class ResourceManager extends Manager {
      * Starts a push of a resource.
      * @param resource
      */
-    private void startPush(Resource resource) {
+    public void startPush(Resource resource) {
         //Creating push tunnel
         MessageTunnel tunnel = router.messageTunnelManager.createTunnel(Node.self.getIdentity().getNetworkId(), resource.getNetworkID(), MessageTunnelSide.ORIGIN);
         startPush(resource, tunnel);
@@ -179,7 +178,7 @@ public class ResourceManager extends Manager {
      * @param resource
      * @param tunnel
      */
-    private void startPush(Resource resource, MessageTunnel tunnel) {
+    public void startPush(Resource resource, MessageTunnel tunnel) {
         //Getting the transfer handler.
         ResourceTransferHandler transferHandler = resource.getTransferHandler(ResourceTransferType.OUTBOUND, tunnel, -1, this.router);
         logger.info("Outbound {} resource transfer, transfer id: {}", resource.getResourceType(), transferHandler.getTransferId());
@@ -320,13 +319,27 @@ public class ResourceManager extends Manager {
             for (FileResource file :
                     getStoredFileResources()) {
                 if(router.neighborNodesManager.getClosestTo(file.getNetworkID()) != Node.self) {
-                    startPush(file);
+                    boolean duplicate = false;
+                    for (Resource r :
+                            queuedResources) {
+                        if (r == file) duplicate = true;
+                    }
+                    if(duplicate) continue;
+
+                    queuedResources.add(file);
                 }
             }
             for (FlagResource flag :
                     flagResources) {
                 if(router.neighborNodesManager.getClosestTo(flag.getNetworkID()) != Node.self) {
-                    startPush(flag);
+                    boolean duplicate = false;
+                    for (Resource r :
+                            queuedResources) {
+                        if (r == flag) duplicate = true;
+                    }
+                    if(duplicate) continue;
+
+                    queuedResources.add(flag);
                 }
             }
         }
@@ -343,7 +356,6 @@ public class ResourceManager extends Manager {
         EventManager.registerEvent(ResourceTransferFinishedEvent.class);
         EventManager.registerEvent(ResourceTransferErrorEvent.class);
         EventManager.registerEvent(ResourceTransferDataSentEvent.class);
-        EventManager.registerEvent(ResourceTransferDataReceivedEvent.class);
     }
 
     /**
