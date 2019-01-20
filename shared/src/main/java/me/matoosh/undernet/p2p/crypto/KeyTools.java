@@ -30,6 +30,11 @@ public class KeyTools {
     public static final String ECC_CURVE_NAME = "secp256k1";
 
     /**
+     * The logger of the class.
+     */
+    public static Logger logger = LoggerFactory.getLogger(KeyTools.class);
+
+    /**
      * Represents the ECC curve used.
      */
     public static ECParameterSpec ECC_CURVE;
@@ -48,12 +53,6 @@ public class KeyTools {
             e.printStackTrace();
         }
     }
-    private static final byte UNCOMPRESSED_POINT_INDICATOR = 0x04;
-
-    /**
-     * The logger of the class.
-     */
-    static final Logger logger = LoggerFactory.getLogger(KeyTools.class);
 
     /**
      * Generates a random keypair.
@@ -82,7 +81,7 @@ public class KeyTools {
     }
 
     /**
-     * Gets public key from byte representation.
+     * Converts byte array with compressed EC public key data into an EC public key instance.
      * @param uncompressedPoint
      * @return
      * @throws Exception
@@ -92,17 +91,12 @@ public class KeyTools {
             throws Exception {
 
         int offset = 0;
-        if (uncompressedPoint[offset++] != UNCOMPRESSED_POINT_INDICATOR) {
-            throw new IllegalArgumentException(
-                    "Invalid uncompressedPoint encoding, no uncompressed point indicator");
-        }
-
         int keySizeBytes = (ECC_CURVE.getOrder().bitLength() + Byte.SIZE - 1)
                 / Byte.SIZE;
 
-        if (uncompressedPoint.length != 1 + 2 * keySizeBytes) {
-            throw new IllegalArgumentException(
-                    "Invalid uncompressedPoint encoding, not the correct size");
+        if (uncompressedPoint.length != 2 * keySizeBytes) {
+            logger.error("Couldn't deserialize EC Public Key, invalid data size!");
+            return null;
         }
 
         final BigInteger x = new BigInteger(1, Arrays.copyOfRange(
@@ -117,18 +111,15 @@ public class KeyTools {
     }
 
     /**
-     * Gets byte representation of a public key.
+     * Converts EC public key data into a byte array.
      * @param publicKey
      * @return
      */
     public static byte[] toUncompressedPoint(final ECPublicKey publicKey) {
-
         int keySizeBytes = (publicKey.getParams().getOrder().bitLength() + Byte.SIZE - 1)
                 / Byte.SIZE;
-
-        final byte[] uncompressedPoint = new byte[1 + 2 * keySizeBytes];
+        final byte[] uncompressedPoint = new byte[2 * keySizeBytes];
         int offset = 0;
-        uncompressedPoint[offset++] = 0x04;
 
         final byte[] x = publicKey.getW().getAffineX().toByteArray();
         if (x.length <= keySizeBytes) {
@@ -137,7 +128,8 @@ public class KeyTools {
         } else if (x.length == keySizeBytes + 1 && x[0] == 0) {
             System.arraycopy(x, 1, uncompressedPoint, offset, keySizeBytes);
         } else {
-            throw new IllegalStateException("x value is too large");
+            logger.error("Couldn't serialize EC public key {}, X value too large!", publicKey);
+            return null;
         }
         offset += keySizeBytes;
 
@@ -148,7 +140,8 @@ public class KeyTools {
         } else if (y.length == keySizeBytes + 1 && y[0] == 0) {
             System.arraycopy(y, 1, uncompressedPoint, offset, keySizeBytes);
         } else {
-            throw new IllegalStateException("y value is too large");
+            logger.error("Couldn't serialize EC public key {}, Y value too large!", publicKey);
+            return null;
         }
 
         return uncompressedPoint;
