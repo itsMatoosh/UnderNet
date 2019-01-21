@@ -12,8 +12,8 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventManager;
-import me.matoosh.undernet.event.client.ClientExceptionEvent;
 import me.matoosh.undernet.event.client.ClientStatusEvent;
+import me.matoosh.undernet.event.router.RouterErrorEvent;
 import me.matoosh.undernet.p2p.cache.EntryNodeCache;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
@@ -76,11 +76,13 @@ public class Client {
         EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STARTING));
 
         //Attempting to connect to each of the 5 most reliable nodes.
-        ArrayList<Node> nodesToConnectTo = EntryNodeCache.getMostReliable(5);
-        nodesToConnectTo.add(Node.self);
+        ArrayList<Node> nodesToConnectTo = EntryNodeCache.getRandom(5);
+        if(nodesToConnectTo != null) {
+            nodesToConnectTo.add(Node.self);
+        }
         if(nodesToConnectTo == null || nodesToConnectTo.size() == 0) {
             logger.warn("There are no cached nodes to connect to! The client will stop.");
-            EventManager.callEvent(new ClientExceptionEvent(this, new ClientNoNodesCachedException(this)));
+            EventManager.callEvent(new RouterErrorEvent(router, new ClientNoNodesCachedException(this), false));
             return;
         }
 
@@ -108,7 +110,7 @@ public class Client {
         if(status != InterfaceStatus.STARTED) {
             EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STARTED));
         }
-        if (this.router.getRemoteNodes().size() >= UnderNet.networkConfig.maxNeighbors()) {
+        if (this.router.getRemoteNodes().length >= UnderNet.networkConfig.maxNeighbors()) {
             logger.warn("Can't connect to more nodes!");
             return;
         }
@@ -179,6 +181,5 @@ public class Client {
      */
     private void registerEvents() {
         EventManager.registerEvent(ClientStatusEvent.class);
-        EventManager.registerEvent(ClientExceptionEvent.class);
     }
 }

@@ -28,47 +28,22 @@ public class EntryNodeCache {
     public static Logger logger = LoggerFactory.getLogger(EntryNodeCache.class);
 
     /**
-     * Returns a specific number of the most reliable nodes.
+     * Returns a specific number of random cached nodes.
      * @param amount
      * @return
      */
-    public static ArrayList<Node> getMostReliable(int amount, Node... exclude) {
+    public static ArrayList<Node> getRandom(int amount) {
         //Skipping if there are no cached nodes.
         if(cachedNodes == null || cachedNodes.size() == 0) {
             return new ArrayList<>();
         }
 
-        ArrayList<Node> resultList = (ArrayList<Node>) cachedNodes.clone();
-
-        //Excluding nodes.
-        if(exclude != null) {
-            for (Node n :
-                    exclude) {
-                resultList.remove(n);
-            }
+        if(amount >= cachedNodes.size()) {
+            return cachedNodes;
+        } else {
+            int i = UnderNet.secureRandom.nextInt(cachedNodes.size() - amount);
+            return (ArrayList<Node>) cachedNodes.subList(i, i + amount);
         }
-
-        //Adjusting the amount.
-        if(amount > resultList.size()) {
-            amount = resultList.size();
-        }
-
-        //Removing nodes with lowest reliability until reached the amount.
-        for(int i = 0; i < amount; i++) {
-            if(amount == resultList.size()) break;
-
-            //Getting the least reliable node in the remaining set.
-            Node lowestRel = resultList.get(0);
-            /*for(Node node : resultList) {
-                if(node.reliability < lowestRel.reliability) {
-                    lowestRel = node;
-                }
-            }*/
-
-            resultList.remove(lowestRel);
-        }
-
-        return resultList;
     }
 
     /**

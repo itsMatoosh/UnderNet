@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Manages neighboring nodes connected to the router.
@@ -31,11 +32,6 @@ import java.util.ArrayList;
 
 public class NeighborNodesManager extends Manager {
     /**
-     * Logger of the class.
-     */
-    public static Logger logger = LoggerFactory.getLogger(NeighborNodesManager.class);
-
-    /**
      * The percentage of neighbors that will be shared with requesting nodes.
      */
     public static final float NEIGHBOR_SHARE_PERCENT = 0.3333f;
@@ -43,6 +39,10 @@ public class NeighborNodesManager extends Manager {
      * Max amount of neighbor addresses shared.
      */
     public static final int MAX_NEIGHBORS_MSG_LENGTH = 5;
+    /**
+     * Logger of the class.
+     */
+    public static Logger logger = LoggerFactory.getLogger(NeighborNodesManager.class);
 
     /**
      * Router specification is mandatory.
@@ -80,18 +80,18 @@ public class NeighborNodesManager extends Manager {
      */
     @Override
     public void onEventCalled(Event e) {
-        if(e instanceof ChannelCreatedEvent) {
+        if (e instanceof ChannelCreatedEvent) {
             //Sending node info to the connected node.
-            ChannelCreatedEvent channelCreatedEvent = (ChannelCreatedEvent)e;
+            ChannelCreatedEvent channelCreatedEvent = (ChannelCreatedEvent) e;
             sendSelfNodeInfo(channelCreatedEvent.remoteNode);
-        } else if(e instanceof ChannelMessageReceivedEvent) {
-            ChannelMessageReceivedEvent messageReceivedEvent = (ChannelMessageReceivedEvent)e;
+        } else if (e instanceof ChannelMessageReceivedEvent) {
+            ChannelMessageReceivedEvent messageReceivedEvent = (ChannelMessageReceivedEvent) e;
 
-            if(messageReceivedEvent.remoteNode.getIdentity() == null) {
+            if (messageReceivedEvent.remoteNode.getIdentity() == null) {
                 if (messageReceivedEvent.message.verify()) {
                     messageReceivedEvent.message.deserialize();
-                    if(messageReceivedEvent.message.getContent().getType() == MsgType.NODE_INFO) {
-                        NodeInfoMessage nodeInfoMessage = (NodeInfoMessage)messageReceivedEvent.message.getContent();
+                    if (messageReceivedEvent.message.getContent().getType() == MsgType.NODE_INFO) {
+                        NodeInfoMessage nodeInfoMessage = (NodeInfoMessage) messageReceivedEvent.message.getContent();
 
                         logger.debug("Received node info for {}", nodeInfoMessage.getNetworkMessage().getOrigin());
                         NetworkIdentity networkIdentity = new NetworkIdentity(nodeInfoMessage.getNetworkMessage().getOrigin());
@@ -107,7 +107,7 @@ public class NeighborNodesManager extends Manager {
             NetworkMessage netMsg = messageReceivedEvent.networkMessage;
             if (netMsg.getContent().getType() == MsgType.NODE_NEIGHBORS_REQUEST && netMsg.getDirection() == NetworkMessage.MessageDirection.TO_DESTINATION) {
                 //responding with neighbors.
-                ArrayList<Node> shareableNeighbors = router.getRemoteNodes();
+                ArrayList<Node> shareableNeighbors = new ArrayList<>(Arrays.asList(router.getRemoteNodes()));
                 for (Node n :
                         shareableNeighbors) {
                     if (n.getAddress().equals(netMsg.getTunnel().getPreviousNode().getAddress())) {
@@ -115,7 +115,7 @@ public class NeighborNodesManager extends Manager {
                         break;
                     }
                 }
-                if(shareableNeighbors.size() == 0) {
+                if (shareableNeighbors.size() == 0) {
                     logger.info("Too few neighbors to share!");
                     return;
                 }
@@ -161,6 +161,7 @@ public class NeighborNodesManager extends Manager {
 
     /**
      * Sends a node info message about infoFrom, to infoTo.
+     *
      * @param infoTo
      */
     public void sendSelfNodeInfo(Node infoTo) {
@@ -173,21 +174,22 @@ public class NeighborNodesManager extends Manager {
 
     /**
      * Returns the neighboring node closest to the given id.
+     *
      * @param id
      * @return
      */
     public Node getClosestTo(NetworkID id) {
         Node closest = Node.self;
         BigInteger closestDist = Node.self.getIdentity().getNetworkId().distanceTo(id);
-        for (int i = 0; i < router.getRemoteNodes().size(); i++) {
-            Node n = router.getRemoteNodes().get(i);
-            if(n == null) continue;
-            if(n.getIdentity() == null) {
+        for (int i = 0; i < router.getRemoteNodes().length; i++) {
+            Node n = router.getRemoteNodes()[i];
+            if (n == null) continue;
+            if (n.getIdentity() == null) {
                 continue;
             }
             BigInteger distance = n.getIdentity().getNetworkId().distanceTo(id);
 
-            if(distance.compareTo(closestDist) == -1) {
+            if (distance.compareTo(closestDist) == -1) {
                 closest = n;
                 closestDist = distance;
             }

@@ -85,18 +85,18 @@ public class VisualPanelDraw extends JPanel {
      * @param g
      */
     private void drawOtherNodes(Graphics g) {
-        double angle = (2 * Math.PI) / UnderNet.router.getRemoteNodes().size();
+        double angle = (2 * Math.PI) / UnderNet.router.getRemoteNodes().length;
         int distance = 100;
         int diam = 30;
 
         double currAngle = ((double)(System.currentTimeMillis() % 5000) / 5000d) * (2 * Math.PI);
-        for (int i = 0; i < UnderNet.router.getRemoteNodes().size(); i++) {
+        for (int i = 0; i < UnderNet.router.getRemoteNodes().length; i++) {
 
             int x = (int) (getWidth()/2 + distance * Math.cos(currAngle));
             int y = (int) (getHeight()/2 + distance * Math.sin(currAngle));
 
             //line
-            Node n = UnderNet.router.getRemoteNodes().get(i);
+            Node n = UnderNet.router.getRemoteNodes()[i];
             if(recentlyReceived.containsKey(n)) {
                 g.setColor(Color.CYAN);
 

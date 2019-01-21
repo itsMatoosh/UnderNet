@@ -10,6 +10,7 @@ import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferDataReceivedEvent;
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferDataSentEvent;
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferFinishedEvent;
+import me.matoosh.undernet.event.router.RouterErrorEvent;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
 import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
@@ -121,6 +122,7 @@ public class MainFrame extends EventHandler {
 
     private void registerListener() {
         EventManager.registerHandler(this, RouterStatusEvent.class);
+        EventManager.registerHandler(this, RouterErrorEvent.class);
         EventManager.registerHandler(this, ResourceTransferDataReceivedEvent.class);
         EventManager.registerHandler(this, ResourceTransferDataSentEvent.class);
         EventManager.registerHandler(this, ResourceTransferFinishedEvent.class);
@@ -243,6 +245,20 @@ public class MainFrame extends EventHandler {
             if (transferHandler instanceof FileTransferHandler) {
                 progressBar.setValue(0);
             }
+        } else if (e instanceof RouterErrorEvent) {
+            RouterErrorEvent errorEvent = (RouterErrorEvent) e;
+
+            if (errorEvent.shouldReconnect) {
+                JOptionPane.showMessageDialog(frame,
+                        errorEvent.exception.getLocalizedMessage() + "\n" + ResourceBundle.getBundle("language").getString("dialog_router_error_reconnecting"),
+                        ResourceBundle.getBundle("language").getString("dialog_router_error_title"),
+                        JOptionPane.WARNING_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(frame,
+                        errorEvent.exception.getLocalizedMessage(),
+                        ResourceBundle.getBundle("language").getString("dialog_router_error_title"),
+                        JOptionPane.WARNING_MESSAGE);
+            }
         }
     }
 
@@ -319,5 +335,4 @@ public class MainFrame extends EventHandler {
     public JComponent $$$getRootComponent$$$() {
         return panel;
     }
-
 }

@@ -20,6 +20,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.ResourceBundle;
 
 public class NodePanel extends EventHandler {
@@ -108,8 +109,7 @@ public class NodePanel extends EventHandler {
     private void refreshNodeList() {
         if (UnderNet.router.status.equals(InterfaceStatus.STARTED)) {
             //Using connected and cached nodes if the router has started.
-            ArrayList<Node> nodesToList = new ArrayList<>();
-            nodesToList.addAll(UnderNet.router.getRemoteNodes());
+            ArrayList<Node> nodesToList = new ArrayList<>(Arrays.asList(UnderNet.router.getRemoteNodes()));
             for (Node cachedNode :
                     EntryNodeCache.cachedNodes) {
                 boolean canAdd = true;

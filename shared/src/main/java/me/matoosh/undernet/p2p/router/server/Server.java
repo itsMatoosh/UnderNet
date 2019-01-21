@@ -12,7 +12,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventManager;
-import me.matoosh.undernet.event.server.ServerExceptionEvent;
+import me.matoosh.undernet.event.router.RouterErrorEvent;
 import me.matoosh.undernet.event.server.ServerStatusEvent;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
 import me.matoosh.undernet.p2p.router.Router;
@@ -113,9 +113,8 @@ public class Server
             }
             serverFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {
-            logger.error("Error binding the server!", e);
-            //Changing the server status to stopping.
-            EventManager.callEvent(new ServerStatusEvent(Server.this, InterfaceStatus.STOPPING));
+            EventManager.callEvent(new RouterErrorEvent(router, e, false));
+            return;
         } finally {
             //Stopping the event loop groups.
             try {
@@ -125,8 +124,10 @@ public class Server
                 workerEventLoopGroup.shutdownGracefully().sync();
                 workerEventLoopGroup = null;
             } catch (InterruptedException e) {
-                logger.error("Server shutdown has been interrupted!", e);
+                EventManager.callEvent(new RouterErrorEvent(router, e, false));
+                return;
             }
+
             EventManager.callEvent(new ServerStatusEvent(Server.this, InterfaceStatus.STOPPED));
         }
     }
@@ -156,6 +157,5 @@ public class Server
     private void registerEvents() {
         //Server events.
         EventManager.registerEvent(ServerStatusEvent.class);
-        EventManager.registerEvent(ServerExceptionEvent.class);
     }
 }
