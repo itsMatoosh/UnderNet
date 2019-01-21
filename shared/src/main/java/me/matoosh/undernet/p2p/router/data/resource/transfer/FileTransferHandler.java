@@ -151,7 +151,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
                     byte[] data = new byte[read];
                     System.arraycopy(buffer, 0, data, 0, read);
 
-                    logger.info("Sending file: {} | {}% ({}kb)", this.getResource().attributes.get(1), ((float) sent / Long.parseLong(getResource().getInfo().attributes.get(0))) * 100f, sent/1024);
+                    logger.info("Sending file: {} | {}% ({}kb)", this.getResource().attributes.get(1), ((float) sent / Long.parseLong(getResource().getInfo().attributes.get(0))) * 100f, read/1024);
                     sendData(data, chunkId);
 
                     //Finish if no more bytes available!
@@ -198,7 +198,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
                 try {
                     outputStream.write(dataMessage.getResourceData());
                     written += dataMessage.getResourceData().length;
-                    logger.info("Receiving file: {} | {}% ({}kb)", this.getResource().attributes.get(1), ((float)written/(float)fileLength)*100f, written/1024);
+                    logger.info("Receiving file: {} | {}% ({}kb)", this.getResource().attributes.get(1), ((float)written/(float)fileLength)*100f, dataMessage.getResourceData().length/1024);
                     if(written >= fileLength) {
                         //File fully received.
                         this.close();
