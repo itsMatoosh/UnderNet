@@ -130,6 +130,30 @@ public class NetworkID implements Serializable {
     }
 
     /**
+     * Returns the Network ID xored with the specified Network id.
+     * @param other the network id, that this network id will be xored with.
+     * @return the output network id.
+     */
+    public NetworkID xor(NetworkID other) {
+        byte[] outputData = new byte[NETWORK_ID_LENGTH];
+
+        for (int i = 0; i < NETWORK_ID_LENGTH; i++) {
+            outputData[i] = (byte) (this.getData()[i] ^ other.getData()[i]);
+        }
+
+        return new NetworkID(outputData);
+    }
+
+    /**
+     * Sends a message to the network id destination
+     *
+     * @param content
+     */
+    public void sendMessage(MsgBase content) {
+        UnderNet.router.networkMessageManager.sendMessage(content, this);
+    }
+
+    /**
      * Serialization
      *
      * @param oos
@@ -150,11 +174,6 @@ public class NetworkID implements Serializable {
             throws ClassNotFoundException, IOException {
         data = new byte[NETWORK_ID_LENGTH];
         ois.read(data);
-    }
-
-    @Override
-    public String toString() {
-        return "NID:{" + getStringValue() + '}';
     }
 
     /**
@@ -247,12 +266,8 @@ public class NetworkID implements Serializable {
         }
     }
 
-    /**
-     * Sends a message to the network id destination
-     *
-     * @param content
-     */
-    public void sendMessage(MsgBase content) {
-        UnderNet.router.networkMessageManager.sendMessage(content, this);
+    @Override
+    public String toString() {
+        return "NID:{" + getStringValue() + '}';
     }
 }
