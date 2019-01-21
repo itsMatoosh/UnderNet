@@ -144,15 +144,18 @@ public class FileTransferHandler extends ResourceTransferHandler {
             try {
                 if(inputStream.available() != 0) {
                     //The send buffer.
-                    byte[] buffer = new byte[BUFFER_SIZE];
+                    byte[] buffer;
+                    if(inputStream.available() > BUFFER_SIZE) {
+                        buffer = new byte[BUFFER_SIZE];
+                    } else {
+                        buffer = new byte[inputStream.available()];
+                    }
+
                     int read = inputStream.read(buffer);
                     sent += read;
 
-                    byte[] data = new byte[read];
-                    System.arraycopy(buffer, 0, data, 0, read);
-
-                    logger.info("Sending file: {} | {}% ({}kb)", this.getResource().attributes.get(1), ((float) sent / Long.parseLong(getResource().getInfo().attributes.get(0))) * 100f, read/1024);
-                    sendData(data, chunkId);
+                    logger.info("Sending file: {} | {}% ({}kb)", this.getResource().attributes.get(1), ((float) sent / Long.parseLong(getResource().getInfo().attributes.get(0))) * 100f, sent/1024);
+                    sendData(buffer, chunkId);
 
                     //Finish if no more bytes available!
                     if(inputStream.available() <= 0) {
@@ -198,7 +201,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
                 try {
                     outputStream.write(dataMessage.getResourceData());
                     written += dataMessage.getResourceData().length;
-                    logger.info("Receiving file: {} | {}% ({}kb)", this.getResource().attributes.get(1), ((float)written/(float)fileLength)*100f, dataMessage.getResourceData().length/1024);
+                    logger.info("Receiving file: {} | {}% ({}kb)", this.getResource().attributes.get(1), ((float)written/(float)fileLength)*100f, written/1024);
                     if(written >= fileLength) {
                         //File fully received.
                         this.close();
