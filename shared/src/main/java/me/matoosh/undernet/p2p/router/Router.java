@@ -333,11 +333,11 @@ public class Router extends EventHandler {
         if(connectedNodes.size() - 2 <= 0) return new Node[0];
         remoteNodes = new Node[connectedNodes.size() - 2];
 
-        for (int i = 0; i < getConnectedNodes().size(); i++) {
+        for (int i = 2; i < getConnectedNodes().size(); i++) {
             Node n = getConnectedNodes().get(i);
             if(n == null) continue;
             if (n.getAddress() != null && !Node.isLocalAddress(n.getAddress())) {
-                remoteNodes[i] = n;
+                remoteNodes[i-2] = n;
             }
         }
         return remoteNodes;
