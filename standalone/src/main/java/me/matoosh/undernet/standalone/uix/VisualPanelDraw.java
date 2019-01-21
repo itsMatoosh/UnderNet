@@ -113,7 +113,7 @@ public class VisualPanelDraw extends JPanel {
             g.drawOval(getWidth()/2 + x - diam/2, getHeight()/2 + y - diam/2, diam, diam);
 
             //net id
-            if(n.getIdentity() != null) {
+            if(n != null && n.getIdentity() != null) {
                 g.setColor(Color.WHITE);
                 String identity = n.getIdentity().getNetworkId().getStringValue().substring(0, 10) + "...";
                 g.drawString(identity, x - g.getFontMetrics().stringWidth(identity) / 2, y + diam / 2 + g.getFontMetrics().getHeight() + 5);
