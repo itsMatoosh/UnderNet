@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import java.security.Security;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.*;
 
 /**
@@ -96,7 +97,7 @@ public class Router extends EventHandler {
     /**
      * Nodes the router is connected to at the moment.
      */
-    private ArrayList<Node> connectedNodes = new ArrayList<>();
+    private Node[] connectedNodes = new Node[0];
     /**
      * Remote nodes that the router is connected to at the moment.
      */
@@ -318,7 +319,7 @@ public class Router extends EventHandler {
      *
      * @return
      */
-    public ArrayList<Node> getConnectedNodes() {
+    public Node[] getConnectedNodes() {
         return connectedNodes;
     }
 
@@ -329,13 +330,13 @@ public class Router extends EventHandler {
      * @return
      */
     public Node[] getRemoteNodes() {
-        if (remoteNodes != null && remoteNodes.length + 2 == connectedNodes.size()) return remoteNodes;
-        if(connectedNodes.size() - 2 <= 0) return new Node[0];
-        remoteNodes = new Node[connectedNodes.size() - 2];
+        if (remoteNodes != null && remoteNodes.length + 2 == connectedNodes.length) return remoteNodes;
+        if(connectedNodes == null || connectedNodes.length - 2 <= 0) return new Node[0];
+        remoteNodes = new Node[connectedNodes.length - 2];
 
         int j = 0;
-        for (int i = 0; i < getConnectedNodes().size(); i++) {
-            Node n = getConnectedNodes().get(i);
+        for (int i = 0; i < getConnectedNodes().length; i++) {
+            Node n = getConnectedNodes()[i];
             if(n == null) continue;
             if (n.getAddress() != null && !Node.isLocalAddress(n.getAddress())) {
                 remoteNodes[j] = n;
@@ -343,6 +344,25 @@ public class Router extends EventHandler {
             }
         }
         return remoteNodes;
+    }
+
+    public void addConnectedNode(Node n) {
+        final int N = connectedNodes.length;
+        connectedNodes = Arrays.copyOf(connectedNodes, N + 1);
+        connectedNodes[N] = n;
+    }
+
+    public void removeConnectedNode(Node n) {
+        int index = -1;
+        for (int i = 0; i < connectedNodes.length; i++) {
+            if(connectedNodes[i] == n) {
+                index = i;
+            }
+        }
+
+        if(index != -1) {
+            System.arraycopy(connectedNodes, index + 1, connectedNodes, index, connectedNodes.length - 1 - index);
+        }
     }
 
     /**
