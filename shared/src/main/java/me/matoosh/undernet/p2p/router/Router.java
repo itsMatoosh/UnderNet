@@ -227,7 +227,7 @@ public class Router extends EventHandler {
         for (int i = 0; i < messageTunnelManager.messageTunnels.size(); i++) {
             MessageTunnel tunnel = messageTunnelManager.messageTunnels.get(i);
 
-            if (System.currentTimeMillis() > tunnel.getLastMessageTime() + 4 * controlLoopInterval * 1000)
+            if (System.currentTimeMillis() > tunnel.getLastMessageTime() + 2 * controlLoopInterval * 1000)
                 messageTunnelManager.closeTunnel(tunnel);
             else if (tunnel.isKeepAlive()) tunnel.sendMessage(new TunnelControlMessage());
         }
@@ -333,11 +333,13 @@ public class Router extends EventHandler {
         if(connectedNodes.size() - 2 <= 0) return new Node[0];
         remoteNodes = new Node[connectedNodes.size() - 2];
 
-        for (int i = 2; i < getConnectedNodes().size(); i++) {
+        int j = 0;
+        for (int i = 0; i < getConnectedNodes().size(); i++) {
             Node n = getConnectedNodes().get(i);
             if(n == null) continue;
             if (n.getAddress() != null && !Node.isLocalAddress(n.getAddress())) {
-                remoteNodes[i-2] = n;
+                remoteNodes[j] = n;
+                j++;
             }
         }
         return remoteNodes;
