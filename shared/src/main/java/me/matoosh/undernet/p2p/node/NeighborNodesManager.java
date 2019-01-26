@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import java.math.BigInteger;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  * Manages neighboring nodes connected to the router.
@@ -104,10 +103,6 @@ public class NeighborNodesManager extends Manager {
                                 logger.warn("Node {} tried to impose the self node and will be disconnected!");
                                 router.disconnectNode(messageReceivedEvent.remoteNode);
                                 return;
-                            } else {
-                                //Self connected.
-                                logger.info("Self connected from {}", messageReceivedEvent.remoteNode.getAddress());
-                                router.getConnectedNodes().remove(messageReceivedEvent.remoteNode);
                             }
                         }
 
