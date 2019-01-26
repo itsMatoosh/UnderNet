@@ -99,11 +99,9 @@ public class NeighborNodesManager extends Manager {
 
                         //disconnecting imposers
                         if(messageReceivedEvent.remoteNode.getIdentity().getNetworkId().equals(Node.self.getIdentity().getNetworkId())) {
-                            if(!Node.isLocalAddress(messageReceivedEvent.remoteNode.getAddress())) {
-                                logger.warn("Node {} tried to impose the self node and will be disconnected!");
-                                router.disconnectNode(messageReceivedEvent.remoteNode);
-                                return;
-                            }
+                            logger.warn("Node {} tried to impose the self node and will be disconnected!");
+                            router.disconnectNode(messageReceivedEvent.remoteNode);
+                            return;
                         }
 
                         EventManager.callEvent(new ConnectionEstablishedEvent(messageReceivedEvent.remoteNode));
