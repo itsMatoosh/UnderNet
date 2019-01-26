@@ -50,15 +50,6 @@ public class ClientNetworkMessageHandler extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        //Checking if connected already.
-        for (Node n :
-                client.router.getConnectedNodes()) {
-            if (n.getAddress().equals(ctx.channel().remoteAddress())) {
-                ctx.disconnect();
-                return;
-            }
-        }
-
         //Adding the channel to the client list.
         client.channels.add(ctx.channel());
 

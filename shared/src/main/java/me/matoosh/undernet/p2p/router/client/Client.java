@@ -77,14 +77,6 @@ public class Client {
 
         //Attempting to connect to each of the 5 most reliable nodes.
         ArrayList<Node> nodesToConnectTo = EntryNodeCache.getRandom(5);
-        if(nodesToConnectTo != null) {
-            nodesToConnectTo.add(Node.self);
-        }
-        if(nodesToConnectTo == null || nodesToConnectTo.size() == 0) {
-            logger.warn("There are no cached nodes to connect to! The client will stop.");
-            EventManager.callEvent(new RouterErrorEvent(router, new ClientNoNodesCachedException(this), false));
-            return;
-        }
 
         //Creating a new event loop group.
         workerEventLoopGroup = new NioEventLoopGroup();

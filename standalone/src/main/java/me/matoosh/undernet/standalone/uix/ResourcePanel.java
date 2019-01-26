@@ -62,7 +62,8 @@ public class ResourcePanel extends EventHandler {
                     //Opening the content folder.
                     try {
                         Desktop.getDesktop().open(UnderNet.fileManager.getContentFolder());
-                    } catch (IOException e1) {}
+                    } catch (IOException e1) {
+                    }
                 }
             }
         });
