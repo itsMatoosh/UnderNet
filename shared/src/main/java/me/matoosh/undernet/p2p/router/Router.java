@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
 
 import java.security.Security;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.*;
 
 /**
@@ -108,6 +107,9 @@ public class Router extends EventHandler {
             logger.warn("Can't setup the router, while it's running!");
             return;
         }
+
+        //Creating the connected nodes list.
+        this.connectedNodes = new ArrayList<>();
 
         //Setting this as the currently used router.
         Node.self.router = this;
