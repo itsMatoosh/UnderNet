@@ -98,6 +98,19 @@ public class NeighborNodesManager extends Manager {
                         messageReceivedEvent.remoteNode.setIdentity(networkIdentity);
                         messageReceivedEvent.remoteNode.setPort(nodeInfoMessage.getConnectionPort());
 
+                        //disconnecting imposers
+                        if(messageReceivedEvent.remoteNode.getIdentity().getNetworkId().equals(Node.self.getIdentity().getNetworkId())) {
+                            if(!Node.isLocalAddress(messageReceivedEvent.remoteNode.getAddress())) {
+                                logger.warn("Node {} tried to impose the self node and will be disconnected!");
+                                router.disconnectNode(messageReceivedEvent.remoteNode);
+                                return;
+                            } else {
+                                //Self connected.
+                                logger.info("Self connected from {}", messageReceivedEvent.remoteNode.getAddress());
+                                router.getConnectedNodes().remove(messageReceivedEvent.remoteNode);
+                            }
+                        }
+
                         EventManager.callEvent(new ConnectionEstablishedEvent(messageReceivedEvent.remoteNode));
                     }
                 }
@@ -107,7 +120,7 @@ public class NeighborNodesManager extends Manager {
             NetworkMessage netMsg = messageReceivedEvent.networkMessage;
             if (netMsg.getContent().getType() == MsgType.NODE_NEIGHBORS_REQUEST && netMsg.getDirection() == NetworkMessage.MessageDirection.TO_DESTINATION) {
                 //responding with neighbors.
-                ArrayList<Node> shareableNeighbors = new ArrayList<>(Arrays.asList(router.getRemoteNodes()));
+                ArrayList<Node> shareableNeighbors = router.getConnectedNodes();
                 for (Node n :
                         shareableNeighbors) {
                     if (n.getAddress().equals(netMsg.getTunnel().getPreviousNode().getAddress())) {
@@ -181,8 +194,8 @@ public class NeighborNodesManager extends Manager {
     public Node getClosestTo(NetworkID id) {
         Node closest = Node.self;
         BigInteger closestDist = Node.self.getIdentity().getNetworkId().distanceTo(id);
-        for (int i = 0; i < router.getRemoteNodes().length; i++) {
-            Node n = router.getRemoteNodes()[i];
+        for (int i = 0; i < router.getConnectedNodes().size(); i++) {
+            Node n = router.getConnectedNodes().get(i);
             if (n == null) continue;
             if (n.getIdentity() == null) {
                 continue;

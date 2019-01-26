@@ -97,11 +97,7 @@ public class Router extends EventHandler {
     /**
      * Nodes the router is connected to at the moment.
      */
-    private Node[] connectedNodes = new Node[0];
-    /**
-     * Remote nodes that the router is connected to at the moment.
-     */
-    private Node[] remoteNodes;
+    private ArrayList<Node> connectedNodes;
 
     /**
      * Sets up the router.
@@ -179,6 +175,13 @@ public class Router extends EventHandler {
             return;
         }
 
+        //Clearing the connected nodes list.
+        if(this.connectedNodes == null) {
+            this.connectedNodes = new ArrayList<>();
+        } else {
+            this.connectedNodes.clear();
+        }
+
         //Caching the network identity.
         Node.self.setIdentity(networkIdentity);
 
@@ -204,11 +207,10 @@ public class Router extends EventHandler {
         logger.info("Checking if everything is running smoothly...");
 
         //Checking if enough nodes are connected.
-        Node[] remote = getRemoteNodes();
-        if (remote.length > 0 && remote.length < UnderNet.networkConfig.optNeighbors()) {
+        if (getConnectedNodes().size() > 0 && getConnectedNodes().size() < UnderNet.networkConfig.optNeighbors()) {
             //Request more neighbors.
-            int id = UnderNet.secureRandom.nextInt(remote.length);
-            Node neighbor = remote[id];
+            int id = UnderNet.secureRandom.nextInt(getConnectedNodes().size());
+            Node neighbor = getConnectedNodes().get(id);
             this.networkMessageManager.sendMessage(new NodeNeighborsRequest(), neighbor.getIdentity().getNetworkId());
         }
 
@@ -288,6 +290,9 @@ public class Router extends EventHandler {
         for (int i = 0; i < messageTunnelManager.messageTunnels.size(); i++) {
             messageTunnelManager.closeTunnel(messageTunnelManager.messageTunnels.get(i));
         }
+
+        //Clearing the connected nodes list.
+        this.connectedNodes.clear();
     }
 
     /**
@@ -319,50 +324,8 @@ public class Router extends EventHandler {
      *
      * @return
      */
-    public Node[] getConnectedNodes() {
+    public ArrayList<Node> getConnectedNodes() {
         return connectedNodes;
-    }
-
-    /**
-     * Gets all of the remote connected nodes.
-     * Omits all of the local nodes.
-     *
-     * @return
-     */
-    public Node[] getRemoteNodes() {
-        if (remoteNodes != null && remoteNodes.length + 2 == connectedNodes.length) return remoteNodes;
-        if(connectedNodes == null || connectedNodes.length - 2 <= 0) return new Node[0];
-        remoteNodes = new Node[connectedNodes.length - 2];
-
-        int j = 0;
-        for (int i = 0; i < getConnectedNodes().length; i++) {
-            Node n = getConnectedNodes()[i];
-            if(n == null) continue;
-            if (n.getAddress() != null && !Node.isLocalAddress(n.getAddress())) {
-                remoteNodes[j] = n;
-                j++;
-            }
-        }
-        return remoteNodes;
-    }
-
-    public void addConnectedNode(Node n) {
-        final int N = connectedNodes.length;
-        connectedNodes = Arrays.copyOf(connectedNodes, N + 1);
-        connectedNodes[N] = n;
-    }
-
-    public void removeConnectedNode(Node n) {
-        int index = -1;
-        for (int i = 0; i < connectedNodes.length; i++) {
-            if(connectedNodes[i] == n) {
-                index = i;
-            }
-        }
-
-        if(index != -1) {
-            System.arraycopy(connectedNodes, index + 1, connectedNodes, index, connectedNodes.length - 1 - index);
-        }
     }
 
     /**

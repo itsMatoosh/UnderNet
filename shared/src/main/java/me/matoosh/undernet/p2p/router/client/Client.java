@@ -110,7 +110,7 @@ public class Client {
         if(status != InterfaceStatus.STARTED) {
             EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STARTED));
         }
-        if (this.router.getRemoteNodes().length >= UnderNet.networkConfig.maxNeighbors()) {
+        if (this.router.getConnectedNodes().size() >= UnderNet.networkConfig.maxNeighbors()) {
             logger.warn("Can't connect to more nodes!");
             return;
         }
