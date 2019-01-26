@@ -254,7 +254,7 @@ public class NetworkMessageManager extends Manager {
             MessageTunnelEstablishedEvent messageTunnelEstablishedEvent = (MessageTunnelEstablishedEvent) e;
             MessageTunnel tunnel = messageTunnelEstablishedEvent.messageTunnel;
 
-            if (messageTunnelEstablishedEvent.messageTunnel.getSide() == MessageTunnelSide.ORIGIN) {
+            if (messageTunnelEstablishedEvent.messageTunnel != null && messageTunnelEstablishedEvent.messageTunnel.getSide() == MessageTunnelSide.ORIGIN) {
                 logger.info("Sending {} queued messages through the established tunnel: \n{}", tunnel.messageQueue.size(), tunnel);
 
                 //Sending messages through the tunnel.
