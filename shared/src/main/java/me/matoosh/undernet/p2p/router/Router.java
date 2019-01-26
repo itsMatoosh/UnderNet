@@ -327,7 +327,24 @@ public class Router extends EventHandler {
      * @return
      */
     public ArrayList<Node> getConnectedNodes() {
-        return connectedNodes;
+        return (ArrayList<Node>) connectedNodes.clone();
+    }
+
+    /**
+     * Adds a connected node.
+     */
+    public void addConnectedNode(Node n) {
+        logger.info("Adding {} to the connected nodes...", n);
+        connectedNodes.add(n);
+    }
+
+    /**
+     * Removes a connected node.
+     * @param n
+     */
+    public void removeConnectedNode(Node n) {
+        logger.info("Removing {} from the connected nodes...");
+        connectedNodes.remove(n);
     }
 
     /**
