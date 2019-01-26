@@ -172,7 +172,7 @@ public class MessageTunnelManager extends Manager {
                 sendTunnelResponse(tunnel);
 
                 //Calling the established event.
-                EventManager.callEvent(new MessageTunnelEstablishedEvent(messageReceivedEvent.networkMessage.getTunnel(), NetworkMessage.MessageDirection.TO_ORIGIN));
+                EventManager.callEvent(new MessageTunnelEstablishedEvent(messageReceivedEvent.networkMessage.getTunnel()));
             } else if (messageReceivedEvent.networkMessage.getContent().getType() == MsgType.TUNNEL_ESTABLISH_RESPONSE) {
                 //Called on the origin of the tunnel.
                 TunnelEstablishResponseMessage tunnelEstablishResponseMessage = (TunnelEstablishResponseMessage) messageReceivedEvent.networkMessage.getContent();
@@ -190,7 +190,7 @@ public class MessageTunnelManager extends Manager {
                 }
 
                 //Calling the event.
-                EventManager.callEvent(new MessageTunnelEstablishedEvent(tunnel, NetworkMessage.MessageDirection.TO_DESTINATION));
+                EventManager.callEvent(new MessageTunnelEstablishedEvent(tunnel));
             } else if (messageReceivedEvent.networkMessage.getContent().getType() == MsgType.TUNNEL_CLOSE_REQUEST) {
                 TunnelCloseRequestMessage closeRequestMessage = (TunnelCloseRequestMessage) messageReceivedEvent.networkMessage.getContent();
                 closeTunnel(closeRequestMessage.getNetworkMessage().getTunnel());
