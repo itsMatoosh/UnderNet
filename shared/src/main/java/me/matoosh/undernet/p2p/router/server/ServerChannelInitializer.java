@@ -5,7 +5,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
-import io.netty.handler.stream.ChunkedWriteHandler;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.ChannelErrorEvent;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
@@ -28,19 +27,15 @@ public class ServerChannelInitializer extends ChannelInitializer {
     }
 
     /**
-     * This method will be called once the {@link Channel} was registered. After the method returns this instance
-     * will be removed from the {@link ChannelPipeline} of the {@link Channel}.
-     *
-     * @param ch the {@link Channel} which was registered.
-     * @throws Exception is thrown if an error occurs. In that case it will be handled by
-     *                   {@link #exceptionCaught(ChannelHandlerContext, Throwable)} which will by default close
-     *                   the {@link Channel}.
+     * Called when a channel is being initialized.
+     * @param ch the initialized channel.
+     * @throws Exception
      */
     @Override
     protected void initChannel(Channel ch) throws Exception {
         //Registering the server channel handler.
-        ch.pipeline().addLast(new LengthFieldPrepender(2));
-        ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(NetworkMessage.NETWORK_MTU_SIZE, 0, 2, 0, 2));
+        ch.pipeline().addLast(new LengthFieldPrepender(4));
+        ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(NetworkMessage.NETWORK_MTU_SIZE, 0, 4, 0, 4));
         ch.pipeline().addLast(new NetworkMessageEncoder());
         ch.pipeline().addLast(new NetworkMessageDecoder());
         ch.pipeline().addLast(new ServerNetworkMessageHandler(server));

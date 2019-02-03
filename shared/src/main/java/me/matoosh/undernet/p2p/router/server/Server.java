@@ -100,6 +100,7 @@ public class Server
                 .childHandler(new ServerChannelInitializer(this))
                 .option(ChannelOption.SO_BACKLOG, UnderNet.networkConfig.backlogCapacity())//Setting the number of pending connections to keep in the queue.
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT) //Setting the default pooled allocator.
+                .option(ChannelOption.SO_REUSEADDR, true) //Allowing the address to be reused.
                 .childOption(ChannelOption.SO_KEEPALIVE, true); //Making sure the connection event loop sends keep alive messages.
 
         //Binding and starting to accept incoming connections.

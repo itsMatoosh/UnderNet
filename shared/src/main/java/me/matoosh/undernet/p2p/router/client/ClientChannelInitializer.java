@@ -28,15 +28,15 @@ public class ClientChannelInitializer extends ChannelInitializer<SocketChannel>{
     }
 
     /**
-     * Initializes the channel with handlers.
-     * @param ch
+     * Called when a channel is being initialized.
+     * @param ch the initialized channel.
      * @throws Exception
      */
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
         //Registering the client channel handler.
-        ch.pipeline().addLast(new LengthFieldPrepender(2));
-        ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(NetworkMessage.NETWORK_MTU_SIZE, 0, 2, 0, 2));
+        ch.pipeline().addLast(new LengthFieldPrepender(4));
+        ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(NetworkMessage.NETWORK_MTU_SIZE, 0, 4, 0, 4));
         ch.pipeline().addLast(new NetworkMessageEncoder());
         ch.pipeline().addLast(new NetworkMessageDecoder());
         ch.pipeline().addLast(new ClientNetworkMessageHandler(client));
@@ -50,7 +50,7 @@ public class ClientChannelInitializer extends ChannelInitializer<SocketChannel>{
      */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        Client.logger.error("An error occured while initializing the connection to: " + ctx.channel().remoteAddress(), cause);
+        Client.logger.error("An error occurred while initializing the connection to: " + ctx.channel().remoteAddress(), cause);
         EventManager.callEvent(new ChannelErrorEvent(ctx.channel(), false, cause));
 
         //Closing the connection.
