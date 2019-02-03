@@ -7,7 +7,6 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.ChannelErrorEvent;
-import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessageDecoder;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessageEncoder;
 
@@ -36,7 +35,7 @@ public class ClientChannelInitializer extends ChannelInitializer<SocketChannel>{
     protected void initChannel(SocketChannel ch) throws Exception {
         //Registering the client channel handler.
         ch.pipeline().addLast(new LengthFieldPrepender(4));
-        ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(NetworkMessage.NETWORK_MTU_SIZE, 0, 4, 0, 4));
+        ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 3, 0, 3));
         ch.pipeline().addLast(new NetworkMessageEncoder());
         ch.pipeline().addLast(new NetworkMessageDecoder());
         ch.pipeline().addLast(new ClientNetworkMessageHandler(client));
