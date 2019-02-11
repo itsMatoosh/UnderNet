@@ -5,6 +5,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.ChannelErrorEvent;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessageDecoder;
@@ -33,6 +35,7 @@ public class ServerChannelInitializer extends ChannelInitializer {
     @Override
     protected void initChannel(Channel ch) throws Exception {
         //Registering the server channel handler.
+        ch.pipeline().addLast(new LoggingHandler(LogLevel.INFO));
         ch.pipeline().addLast(new LengthFieldPrepender(3));
         ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 3, 0, 3));
         ch.pipeline().addLast(new NetworkMessageEncoder());

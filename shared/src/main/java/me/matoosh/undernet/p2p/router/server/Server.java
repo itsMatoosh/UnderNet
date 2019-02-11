@@ -9,6 +9,10 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.udt.nio.NioUdtProvider;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
+import io.netty.util.concurrent.DefaultThreadFactory;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventManager;
@@ -18,6 +22,8 @@ import me.matoosh.undernet.p2p.router.InterfaceStatus;
 import me.matoosh.undernet.p2p.router.Router;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.ThreadFactory;
 
 /**
  * Server part of the router.
@@ -90,18 +96,18 @@ public class Server
         EventManager.callEvent(new ServerStatusEvent(Server.this, InterfaceStatus.STARTING));
 
         //Creating the worker and boss server event groups.
-        bossEventLoopGroup = new NioEventLoopGroup();
-        workerEventLoopGroup = new NioEventLoopGroup();
+        final ThreadFactory bossThreadFactory = new DefaultThreadFactory("transport-server-boss");
+        final ThreadFactory workerThreadFactory = new DefaultThreadFactory("transport-server-worker");
+        bossEventLoopGroup = new NioEventLoopGroup(1, bossThreadFactory, NioUdtProvider.BYTE_PROVIDER);
+        workerEventLoopGroup = new NioEventLoopGroup(1, workerThreadFactory, NioUdtProvider.BYTE_PROVIDER);
 
         //Bootstraping the server.
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         serverBootstrap.group(bossEventLoopGroup, workerEventLoopGroup) //Assigning event loops to the server.
-                .channel(NioServerSocketChannel.class) //Using the non blocking io for transfer.
+                .channelFactory(NioUdtProvider.BYTE_ACCEPTOR) //Using the non blocking udt io for transfer.
                 .childHandler(new ServerChannelInitializer(this))
                 .option(ChannelOption.SO_BACKLOG, UnderNet.networkConfig.backlogCapacity())//Setting the number of pending connections to keep in the queue.
-                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT) //Setting the default pooled allocator.
-                .option(ChannelOption.SO_REUSEADDR, true) //Allowing the address to be reused.
-                .childOption(ChannelOption.SO_KEEPALIVE, true); //Making sure the connection event loop sends keep alive messages.
+                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT); //Setting the default pooled allocator.
 
         //Binding and starting to accept incoming connections.
         try {

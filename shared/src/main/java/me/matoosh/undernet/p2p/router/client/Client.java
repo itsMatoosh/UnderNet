@@ -9,6 +9,8 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.channel.udt.nio.NioUdtProvider;
+import io.netty.util.concurrent.DefaultThreadFactory;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventManager;
@@ -22,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * Client part of the router.
@@ -79,7 +82,8 @@ public class Client {
         ArrayList<Node> nodesToConnectTo = EntryNodeCache.getRandom(5);
 
         //Creating a new event loop group.
-        workerEventLoopGroup = new NioEventLoopGroup();
+        final ThreadFactory connectFactory = new DefaultThreadFactory("transport-client");
+        workerEventLoopGroup = new NioEventLoopGroup(1, connectFactory, NioUdtProvider.BYTE_PROVIDER);
 
         //Creating a list of client futures.
         closeFutures = new ArrayList<>();
@@ -126,8 +130,7 @@ public class Client {
         //Starting the client.
         Bootstrap clientBootstrap = new Bootstrap();
         clientBootstrap.group(workerEventLoopGroup) //Assigning the channel to the client event loop group.
-        .channel(NioSocketChannel.class) //Using the non blocking io.
-        .option(ChannelOption.SO_KEEPALIVE, true) //Making sure the connection is sending the keep alive signal.
+        .channelFactory(NioUdtProvider.BYTE_CONNECTOR) //Using the non blocking io.
         .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT) //Using the default pooled allocator.
         .handler(new ClientChannelInitializer(this));
 
@@ -158,7 +161,7 @@ public class Client {
         EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STOPPING));
 
         //Stopping the client futures.
-        if(closeFutures == null) {
+        if(closeFutures == null || closeFutures.size() == 0) {
             EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STOPPED));
         } else {
             for (ChannelFuture future:
