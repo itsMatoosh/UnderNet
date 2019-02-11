@@ -7,9 +7,9 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.FixedLengthFrameDecoder;
+import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.Delimiters;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
-import io.netty.handler.codec.LengthFieldPrepender;
 
 import java.net.InetSocketAddress;
 
@@ -40,8 +40,8 @@ public class PunchthroughMediatorServer {
 
             serverBootstrap.childHandler(new ChannelInitializer<SocketChannel>() {
                 protected void initChannel(SocketChannel socketChannel) throws Exception {
-                    socketChannel.pipeline().addLast(new LengthFieldPrepender(2));
-                    socketChannel.pipeline().addLast(new LengthFieldBasedFrameDecoder());
+                    socketChannel.pipeline().addLast(new DelimiterBasedFrameDecoder(1024, true, Delimiters.lineDelimiter()));
+                    socketChannel.pipeline().addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 2, 0, 2));
                     socketChannel.pipeline().addLast(new PunchthroughRequestHandler());
                 }
             });
