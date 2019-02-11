@@ -35,7 +35,6 @@ public class ServerChannelInitializer extends ChannelInitializer {
     @Override
     protected void initChannel(Channel ch) throws Exception {
         //Registering the server channel handler.
-        ch.pipeline().addLast(new LoggingHandler(LogLevel.INFO));
         ch.pipeline().addLast(new LengthFieldPrepender(3));
         ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 3, 0, 3));
         ch.pipeline().addLast(new NetworkMessageEncoder());
