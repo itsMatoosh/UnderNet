@@ -1,8 +1,8 @@
 package me.matoosh.undernet.p2p.router.client;
 
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.logging.LogLevel;
@@ -17,7 +17,7 @@ import me.matoosh.undernet.p2p.router.data.message.NetworkMessageEncoder;
  * Created by Mateusz Rębacz on 21.09.2017.
  */
 
-public class ClientChannelInitializer extends ChannelInitializer<SocketChannel>{
+public class ClientChannelInitializer extends ChannelInitializer{
 
     /**
      * The client of this channel initializer.
@@ -34,7 +34,7 @@ public class ClientChannelInitializer extends ChannelInitializer<SocketChannel>{
      * @throws Exception
      */
     @Override
-    protected void initChannel(SocketChannel ch) throws Exception {
+    protected void initChannel(Channel ch) throws Exception {
         //Registering the client channel handler.
         ch.pipeline().addLast(new LoggingHandler(LogLevel.INFO));
         ch.pipeline().addLast(new LengthFieldPrepender(3));
