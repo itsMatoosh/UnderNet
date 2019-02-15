@@ -10,7 +10,7 @@
  - Resource distribution
  -- After being published, resources such as files, will be distributed to appropriate nodes within the network and can be retrieved back using their network ids.
  - Direct Communication
- -- A direct or multicast connection between nodes can be established using tunnels.
+ -- A direct or multicast connection between nodes can be established using tunnels. (Not yet implemented)
  - Multi-platform
  -- Currently the network is being developed to be fully functional on standalone as well as Android devices, but with its modular design, it should be easy to port it to other platforms.
 
