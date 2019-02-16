@@ -1,4 +1,4 @@
-package me.matoosh.undernet.p2p.punchthrough.server;
+package me.matoosh.undernet.p2p.punchthrough;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;

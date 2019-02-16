@@ -282,8 +282,6 @@ public class MainFrame extends EventHandler {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-            } else {
-                logger.warn("Can't keep up! Did the system time change, or is the node overloaded?");
             }
         }
     }

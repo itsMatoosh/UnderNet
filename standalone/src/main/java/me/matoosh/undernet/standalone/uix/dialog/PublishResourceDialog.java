@@ -31,6 +31,7 @@ public class PublishResourceDialog extends JDialog {
     public PublishResourceDialog() {
         setContentPane(contentPane);
         setModal(true);
+        setTitle(ResourceBundle.getBundle("language").getString("dialog_publishResource"));
         getRootPane().setDefaultButton(buttonPublish);
         centerDialogOnMouse();
         onFileChosen();

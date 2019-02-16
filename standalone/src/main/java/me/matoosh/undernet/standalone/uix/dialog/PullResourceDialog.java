@@ -40,6 +40,7 @@ public class PullResourceDialog extends JDialog {
     public PullResourceDialog() {
         setContentPane(contentPane);
         setModal(true);
+        setTitle(ResourceBundle.getBundle("language").getString("dialog_pullResource"));
         getRootPane().setDefaultButton(buttonPull);
         centerDialogOnMouse();
 
