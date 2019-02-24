@@ -23,6 +23,7 @@ import me.matoosh.undernet.p2p.router.Router;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.concurrent.ThreadFactory;
 
@@ -95,8 +96,10 @@ public class Client {
             connect(node);
         }
     }
+
     /**
      * Connects the client to a node.
+     * @param node
      */
     public void connect(Node node) {
         if(status == InterfaceStatus.STOPPING) {
@@ -111,7 +114,7 @@ public class Client {
             return;
         }
 
-        //making sure node is not yet connected
+        //Making sure node is not yet connected
         for (Node conn :
                 this.router.getConnectedNodes()) {
             if (conn.getAddress().getHostString().equals(node.getAddress().getHostString())) {
@@ -120,7 +123,7 @@ public class Client {
             }
         }
 
-        logger.info("Connecting to node: " + node.getAddress());
+        logger.info("Connecting to node: {}", node.getAddress());
 
         //Making sure the list of client futures exists.
         if(closeFutures == null) {
@@ -130,9 +133,10 @@ public class Client {
         //Starting the client.
         Bootstrap clientBootstrap = new Bootstrap();
         clientBootstrap.group(workerEventLoopGroup) //Assigning the channel to the client event loop group.
-        .channelFactory(NioUdtProvider.BYTE_CONNECTOR) //Using the non blocking io.
-        .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT) //Using the default pooled allocator.
-        .handler(new ClientChannelInitializer(this));
+                .channelFactory(NioUdtProvider.BYTE_CONNECTOR) //Using the non blocking io.
+                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT) //Using the default pooled allocator.
+                .handler(new ClientChannelInitializer(this));
+
 
         //Connecting
         ChannelFuture future = clientBootstrap.connect(node.getAddress()); //Connecting to the node.
@@ -140,10 +144,57 @@ public class Client {
         closeFuture.addListener(future1 -> {
             //Removing the future from future list.
             closeFutures.remove(future1);
-            if(closeFutures.size() == 0) {
-                //Stopping the worker group.
-                EventManager.callEvent(new ClientStatusEvent(Client.this, InterfaceStatus.STOPPED));
+        });
+        closeFutures.add(closeFuture);
+    }
+
+    /**
+     * Connects the client to a node.
+     */
+    public void shineConnect(Node node, int selfPort) {
+        if(status == InterfaceStatus.STOPPING) {
+            logger.error("Can't connect to nodes, while the client is stopping!");
+            return;
+        }
+        if(status != InterfaceStatus.STARTED) {
+            EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STARTED));
+        }
+        if (this.router.getConnectedNodes().size() >= UnderNet.networkConfig.maxNeighbors()) {
+            logger.warn("Can't connect to more nodes!");
+            return;
+        }
+
+        //Making sure node is not yet connected
+        for (Node conn :
+                this.router.getConnectedNodes()) {
+            if (conn.getAddress().getHostString().equals(node.getAddress().getHostString())) {
+                logger.warn("Node {} already connected!", conn);
+                return;
             }
+        }
+
+        logger.info("SHINE connecting to node: {}", node.getAddress());
+
+        //Making sure the list of client futures exists.
+        if(closeFutures == null) {
+            closeFutures = new ArrayList<>();
+        }
+
+        //Starting the client.
+        Bootstrap clientBootstrap = new Bootstrap();
+        clientBootstrap.group(workerEventLoopGroup) //Assigning the channel to the client event loop group.
+                .channelFactory(NioUdtProvider.BYTE_RENDEZVOUS) //Using the non blocking io.
+                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT) //Using the default pooled allocator.
+                .option(ChannelOption.SO_REUSEADDR, true) //Reusing a socket address.
+                .handler(new ClientChannelInitializer(this));
+
+
+        //Connecting
+        ChannelFuture future = clientBootstrap.connect(node.getAddress(), new InetSocketAddress(selfPort)); //Connecting to the node.
+        ChannelFuture closeFuture = future.channel().closeFuture();
+        closeFuture.addListener(future1 -> {
+            //Removing the future from future list.
+            closeFutures.remove(future1);
         });
         closeFutures.add(closeFuture);
     }

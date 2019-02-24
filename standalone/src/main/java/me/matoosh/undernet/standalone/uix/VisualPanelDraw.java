@@ -7,6 +7,7 @@ import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.message.MessageReceivedEvent;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
+import me.matoosh.undernet.p2p.shine.client.ShineMediatorClient;
 import me.matoosh.undernet.standalone.UnderNetStandalone;
 
 import javax.swing.*;
@@ -68,10 +69,14 @@ public class VisualPanelDraw extends JPanel {
         }
 
         int diam = 40;
+        if(UnderNet.router != null && UnderNet.router.status == InterfaceStatus.STARTED && UnderNet.networkConfig.useShine() && ShineMediatorClient.isRunning()) {
+            int shineDiam = (int) (diam + ((double)(System.currentTimeMillis() % 1000) / 1000d) * 23);
+
+            g.setColor(Color.white);
+            g.drawOval(getWidth()/2 - shineDiam/2, getHeight()/2 - shineDiam/2, shineDiam, shineDiam);
+        }
         g.setColor(fill);
         g.fillOval(getWidth()/2 - diam/2, getHeight()/2 - diam/2, diam, diam);
-        g.setColor(Color.BLACK);
-        g.drawOval(getWidth()/2 - diam/2, getHeight()/2 - diam/2, diam, diam);
 
         if(UnderNetStandalone.networkIdentity != null) {
             g.setColor(Color.WHITE);

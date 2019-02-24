@@ -6,6 +6,8 @@
       <module name="api_test" target="1.8" />
       <module name="shared_main" target="1.8" />
       <module name="shared_test" target="1.8" />
+      <module name="shine_main" target="1.8" />
+      <module name="shine_test" target="1.8" />
       <module name="standalone_main" target="1.8" />
       <module name="standalone_test" target="1.8" />
       <module name="UnderNet_main" target="1.8" />

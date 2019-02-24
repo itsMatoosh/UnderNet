@@ -28,6 +28,7 @@ import me.matoosh.undernet.p2p.router.data.resource.Resource;
 import me.matoosh.undernet.p2p.router.data.resource.ResourceManager;
 import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferHandler;
 import me.matoosh.undernet.p2p.router.server.Server;
+import me.matoosh.undernet.p2p.shine.client.ShineMediatorClient;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -209,11 +210,30 @@ public class Router extends EventHandler {
         logger.info("Checking if everything is running smoothly...");
 
         //Checking if enough nodes are connected.
-        if (getConnectedNodes().size() > 0 && getConnectedNodes().size() < UnderNet.networkConfig.optNeighbors()) {
-            //Request more neighbors.
-            int id = UnderNet.secureRandom.nextInt(getConnectedNodes().size());
-            Node neighbor = getConnectedNodes().get(id);
-            this.networkMessageManager.sendMessage(new NodeNeighborsRequest(), neighbor.getIdentity().getNetworkId());
+        if (getConnectedNodes().size() < UnderNet.networkConfig.optNeighbors()) {
+            //Request more neighbors from neighbors.
+            if(getConnectedNodes().size() > 0) {
+                int id = UnderNet.secureRandom.nextInt(getConnectedNodes().size());
+                Node neighbor = getConnectedNodes().get(id);
+                this.networkMessageManager.sendMessage(new NodeNeighborsRequest(), neighbor.getIdentity().getNetworkId());
+            }
+
+            //Request neighbors from SHINE
+            if(UnderNet.networkConfig.useShine()) {
+                ShineMediatorClient.start(UnderNet.networkConfig.shineAddress(), UnderNet.networkConfig.shinePort(), (socketAddress, localPort) -> {
+                    if(localPort == 0) {
+                        logger.warn("Local SHINE port unknown, can't initiate connection!");
+                        return;
+                    }
+                    if(UnderNet.router != null && UnderNet.router.status == InterfaceStatus.STARTED) {
+                        Node n = new Node();
+                        n.setAddress(socketAddress);
+                        UnderNet.router.client.shineConnect(n, localPort);
+                    } else {
+                        logger.warn("UnderNet router must be running to complete a SHINE connection!");
+                    }
+                });
+            }
         }
 
         //Checking resource transfer activity.
@@ -292,6 +312,9 @@ public class Router extends EventHandler {
         for (int i = 0; i < messageTunnelManager.messageTunnels.size(); i++) {
             messageTunnelManager.closeTunnel(messageTunnelManager.messageTunnels.get(i));
         }
+
+        //Closes the shine client.
+        ShineMediatorClient.stop();
 
         //Clearing the connected nodes list.
         this.connectedNodes.clear();
@@ -401,30 +424,13 @@ public class Router extends EventHandler {
             }
         } else if (e.getClass() == RouterErrorEvent.class) {
             onRouterError((RouterErrorEvent) e);
-        } else if (e.getClass() == ServerStatusEvent.class) {
-            ServerStatusEvent statusEvent = (ServerStatusEvent) e;
-            if (statusEvent.newStatus.equals(InterfaceStatus.STARTED)) {
+        } else if (e.getClass() == ServerStatusEvent.class || e.getClass() == ClientStatusEvent.class) {
+            if (server.status == client.status) {
                 //In this case client doesn't yet have to be started.
-                if (client.status.equals(InterfaceStatus.STARTED)) {
+                if (server.status.equals(InterfaceStatus.STARTED)) {
                     //Both parts of the router started successfully.
                     onRouterStarted();
-                }
-            } else if (statusEvent.newStatus.equals(InterfaceStatus.STOPPED)) {
-                if (client.status.equals(InterfaceStatus.STOPPED)) {
-                    //Both parts of the router stopped successfully.
-                    onRouterStopped();
-                }
-            }
-        } else if (e.getClass() == ClientStatusEvent.class) {
-            ClientStatusEvent statusEvent = (ClientStatusEvent) e;
-            if (statusEvent.newStatus.equals(InterfaceStatus.STARTED)) {
-                if (server.status.equals(InterfaceStatus.STARTED)) {
-                    //Both parts of the router started succesfully.
-                    onRouterStarted();
-                }
-            } else if (statusEvent.newStatus.equals(InterfaceStatus.STOPPED)) {
-                if (server.status.equals(InterfaceStatus.STOPPED)) {
-                    //Both parts of the router stopped successfully.
+                } else if(server.status.equals(InterfaceStatus.STOPPED)) {
                     onRouterStopped();
                 }
             }

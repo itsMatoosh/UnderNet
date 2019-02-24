@@ -1,8 +1,9 @@
 dependencies {
+    implementation project(':shine')
     implementation group: 'io.netty', name: 'netty-all', version: '4.1.33.Final'
+    implementation group: 'com.barchart.udt', name: 'barchart-udt-bundle', version: '2.3.0'
     implementation group: 'org.apache.commons', name: 'commons-crypto', version: '1.0.0'
     implementation group: 'org.bouncycastle', name: 'bcprov-jdk16', version: '1.45'
-    implementation group: 'com.barchart.udt', name: 'barchart-udt-bundle', version: '2.3.0'
 }
 
 jar {

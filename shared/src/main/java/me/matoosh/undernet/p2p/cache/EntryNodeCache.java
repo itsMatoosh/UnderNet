@@ -8,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 
@@ -71,7 +73,9 @@ public class EntryNodeCache {
         if(node.getAddress() == null || node.getAddress().getAddress() == null) return null;
 
         //Adding the node to the cache.
-        EntryNodeCache.addNode(node);
+        if(!Node.isLocalAddress(node.getAddress())) {
+            EntryNodeCache.addNode(node);
+        }
 
         return node;
     }
