@@ -103,10 +103,9 @@ public class ShineMediatorServer {
         for (int i = 0; i < getConnectedClients().size(); i++) {
             Channel client = getConnectedClients().get(i);
             InetSocketAddress address = (InetSocketAddress)client.remoteAddress();
-            return client;
-            /*if(!address.getHostString().equalsIgnoreCase(nodeAddress.getHostString())) {
+            if(!address.getHostString().equalsIgnoreCase(nodeAddress.getHostString())) {
                 return client;
-            }*/
+            }
         }
         return null;
     }

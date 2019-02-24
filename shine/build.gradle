@@ -1,5 +1,4 @@
 apply plugin: 'application'
-apply plugin: 'java-library-distribution'
 
 dependencies {
     implementation group: 'io.netty', name: 'netty-all', version: '4.1.33.Final'
@@ -8,26 +7,3 @@ dependencies {
 
 // Include dependent libraries in archive.
 mainClassName = "me.matoosh.undernet.p2p.shine.ShineDriver"
-
-// Task "distZip" added by plugin "java-library-distribution":
-distZip.shouldRunAfter(build)
-
-jar {
-    // Keep jar clean:
-    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/*.MF'
-    baseName = 'SHINE'
-
-    manifest {
-        attributes 'Main-Class': 'me.matoosh.undernet.p2p.shine.ShineDriver',
-                'Class-Path': configurations.runtime.files.collect { "lib/$it.name" }.join(' ')
-    }
-    // How-to add class path:
-    //     http://stackoverflow.com/questions/22659463/add-classpath-in-manifest-using-gradle
-    //     https://gist.github.com/simon04/6865179
-}
-distZip {
-    baseName = 'SHINE'
-}
-distTar {
-    baseName = 'SHINE'
-}
