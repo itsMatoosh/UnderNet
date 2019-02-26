@@ -44,4 +44,22 @@ public interface NetworkConfig {
      * @return
      */
     Integer maxReconnectCount();
+
+    /**
+     * Whether UnderNet should use SHINE.
+     * @return
+     */
+    Boolean useShine();
+
+    /**
+     * The used SHINE address.
+     * @return
+     */
+    String shineAddress();
+
+    /**
+     * The used SHINE port.
+     * @return
+     */
+    Integer shinePort();
 }

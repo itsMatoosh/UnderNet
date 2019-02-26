@@ -32,9 +32,9 @@ public class ChannelCreatedEvent extends ChannelEvent {
     @Override
     public void onCalled() {
         if(isServer) {
-            Server.logger.info("Channel has been created to: {}", channel.remoteAddress());
+            Server.logger.info("New connection established with: {}", channel.remoteAddress());
         } else {
-            Client.logger.info("Channel has been created to: {}", channel.remoteAddress());
+            Client.logger.info("New connection established with: {}", channel.remoteAddress());
         }
     }
 }

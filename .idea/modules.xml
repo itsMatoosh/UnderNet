@@ -4,8 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/UnderNet.iml" filepath="$PROJECT_DIR$/.idea/modules/UnderNet.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/UnderNet_main.iml" filepath="$PROJECT_DIR$/.idea/modules/UnderNet_main.iml" group="UnderNet" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/UnderNet_main.iml" filepath="$PROJECT_DIR$/.idea/modules/UnderNet_main.iml" group="UnderNet" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/UnderNet_test.iml" filepath="$PROJECT_DIR$/.idea/modules/UnderNet_test.iml" group="UnderNet" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/UnderNet_test.iml" filepath="$PROJECT_DIR$/.idea/modules/UnderNet_test.iml" group="UnderNet" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/api/api.iml" filepath="$PROJECT_DIR$/.idea/modules/api/api.iml" group="api" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/api/api_main.iml" filepath="$PROJECT_DIR$/.idea/modules/api/api_main.iml" group="api" />
@@ -13,6 +11,9 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/shared/shared.iml" filepath="$PROJECT_DIR$/.idea/modules/shared/shared.iml" group="shared" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/shared/shared_main.iml" filepath="$PROJECT_DIR$/.idea/modules/shared/shared_main.iml" group="shared" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/shared/shared_test.iml" filepath="$PROJECT_DIR$/.idea/modules/shared/shared_test.iml" group="shared" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/shine.iml" filepath="$PROJECT_DIR$/.idea/modules/shine.iml" group="shine" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/shine/shine_main.iml" filepath="$PROJECT_DIR$/.idea/modules/shine/shine_main.iml" group="shine" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/shine/shine_test.iml" filepath="$PROJECT_DIR$/.idea/modules/shine/shine_test.iml" group="shine" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/standalone/standalone.iml" filepath="$PROJECT_DIR$/.idea/modules/standalone/standalone.iml" group="standalone" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/standalone/standalone_main.iml" filepath="$PROJECT_DIR$/.idea/modules/standalone/standalone_main.iml" group="standalone" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/standalone/standalone_test.iml" filepath="$PROJECT_DIR$/.idea/modules/standalone/standalone_test.iml" group="standalone" />

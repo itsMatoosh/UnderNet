@@ -45,3 +45,4 @@ standalone/random.id
 cache
 standalone.yaml
 network.yaml
+*.id

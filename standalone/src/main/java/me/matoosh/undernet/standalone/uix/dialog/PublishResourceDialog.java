@@ -31,6 +31,7 @@ public class PublishResourceDialog extends JDialog {
     public PublishResourceDialog() {
         setContentPane(contentPane);
         setModal(true);
+        setTitle(ResourceBundle.getBundle("language").getString("dialog_publishResource"));
         getRootPane().setDefaultButton(buttonPublish);
         centerDialogOnMouse();
         onFileChosen();
@@ -64,7 +65,11 @@ public class PublishResourceDialog extends JDialog {
         if (filePathField.getText() != null && !filePathField.getText().trim().equals("")) {
             new Thread(() -> {
                 //Publishing resource on UnderNet.
-                FileResource fileResource = new FileResource(UnderNet.router, new File(filePathField.getText()));
+                FileResource fileResource = new FileResource(UnderNet.router, new File(filePathField.getText().replaceAll("\"", "")));
+                if (fileResource.file == null || !fileResource.file.exists()) {
+                    EventQueue.invokeLater(() -> JOptionPane.showMessageDialog(MainFrame.instance.frame, String.format(ResourceBundle.getBundle("language").getString("dialog_publishResource_cantAccessFile"), fileResource.file), ResourceBundle.getBundle("language").getString("dialog_publishResource_cantPublishTitle"), JOptionPane.ERROR_MESSAGE));
+                    return;
+                }
 
                 //Copying the network to clipboard.
                 StringSelection stringSelection = new StringSelection(fileResource.getNetworkID().getStringValue());
@@ -241,5 +246,4 @@ public class PublishResourceDialog extends JDialog {
     public JComponent $$$getRootComponent$$$() {
         return contentPane;
     }
-
 }

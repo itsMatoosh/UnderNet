@@ -23,7 +23,7 @@ public class NetworkID implements Serializable {
     /**
      * The length of a network id in bytes.
      */
-    public static final int NETWORK_ID_LENGTH = 65;
+    public static final int NETWORK_ID_LENGTH = 64;
 
     /**
      * The data of the network id.
@@ -62,6 +62,47 @@ public class NetworkID implements Serializable {
     }
 
     /**
+     * Returns the value of the given id as a string.
+     *
+     * @return
+     */
+    public static String getStringValue(byte[] data) {
+        return Base64.getEncoder().withoutPadding().encodeToString(data);
+    }
+
+    /**
+     * Gets data from net id value.
+     */
+    public static byte[] getByteValue(String value) {
+        int rem = value.length() % 4;
+        if(rem == 3) {
+            return Base64.getDecoder().decode(value + "=");
+        }
+        else if(rem == 2) {
+            return Base64.getDecoder().decode(value + "==");
+        }
+
+        return Base64.getDecoder().decode(value);
+    }
+
+    /**
+     * Generates a NetworkID from a public key.
+     *
+     * @param publicKey
+     * @return
+     */
+    public static NetworkID generateFromPublicKey(ECPublicKey publicKey) {
+        byte[] encoded = KeyTools.toUncompressedPoint(publicKey);
+        if (encoded.length != NETWORK_ID_LENGTH) {
+            logger.warn("Cannot generate network id from {}, length mismatch! Key length: {}, expected: {}", publicKey, encoded.length, NETWORK_ID_LENGTH);
+            return null;
+        }
+
+        //Extract data from the public key.
+        return new NetworkID(encoded);
+    }
+
+    /**
      * Checks whether the network id is valid.
      *
      * @return
@@ -89,6 +130,30 @@ public class NetworkID implements Serializable {
     }
 
     /**
+     * Returns the Network ID xored with the specified Network id.
+     * @param other the network id, that this network id will be xored with.
+     * @return the output network id.
+     */
+    public NetworkID xor(NetworkID other) {
+        byte[] outputData = new byte[NETWORK_ID_LENGTH];
+
+        for (int i = 0; i < NETWORK_ID_LENGTH; i++) {
+            outputData[i] = (byte) (this.getData()[i] ^ other.getData()[i]);
+        }
+
+        return new NetworkID(outputData);
+    }
+
+    /**
+     * Sends a message to the network id destination
+     *
+     * @param content
+     */
+    public void sendMessage(MsgBase content) {
+        UnderNet.router.networkMessageManager.sendMessage(content, this);
+    }
+
+    /**
      * Serialization
      *
      * @param oos
@@ -111,27 +176,13 @@ public class NetworkID implements Serializable {
         ois.read(data);
     }
 
-    @Override
-    public String toString() {
-        return "NID:{" + getStringValue() + '}';
-    }
-
-    /**
-     * Returns the value of the given id as a string.
-     *
-     * @return
-     */
-    public static String getStringValue(byte[] data) {
-        return Base64.getEncoder().encodeToString(data);
-    }
-
     /**
      * Returns the value of the id as a string.
      *
      * @return
      */
     public String getStringValue() {
-        if(stringValue == null) {
+        if (stringValue == null) {
             stringValue = getStringValue(this.data);
         }
         return stringValue;
@@ -147,12 +198,26 @@ public class NetworkID implements Serializable {
     }
 
     /**
+     * Sets the network id data.
+     *
+     * @param data
+     */
+    public void setData(byte[] data) {
+        if (data.length != NETWORK_ID_LENGTH) {
+            logger.error("Network ID is not " + NETWORK_ID_LENGTH + " bytes long! Current number of bytes: " + data.length);
+            return;
+        }
+        this.data = data;
+    }
+
+    /**
      * Returns the big integer value of the network id.
      * Used for distance calculations.
+     *
      * @return
      */
     public BigInteger getBigIntegerValue() {
-        if(bigIntegerValue == null) {
+        if (bigIntegerValue == null) {
             bigIntegerValue = new BigInteger(this.getData());
         }
         return bigIntegerValue;
@@ -170,43 +235,6 @@ public class NetworkID implements Serializable {
             logger.error("Couldn't convert NetworkID: {} into a EC public key!", getStringValue(), e);
             return null;
         }
-    }
-
-    /**
-     * Sets the network id data.
-     *
-     * @param data
-     */
-    public void setData(byte[] data) {
-        if (data.length != NETWORK_ID_LENGTH) {
-            logger.error("Network ID is not " + NETWORK_ID_LENGTH + " bytes long! Current number of bytes: " + data.length);
-            return;
-        }
-        this.data = data;
-    }
-
-    /**
-     * Gets data from net id value.
-     */
-    public static byte[] getByteValue(String value) {
-        return Base64.getDecoder().decode(value);
-    }
-
-    /**
-     * Generates a NetworkID from a public key.
-     *
-     * @param publicKey
-     * @return
-     */
-    public static NetworkID generateFromPublicKey(ECPublicKey publicKey) {
-        byte[] encoded = KeyTools.toUncompressedPoint(publicKey);
-        if (encoded.length != NETWORK_ID_LENGTH) {
-            logger.warn("Cannot generate network id from {}, length mismatch! Key length: {}, expected: {}", publicKey, encoded.length, NETWORK_ID_LENGTH);
-            return null;
-        }
-
-        //Extract data from the public key.
-        return new NetworkID(encoded);
     }
 
     /**
@@ -238,12 +266,8 @@ public class NetworkID implements Serializable {
         }
     }
 
-    /**
-     * Sends a message to the network id destination
-     *
-     * @param content
-     */
-    public void sendMessage(MsgBase content) {
-        UnderNet.router.networkMessageManager.sendMessage(content, this);
+    @Override
+    public String toString() {
+        return "NID:{" + getStringValue() + '}';
     }
 }

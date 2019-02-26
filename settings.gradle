@@ -13,5 +13,7 @@
 include ':shared'
 include ':api'
 include ':standalone'
+include ':shine'
 
 rootProject.name = 'UnderNet'
+

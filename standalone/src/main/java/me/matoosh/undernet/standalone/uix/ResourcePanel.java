@@ -11,8 +11,10 @@ import me.matoosh.undernet.event.resource.transfer.ResourceTransferFinishedEvent
 import me.matoosh.undernet.event.resource.transfer.ResourceTransferStartedEvent;
 import me.matoosh.undernet.event.router.RouterControlLoopEvent;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
+import me.matoosh.undernet.file.FileManager;
 import me.matoosh.undernet.p2p.router.data.resource.FileResource;
 import me.matoosh.undernet.p2p.router.data.resource.Resource;
+import me.matoosh.undernet.standalone.UnderNetStandalone;
 import me.matoosh.undernet.standalone.uix.dialog.PublishResourceDialog;
 import me.matoosh.undernet.standalone.uix.dialog.PullResourceDialog;
 
@@ -22,6 +24,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.ResourceBundle;
 
 public class ResourcePanel extends EventHandler {
@@ -29,6 +32,7 @@ public class ResourcePanel extends EventHandler {
     private JList resourceList;
     private JButton publishButton;
     private JButton pullButton;
+    private JLabel sectionTitle;
 
     public ResourcePanel() {
         $$$setupUI$$$();
@@ -44,10 +48,22 @@ public class ResourcePanel extends EventHandler {
                     Resource res = (Resource) resourceList.getModel().getElementAt(index);
                     if (res == null) return;
 
-                    //Double clicked on resource.
+                    //Double clicked on resource, copying network id to clipboard.
                     StringSelection stringSelection = new StringSelection(res.getNetworkID().getStringValue());
                     Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
                     clipboard.setContents(stringSelection, null);
+                }
+            }
+        });
+        sectionTitle.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    //Opening the content folder.
+                    try {
+                        Desktop.getDesktop().open(UnderNet.fileManager.getContentFolder());
+                    } catch (IOException e1) {
+                    }
                 }
             }
         });
@@ -128,11 +144,11 @@ public class ResourcePanel extends EventHandler {
         panel = new JPanel();
         panel.setLayout(new GridLayoutManager(3, 1, new Insets(0, 0, 0, 0), -1, -1));
         panel.setForeground(new Color(-1));
-        final JLabel label1 = new JLabel();
-        Font label1Font = this.$$$getFont$$$("Droid Sans", Font.BOLD, 18, label1.getFont());
-        if (label1Font != null) label1.setFont(label1Font);
-        this.$$$loadLabelText$$$(label1, ResourceBundle.getBundle("language").getString("title_resources"));
-        panel.add(label1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        sectionTitle = new JLabel();
+        Font sectionTitleFont = this.$$$getFont$$$("Droid Sans", Font.BOLD, 18, sectionTitle.getFont());
+        if (sectionTitleFont != null) sectionTitle.setFont(sectionTitleFont);
+        this.$$$loadLabelText$$$(sectionTitle, ResourceBundle.getBundle("language").getString("title_resources"));
+        panel.add(sectionTitle, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_NORTH, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JScrollPane scrollPane1 = new JScrollPane();
         panel.add(scrollPane1, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         final DefaultListModel defaultListModel1 = new DefaultListModel();
@@ -231,7 +247,6 @@ public class ResourcePanel extends EventHandler {
     public JComponent $$$getRootComponent$$$() {
         return panel;
     }
-
 }
 /**
  * Renders elements within the resource list.

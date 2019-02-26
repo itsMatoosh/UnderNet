@@ -1,0 +1,9 @@
+apply plugin: 'application'
+
+dependencies {
+    implementation group: 'io.netty', name: 'netty-all', version: '4.1.33.Final'
+    implementation group: 'com.barchart.udt', name: 'barchart-udt-bundle', version: '2.3.0'
+}
+
+// Include dependent libraries in archive.
+mainClassName = "me.matoosh.undernet.p2p.shine.ShineDriver"

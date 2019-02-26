@@ -10,6 +10,8 @@ import me.matoosh.undernet.event.cache.NodeCacheAddedEvent;
 import me.matoosh.undernet.event.cache.NodeCacheRemovedEvent;
 import me.matoosh.undernet.event.channel.ChannelClosedEvent;
 import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
+import me.matoosh.undernet.event.router.RouterControlLoopEvent;
+import me.matoosh.undernet.event.router.RouterStatusEvent;
 import me.matoosh.undernet.p2p.cache.EntryNodeCache;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
@@ -20,6 +22,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.ResourceBundle;
 
 public class NodePanel extends EventHandler {
@@ -93,6 +96,7 @@ public class NodePanel extends EventHandler {
     private void registerListeners() {
         EventManager.registerHandler(this, NodeCacheAddedEvent.class);
         EventManager.registerHandler(this, NodeCacheRemovedEvent.class);
+        EventManager.registerHandler(this, RouterControlLoopEvent.class);
         EventManager.registerHandler(this, ChannelCreatedEvent.class);
         EventManager.registerHandler(this, ChannelClosedEvent.class);
     }
@@ -108,12 +112,11 @@ public class NodePanel extends EventHandler {
     private void refreshNodeList() {
         if (UnderNet.router.status.equals(InterfaceStatus.STARTED)) {
             //Using connected and cached nodes if the router has started.
-            ArrayList<Node> nodesToList = new ArrayList<>();
-            nodesToList.addAll(UnderNet.router.getRemoteNodes());
+            ArrayList<Node> nodesToList = UnderNet.router.getConnectedNodes();
             for (Node cachedNode :
                     EntryNodeCache.cachedNodes) {
                 boolean canAdd = true;
-                for (Node connectedNode : UnderNet.router.getRemoteNodes()) {
+                for (Node connectedNode : UnderNet.router.getConnectedNodes()) {
                     if (cachedNode.getAddress().equals(connectedNode.getAddress())) {
                         canAdd = false;
                     }

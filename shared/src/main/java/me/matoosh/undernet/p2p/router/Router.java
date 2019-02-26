@@ -9,12 +9,10 @@ import me.matoosh.undernet.event.channel.ChannelClosedEvent;
 import me.matoosh.undernet.event.channel.ChannelCreatedEvent;
 import me.matoosh.undernet.event.channel.ChannelErrorEvent;
 import me.matoosh.undernet.event.channel.message.ChannelMessageReceivedEvent;
-import me.matoosh.undernet.event.client.ClientExceptionEvent;
 import me.matoosh.undernet.event.client.ClientStatusEvent;
 import me.matoosh.undernet.event.router.RouterControlLoopEvent;
 import me.matoosh.undernet.event.router.RouterErrorEvent;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
-import me.matoosh.undernet.event.server.ServerExceptionEvent;
 import me.matoosh.undernet.event.server.ServerStatusEvent;
 import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.p2p.node.NeighborNodesManager;
@@ -30,10 +28,12 @@ import me.matoosh.undernet.p2p.router.data.resource.Resource;
 import me.matoosh.undernet.p2p.router.data.resource.ResourceManager;
 import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferHandler;
 import me.matoosh.undernet.p2p.router.server.Server;
+import me.matoosh.undernet.p2p.shine.client.ShineMediatorClient;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.concurrent.*;
@@ -98,11 +98,7 @@ public class Router extends EventHandler {
     /**
      * Nodes the router is connected to at the moment.
      */
-    private ArrayList<Node> connectedNodes = new ArrayList<>();
-    /**
-     * Remote nodes that the router is connected to at the moment.
-     */
-    private ArrayList<Node> remoteNodes = new ArrayList<>();
+    private ArrayList<Node> connectedNodes;
 
     /**
      * Sets up the router.
@@ -113,6 +109,9 @@ public class Router extends EventHandler {
             logger.warn("Can't setup the router, while it's running!");
             return;
         }
+
+        //Creating the connected nodes list.
+        this.connectedNodes = new ArrayList<>();
 
         //Setting this as the currently used router.
         Node.self.router = this;
@@ -180,6 +179,13 @@ public class Router extends EventHandler {
             return;
         }
 
+        //Clearing the connected nodes list.
+        if(this.connectedNodes == null) {
+            this.connectedNodes = new ArrayList<>();
+        } else {
+            this.connectedNodes.clear();
+        }
+
         //Caching the network identity.
         Node.self.setIdentity(networkIdentity);
 
@@ -205,12 +211,36 @@ public class Router extends EventHandler {
         logger.info("Checking if everything is running smoothly...");
 
         //Checking if enough nodes are connected.
-        ArrayList<Node> remote = getRemoteNodes();
-        if (remote.size() > 0 && remote.size() < UnderNet.networkConfig.optNeighbors()) {
-            //Request more neighbors.
-            int id = UnderNet.secureRandom.nextInt(remote.size());
-            Node neighbor = remote.get(id);
-            this.networkMessageManager.sendMessage(new NodeNeighborsRequest(), neighbor.getIdentity().getNetworkId());
+        if (getConnectedNodes().size() < UnderNet.networkConfig.optNeighbors()) {
+            //Request more neighbors from neighbors.
+            if(getConnectedNodes().size() > 0) {
+                int id = UnderNet.secureRandom.nextInt(getConnectedNodes().size());
+                Node neighbor = getConnectedNodes().get(id);
+                this.networkMessageManager.sendMessage(new NodeNeighborsRequest(), neighbor.getIdentity().getNetworkId());
+            }
+
+            //Request neighbors from SHINE
+            if(UnderNet.networkConfig.useShine()) {
+                ArrayList<InetSocketAddress> ignoreAddresses = new ArrayList<>();
+                for (int i = 0; i < connectedNodes.size(); i++) {
+                    Node n = connectedNodes.get(i);
+                    if(!Node.isLocalAddress(n.getAddress())) ignoreAddresses.add(n.getAddress());
+                }
+
+                ShineMediatorClient.start(UnderNet.networkConfig.shineAddress(), UnderNet.networkConfig.shinePort(), (socketAddress, localPort) -> {
+                    if(localPort == 0) {
+                        logger.warn("Local SHINE port unknown, can't initiate connection!");
+                        return;
+                    }
+                    if(UnderNet.router != null && UnderNet.router.status == InterfaceStatus.STARTED) {
+                        Node n = new Node();
+                        n.setAddress(socketAddress);
+                        UnderNet.router.client.shineConnect(n, localPort);
+                    } else {
+                        logger.warn("UnderNet router must be running to complete a SHINE connection!");
+                    }
+                }, ignoreAddresses.toArray(new InetSocketAddress[0]));
+            }
         }
 
         //Checking resource transfer activity.
@@ -229,7 +259,7 @@ public class Router extends EventHandler {
         for (int i = 0; i < messageTunnelManager.messageTunnels.size(); i++) {
             MessageTunnel tunnel = messageTunnelManager.messageTunnels.get(i);
 
-            if (System.currentTimeMillis() > tunnel.getLastMessageTime() + 4 * controlLoopInterval * 1000)
+            if (System.currentTimeMillis() > tunnel.getLastMessageTime() + 2 * controlLoopInterval * 1000)
                 messageTunnelManager.closeTunnel(tunnel);
             else if (tunnel.isKeepAlive()) tunnel.sendMessage(new TunnelControlMessage());
         }
@@ -265,7 +295,8 @@ public class Router extends EventHandler {
         EventManager.callEvent(new RouterStatusEvent(this, InterfaceStatus.STOPPING));
 
         //Stops the control loop.
-        timerHandle.cancel(true);
+        if(timerHandle != null)
+            timerHandle.cancel(true);
 
         //Stops the client.
         if (client != null) {
@@ -288,6 +319,12 @@ public class Router extends EventHandler {
         for (int i = 0; i < messageTunnelManager.messageTunnels.size(); i++) {
             messageTunnelManager.closeTunnel(messageTunnelManager.messageTunnels.get(i));
         }
+
+        //Closes the shine client.
+        ShineMediatorClient.stop();
+
+        //Clearing the connected nodes list.
+        this.connectedNodes.clear();
     }
 
     /**
@@ -320,35 +357,24 @@ public class Router extends EventHandler {
      * @return
      */
     public ArrayList<Node> getConnectedNodes() {
-        return connectedNodes;
+        return (ArrayList<Node>) connectedNodes.clone();
     }
 
     /**
-     * Gets all of the remote connected nodes.
-     * Omits all of the local nodes.
-     *
-     * @return
+     * Adds a connected node.
      */
-    public ArrayList<Node> getRemoteNodes() {
-        if (remoteNodes.size() + 2 == connectedNodes.size()) return remoteNodes;
-        remoteNodes.clear();
+    public void addConnectedNode(Node n) {
+        logger.info("Adding {} to the connected nodes...", n);
+        connectedNodes.add(n);
+    }
 
-        for (Node n : getConnectedNodes()) {
-            if(n == null) continue;
-            if (n.getAddress() != null && !Node.isLocalAddress(n.getAddress())) {
-                boolean duplicate = false;
-                for (Node no :
-                        remoteNodes) {
-                    if (no.getAddress().equals(n.getAddress())) {
-                        duplicate = true;
-                    }
-                }
-                if (!duplicate) {
-                    remoteNodes.add(n);
-                }
-            }
-        }
-        return remoteNodes;
+    /**
+     * Removes a connected node.
+     * @param n
+     */
+    public void removeConnectedNode(Node n) {
+        logger.info("Removing {} from the connected nodes...");
+        connectedNodes.remove(n);
     }
 
     /**
@@ -375,13 +401,8 @@ public class Router extends EventHandler {
     private void registerHandlers() {
         EventManager.registerHandler(this, RouterStatusEvent.class);
         EventManager.registerHandler(this, RouterErrorEvent.class);
-        EventManager.registerHandler(this, ChannelCreatedEvent.class);
-        EventManager.registerHandler(this, ChannelClosedEvent.class);
-        EventManager.registerHandler(this, ChannelErrorEvent.class);
         EventManager.registerHandler(this, ClientStatusEvent.class);
-        EventManager.registerHandler(this, ClientExceptionEvent.class);
         EventManager.registerHandler(this, ServerStatusEvent.class);
-        EventManager.registerHandler(this, ServerExceptionEvent.class);
     }
 
     //EVENTS
@@ -393,20 +414,7 @@ public class Router extends EventHandler {
      */
     @Override
     public void onEventCalled(Event e) {
-        //Connection established.
-        if (e.getClass() == ChannelCreatedEvent.class) {
-            ChannelCreatedEvent establishedEvent = (ChannelCreatedEvent) e;
-            logger.debug("New connection established with: " + establishedEvent.other);
-        }
-        //Connection dropped.
-        else if (e.getClass() == ChannelClosedEvent.class) {
-            ChannelClosedEvent droppedEvent = (ChannelClosedEvent) e;
-        }
-        //Connection error.
-        else if (e.getClass() == ChannelErrorEvent.class) {
-            ChannelErrorEvent errorEvent = (ChannelErrorEvent) e;
-            //TODO: Handle the error.
-        } else if (e.getClass() == RouterStatusEvent.class) {
+        if (e.getClass() == RouterStatusEvent.class) {
             RouterStatusEvent statusEvent = (RouterStatusEvent) e;
             switch (statusEvent.newStatus) {
                 case STOPPED:
@@ -423,46 +431,15 @@ public class Router extends EventHandler {
             }
         } else if (e.getClass() == RouterErrorEvent.class) {
             onRouterError((RouterErrorEvent) e);
-        } else if (e.getClass() == ServerStatusEvent.class) {
-            ServerStatusEvent statusEvent = (ServerStatusEvent) e;
-            if (statusEvent.newStatus.equals(InterfaceStatus.STARTED)) {
+        } else if (e.getClass() == ServerStatusEvent.class || e.getClass() == ClientStatusEvent.class) {
+            if (server.status == client.status) {
                 //In this case client doesn't yet have to be started.
-                if (client.status.equals(InterfaceStatus.STARTED)) {
+                if (server.status.equals(InterfaceStatus.STARTED)) {
                     //Both parts of the router started successfully.
                     onRouterStarted();
-                }
-            } else if (statusEvent.newStatus.equals(InterfaceStatus.STOPPED)) {
-                if (client.status.equals(InterfaceStatus.STOPPED)) {
-                    //Both parts of the router stopped successfully.
+                } else if(server.status.equals(InterfaceStatus.STOPPED)) {
                     onRouterStopped();
                 }
-            }
-        } else if (e.getClass() == ClientStatusEvent.class) {
-            ClientStatusEvent statusEvent = (ClientStatusEvent) e;
-            if (statusEvent.newStatus.equals(InterfaceStatus.STARTED)) {
-                if (server.status.equals(InterfaceStatus.STARTED)) {
-                    //Both parts of the router started succesfully.
-                    onRouterStarted();
-                }
-            } else if (statusEvent.newStatus.equals(InterfaceStatus.STOPPED)) {
-                if (server.status.equals(InterfaceStatus.STOPPED)) {
-                    //Both parts of the router stopped successfully.
-                    onRouterStopped();
-                }
-            }
-        } else if (e.getClass() == ClientExceptionEvent.class) {
-            ClientExceptionEvent exceptionEvent = (ClientExceptionEvent) e;
-
-            logger.error("Exception occurred with the client!", exceptionEvent.exception);
-            if (!UnderNet.networkConfig.ignoreExceptions()) {
-                this.stop();
-            }
-        } else if (e.getClass() == ServerExceptionEvent.class) {
-            ServerExceptionEvent exceptionEvent = (ServerExceptionEvent) e;
-
-            logger.error("Exception occurred with the server!", exceptionEvent.exception);
-            if (!UnderNet.networkConfig.ignoreExceptions()) {
-                this.stop();
             }
         }
     }
@@ -475,16 +452,12 @@ public class Router extends EventHandler {
      */
     private void onRouterError(RouterErrorEvent e) {
         //Printing the error.
-        if (e.exception.getMessage() != null) {
-            logger.error("There was a problem with the UnderNet router: " + e.exception.getMessage());
-        }
-        e.exception.printStackTrace();
-
+        logger.error("There was a problem with the UnderNet router!", e);
         //Resetting the network devices.
         e.router.stop();
 
         //Reconnecting if possible.
-        if (e.router.status != InterfaceStatus.STOPPED && e.shouldReconnect) {
+        if (e.shouldReconnect) {
             reconnectNum++;
             //Checking if we should reconnect.
             if (reconnectNum > UnderNet.networkConfig.maxReconnectCount()) {
@@ -492,7 +465,8 @@ public class Router extends EventHandler {
                 onConnectionEnded();
             }
 
-            logger.info("Attempting to reconnect for: " + reconnectNum + " time...");
+            logger.info("Attempting to reconnect for: {} time...", reconnectNum);
+            this.start(Node.self.getIdentity());
         }
     }
 

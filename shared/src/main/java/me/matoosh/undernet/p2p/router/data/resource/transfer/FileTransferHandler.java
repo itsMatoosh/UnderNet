@@ -35,7 +35,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
     /**
      * The standard buffer size for file chunks (1MB)
      */
-    public static final int BUFFER_SIZE = 2 * Short.MAX_VALUE - 1024;
+    public static final int BUFFER_SIZE = 1048576;
 
     /**
      * The amount of bytes written from the received chunks.
@@ -142,18 +142,20 @@ public class FileTransferHandler extends ResourceTransferHandler {
 
             //File sending logic.
             try {
-                logger.info("Sending file, available bytes: {}", inputStream.available());
                 if(inputStream.available() != 0) {
                     //The send buffer.
-                    byte[] buffer = new byte[BUFFER_SIZE];
+                    byte[] buffer;
+                    if(inputStream.available() > BUFFER_SIZE) {
+                        buffer = new byte[BUFFER_SIZE];
+                    } else {
+                        buffer = new byte[inputStream.available()];
+                    }
+
                     int read = inputStream.read(buffer);
                     sent += read;
 
-                    byte[] data = new byte[read];
-                    System.arraycopy(buffer, 0, data, 0, read);
-
-                    logger.info("File transfer ({}) - {}%", this.getResource().attributes.get(1), ((float) sent / Long.parseLong(getResource().getInfo().attributes.get(0))) * 100f);
-                    sendData(data, chunkId);
+                    logger.info("Sending file: {} | {}% ({}kb)", this.getResource().attributes.get(1), ((float) sent / Long.parseLong(getResource().getInfo().attributes.get(0))) * 100f, sent/1024);
+                    sendData(buffer, chunkId);
 
                     //Finish if no more bytes available!
                     if(inputStream.available() <= 0) {
@@ -199,7 +201,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
                 try {
                     outputStream.write(dataMessage.getResourceData());
                     written += dataMessage.getResourceData().length;
-                    logger.info("File chunk received for: {} | {}%", this.getResource().getNetworkID(), ((float)written/(float)fileLength)*100f);
+                    logger.info("Receiving file: {} | {}% ({}kb)", this.getResource().attributes.get(1), ((float)written/(float)fileLength)*100f, written/1024);
                     if(written >= fileLength) {
                         //File fully received.
                         this.close();
@@ -211,7 +213,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
                 }
             } else {
                 //Empty chunk, ending the transfer and closing the file.
-                logger.info("Empty chunk received for: {}, ending the transfer...");
+                logger.info("Empty chunk received for: {}, ending the transfer...", this.getResource().attributes.get(1));
 
                 //File fully received.
                 this.close();

@@ -50,7 +50,7 @@ public class ServerNetworkMessageHandler extends ChannelInboundHandlerAdapter {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         //Checking if connected already.
         for (Node n :
-                server.router.getRemoteNodes()) {
+                server.router.getConnectedNodes()) {
             if (n.getAddress().equals(ctx.channel().remoteAddress())) {
                 ctx.disconnect();
                 return;
@@ -67,7 +67,7 @@ public class ServerNetworkMessageHandler extends ChannelInboundHandlerAdapter {
         ctx.channel().attr(ATTRIBUTE_KEY_CLIENT_NODE).set(clientNode);
 
         //Adding the client node to the connectedNodes list.
-        server.router.getConnectedNodes().add(clientNode);
+        server.router.addConnectedNode(clientNode);
 
         //Calling the channel created event.
         EventManager.callEvent(new ChannelCreatedEvent(ctx.channel(), true));
@@ -86,7 +86,7 @@ public class ServerNetworkMessageHandler extends ChannelInboundHandlerAdapter {
         //Removing the client from the connectedNodes list.
         Node clientNode = ctx.channel().attr(ATTRIBUTE_KEY_CLIENT_NODE).get();
         clientNode.channel = null;
-        server.router.getConnectedNodes().remove(clientNode);
+        server.router.removeConnectedNode(clientNode);
 
         //Removing tunnels with node.
         server.router.messageTunnelManager.closeTunnelsOnDisconnect(clientNode);

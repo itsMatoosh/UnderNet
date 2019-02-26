@@ -7,6 +7,7 @@ import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.channel.message.MessageReceivedEvent;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
+import me.matoosh.undernet.p2p.shine.client.ShineMediatorClient;
 import me.matoosh.undernet.standalone.UnderNetStandalone;
 
 import javax.swing.*;
@@ -68,14 +69,18 @@ public class VisualPanelDraw extends JPanel {
         }
 
         int diam = 40;
+        if(UnderNet.router != null && UnderNet.router.status == InterfaceStatus.STARTED && UnderNet.networkConfig.useShine() && ShineMediatorClient.isRunning()) {
+            int shineDiam = (int) (diam + ((double)(System.currentTimeMillis() % 1000) / 1000d) * 23);
+
+            g.setColor(Color.white);
+            g.drawOval(getWidth()/2 - shineDiam/2, getHeight()/2 - shineDiam/2, shineDiam, shineDiam);
+        }
         g.setColor(fill);
         g.fillOval(getWidth()/2 - diam/2, getHeight()/2 - diam/2, diam, diam);
-        g.setColor(Color.BLACK);
-        g.drawOval(getWidth()/2 - diam/2, getHeight()/2 - diam/2, diam, diam);
 
         if(UnderNetStandalone.networkIdentity != null) {
             g.setColor(Color.WHITE);
-            String identity = UnderNetStandalone.networkIdentity.getNetworkId().getStringValue().substring(0, 12) + "...";
+            String identity = UnderNetStandalone.networkIdentity.getNetworkId().getStringValue().substring(0, 15) + "...";
             g.drawString(identity, getWidth()/2 - g.getFontMetrics().stringWidth(identity) / 2, getHeight()/2 + diam / 2 + g.getFontMetrics().getHeight() + 5);
         }
     }
@@ -85,18 +90,18 @@ public class VisualPanelDraw extends JPanel {
      * @param g
      */
     private void drawOtherNodes(Graphics g) {
-        double angle = (2 * Math.PI) / UnderNet.router.getRemoteNodes().size();
+        double angle = (2 * Math.PI) / UnderNet.router.getConnectedNodes().size();
         int distance = 100;
         int diam = 30;
 
         double currAngle = ((double)(System.currentTimeMillis() % 5000) / 5000d) * (2 * Math.PI);
-        for (int i = 0; i < UnderNet.router.getRemoteNodes().size(); i++) {
+        for (int i = 0; i < UnderNet.router.getConnectedNodes().size(); i++) {
 
             int x = (int) (getWidth()/2 + distance * Math.cos(currAngle));
             int y = (int) (getHeight()/2 + distance * Math.sin(currAngle));
 
             //line
-            Node n = UnderNet.router.getRemoteNodes().get(i);
+            Node n = UnderNet.router.getConnectedNodes().get(i);
             if(recentlyReceived.containsKey(n)) {
                 g.setColor(Color.CYAN);
 
@@ -113,7 +118,7 @@ public class VisualPanelDraw extends JPanel {
             g.drawOval(getWidth()/2 + x - diam/2, getHeight()/2 + y - diam/2, diam, diam);
 
             //net id
-            if(n.getIdentity() != null) {
+            if(n != null && n.getIdentity() != null) {
                 g.setColor(Color.WHITE);
                 String identity = n.getIdentity().getNetworkId().getStringValue().substring(0, 10) + "...";
                 g.drawString(identity, x - g.getFontMetrics().stringWidth(identity) / 2, y + diam / 2 + g.getFontMetrics().getHeight() + 5);

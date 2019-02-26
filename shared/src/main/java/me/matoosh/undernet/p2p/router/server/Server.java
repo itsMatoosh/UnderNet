@@ -9,15 +9,21 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.udt.nio.NioUdtProvider;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
+import io.netty.util.concurrent.DefaultThreadFactory;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventManager;
-import me.matoosh.undernet.event.server.ServerExceptionEvent;
+import me.matoosh.undernet.event.router.RouterErrorEvent;
 import me.matoosh.undernet.event.server.ServerStatusEvent;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
 import me.matoosh.undernet.p2p.router.Router;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.ThreadFactory;
 
 /**
  * Server part of the router.
@@ -90,17 +96,18 @@ public class Server
         EventManager.callEvent(new ServerStatusEvent(Server.this, InterfaceStatus.STARTING));
 
         //Creating the worker and boss server event groups.
-        bossEventLoopGroup = new NioEventLoopGroup();
-        workerEventLoopGroup = new NioEventLoopGroup();
+        final ThreadFactory bossThreadFactory = new DefaultThreadFactory("transport-server-boss");
+        final ThreadFactory workerThreadFactory = new DefaultThreadFactory("transport-server-worker");
+        bossEventLoopGroup = new NioEventLoopGroup(1, bossThreadFactory, NioUdtProvider.BYTE_PROVIDER);
+        workerEventLoopGroup = new NioEventLoopGroup(1, workerThreadFactory, NioUdtProvider.BYTE_PROVIDER);
 
         //Bootstraping the server.
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         serverBootstrap.group(bossEventLoopGroup, workerEventLoopGroup) //Assigning event loops to the server.
-                .channel(NioServerSocketChannel.class) //Using the non blocking io for transfer.
+                .channelFactory(NioUdtProvider.BYTE_ACCEPTOR) //Using the non blocking udt io for transfer.
                 .childHandler(new ServerChannelInitializer(this))
                 .option(ChannelOption.SO_BACKLOG, UnderNet.networkConfig.backlogCapacity())//Setting the number of pending connections to keep in the queue.
-                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT) //Setting the default pooled allocator.
-                .childOption(ChannelOption.SO_KEEPALIVE, true); //Making sure the connection event loop sends keep alive messages.
+                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT); //Setting the default pooled allocator.
 
         //Binding and starting to accept incoming connections.
         try {
@@ -113,9 +120,8 @@ public class Server
             }
             serverFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {
-            logger.error("Error binding the server!", e);
-            //Changing the server status to stopping.
-            EventManager.callEvent(new ServerStatusEvent(Server.this, InterfaceStatus.STOPPING));
+            EventManager.callEvent(new RouterErrorEvent(router, e, false));
+            return;
         } finally {
             //Stopping the event loop groups.
             try {
@@ -125,8 +131,10 @@ public class Server
                 workerEventLoopGroup.shutdownGracefully().sync();
                 workerEventLoopGroup = null;
             } catch (InterruptedException e) {
-                logger.error("Server shutdown has been interrupted!", e);
+                EventManager.callEvent(new RouterErrorEvent(router, e, false));
+                return;
             }
+
             EventManager.callEvent(new ServerStatusEvent(Server.this, InterfaceStatus.STOPPED));
         }
     }
@@ -156,6 +164,5 @@ public class Server
     private void registerEvents() {
         //Server events.
         EventManager.registerEvent(ServerStatusEvent.class);
-        EventManager.registerEvent(ServerExceptionEvent.class);
     }
 }

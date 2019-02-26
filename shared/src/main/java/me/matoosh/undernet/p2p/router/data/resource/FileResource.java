@@ -55,19 +55,15 @@ public class FileResource extends Resource {
      * Calculates checksum of the file.
      */
     public byte[] calcChecksum() {
-        FileInputStream fis = null;
-        try {
-            fis = new FileInputStream(file);
-            ByteBuffer checksum = ByteBuffer.allocate(65);
+        try (FileInputStream fis = new FileInputStream(file)) {
+            ByteBuffer checksum = ByteBuffer.allocate(NetworkID.NETWORK_ID_LENGTH);
             checksum.put(org.apache.commons.codec.digest.DigestUtils.sha512(fis));
-            fis.close();
             return checksum.array();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         return null;
     }
 

@@ -7,10 +7,8 @@ import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.message.MsgBase;
 import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.security.util.KeyUtil;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
@@ -29,7 +27,6 @@ import java.util.List;
  * The public key will be used to encrypt the messages so that only the other node can decrypt them.
  */
 public class MessageTunnel {
-    //This part is present on all the part taking nodes. Identifies the tunnel.
     /**
      * The logger of the class.
      */

@@ -2,10 +2,11 @@ apply plugin: 'application'
 apply plugin: 'java-library-distribution'
 
 dependencies {
-    compile project(path: ':shared')
-    compile 'com.esotericsoftware.yamlbeans:yamlbeans:1.12'
-    compile 'com.intellij:forms_rt:7.0.3'
-    compile group: 'commons-io', name: 'commons-io', version: '2.4'
+    implementation project(':shared')
+    implementation project(':shine')
+    implementation 'com.esotericsoftware.yamlbeans:yamlbeans:1.12'
+    implementation 'com.intellij:forms_rt:7.0.3'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.4'
 }
 
 // Include dependent libraries in archive.
