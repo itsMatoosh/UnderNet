@@ -5,6 +5,7 @@
 ## Features
  - Mesh Architecture
  -- There is no central server, every device makes a piece of the network.
+ -- Peers can discover others globally, using the SHINE technology.
  - Anonymity
  -- Nodes within UnderNet use 512bit network ids instead of IP addresses for identification. Your IP address will only be known to the neighboring nodes.
  - Resource distribution
