@@ -33,6 +33,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.concurrent.*;
@@ -220,6 +221,12 @@ public class Router extends EventHandler {
 
             //Request neighbors from SHINE
             if(UnderNet.networkConfig.useShine()) {
+                ArrayList<InetSocketAddress> ignoreAddresses = new ArrayList<>();
+                for (int i = 0; i < connectedNodes.size(); i++) {
+                    Node n = connectedNodes.get(i);
+                    if(!Node.isLocalAddress(n.getAddress())) ignoreAddresses.add(n.getAddress());
+                }
+
                 ShineMediatorClient.start(UnderNet.networkConfig.shineAddress(), UnderNet.networkConfig.shinePort(), (socketAddress, localPort) -> {
                     if(localPort == 0) {
                         logger.warn("Local SHINE port unknown, can't initiate connection!");
@@ -232,7 +239,7 @@ public class Router extends EventHandler {
                     } else {
                         logger.warn("UnderNet router must be running to complete a SHINE connection!");
                     }
-                });
+                }, ignoreAddresses.toArray(new InetSocketAddress[0]));
             }
         }
 

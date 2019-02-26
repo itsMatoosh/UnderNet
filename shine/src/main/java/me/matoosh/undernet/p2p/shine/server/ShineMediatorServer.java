@@ -25,7 +25,7 @@ import java.util.concurrent.ThreadFactory;
  */
 public class ShineMediatorServer {
     private static boolean isRunning;
-    private static ArrayList<Channel> connectedClients;
+    private static ArrayList<ShineEntry> connectedClients;
 
     public static Logger logger = LoggerFactory.getLogger("[MediatorServer]");
 
@@ -88,7 +88,7 @@ public class ShineMediatorServer {
         return isRunning;
     }
 
-    public static ArrayList<Channel> getConnectedClients() {
+    public static ArrayList<ShineEntry> getConnectedClients() {
         return connectedClients;
     }
 
@@ -97,15 +97,23 @@ public class ShineMediatorServer {
      * @param forNode
      * @return
      */
-    private static Channel getNextNeighbor(Channel forNode) {
+    private static Channel getNextNeighbor(ShineEntry forNode) {
+        logger.info("Fetching a match for {}, ignoring {}...", forNode.getAddress(), forNode.getIgnore().size());
         if(getConnectedClients().size() <= 1) return null;
 
-        InetSocketAddress nodeAddress = (InetSocketAddress) forNode.remoteAddress();
         for (int i = 0; i < getConnectedClients().size(); i++) {
-            Channel client = getConnectedClients().get(i);
-            InetSocketAddress address = (InetSocketAddress)client.remoteAddress();
-            if(!address.getHostString().equalsIgnoreCase(nodeAddress.getHostString())) {
-                return client;
+            ShineEntry shineEntry = getConnectedClients().get(i);
+            boolean shouldSkip = false;
+            for (int j = 0; j < forNode.getIgnore().size(); j++) {
+                if(shineEntry.getAddress().equals(forNode.getIgnore().get(i))) shouldSkip = true;
+            }
+            for (int j = 0; j < shineEntry.getIgnore().size(); j++) {
+                if(forNode.getAddress().equals(shineEntry.getIgnore().get(i))) shouldSkip = true;
+            }
+            if(shouldSkip) continue;
+
+            if(!forNode.getAddress().getHostString().equalsIgnoreCase(shineEntry.getAddress().getHostString())) {
+                return shineEntry.getChannel();
             }
         }
         return null;
@@ -115,7 +123,7 @@ public class ShineMediatorServer {
      * Attempts to choose and send next neighbor info to node.
      * @param nodeA
      */
-    public static void sendNeighborInfos(Channel nodeA) {
+    public static void sendNeighborInfos(ShineEntry nodeA) {
         //getting node b.
         Channel nodeB = getNextNeighbor(nodeA);
         if(nodeB == null) {
@@ -125,11 +133,11 @@ public class ShineMediatorServer {
 
         logger.info("Sending nodes infos...");
         //sending node infos to the two nodes.
-        sendSocketAddress(nodeA, (InetSocketAddress)nodeB.remoteAddress());
-        sendSocketAddress(nodeB, (InetSocketAddress)nodeA.remoteAddress());
+        sendSocketAddress(nodeA.getChannel(), (InetSocketAddress)nodeB.remoteAddress());
+        sendSocketAddress(nodeB, (InetSocketAddress)nodeA.getChannel().remoteAddress());
 
         //disconnecting both of the nodes.
-        nodeA.close();
+        nodeA.getChannel().close();
         nodeB.close();
     }
 

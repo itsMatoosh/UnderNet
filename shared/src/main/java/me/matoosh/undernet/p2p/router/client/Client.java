@@ -144,6 +144,9 @@ public class Client {
         closeFuture.addListener(future1 -> {
             //Removing the future from future list.
             closeFutures.remove(future1);
+            if(status != InterfaceStatus.STARTED) {
+                EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STOPPED));
+            }
         });
         closeFutures.add(closeFuture);
     }
@@ -195,6 +198,9 @@ public class Client {
         closeFuture.addListener(future1 -> {
             //Removing the future from future list.
             closeFutures.remove(future1);
+            if(status != InterfaceStatus.STARTED) {
+                EventManager.callEvent(new ClientStatusEvent(this, InterfaceStatus.STOPPED));
+            }
         });
         closeFutures.add(closeFuture);
     }

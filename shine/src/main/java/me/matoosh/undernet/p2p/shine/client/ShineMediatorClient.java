@@ -23,6 +23,7 @@ import java.util.concurrent.ThreadFactory;
 public class ShineMediatorClient {
     public static Logger logger = LoggerFactory.getLogger("[MediatorClient]");
     public static IMediatorClientConnectionInfoReceivedListner infoReceivedListner;
+    public static InetSocketAddress[] ignoreAddresses;
 
     private static int localPort = 0;
     public static ChannelFuture clientFuture;
@@ -35,9 +36,10 @@ public class ShineMediatorClient {
         start(args[1], Integer.parseInt(args[2]), null);
     }
 
-    public static void start(String shineAddress, int shinePort, IMediatorClientConnectionInfoReceivedListner connectionInfoReceivedListner) {
+    public static void start(String shineAddress, int shinePort, IMediatorClientConnectionInfoReceivedListner connectionInfoReceivedListner, InetSocketAddress... ignoreAddresses) {
         if(clientFuture != null && clientFuture.channel() != null && clientFuture.channel().isOpen()) return;
         infoReceivedListner = connectionInfoReceivedListner;
+        ShineMediatorClient.ignoreAddresses = ignoreAddresses;
 
         //Starting the client.
         logger.info("Connecting to the SHINE mediator server ({})...", shineAddress + ":" + shinePort);
