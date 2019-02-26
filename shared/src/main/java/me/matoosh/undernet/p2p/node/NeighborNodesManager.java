@@ -1,5 +1,6 @@
 package me.matoosh.undernet.p2p.node;
 
+import io.netty.channel.udt.nio.NioUdtByteRendezvousChannel;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.Event;
 import me.matoosh.undernet.event.EventManager;
@@ -116,9 +117,19 @@ public class NeighborNodesManager extends Manager {
                 ArrayList<Node> shareableNeighbors = router.getConnectedNodes();
                 for (Node n :
                         shareableNeighbors) {
-                    if (n.getAddress().equals(netMsg.getTunnel().getPreviousNode().getAddress())) {
+                    if (n.getAddress().equals(netMsg.getTunnel().getPreviousNode().getAddress()) || n.channel instanceof NioUdtByteRendezvousChannel) {
                         shareableNeighbors.remove(n);
                         break;
+                    }
+                }
+                //remove local nodes when sending to not local nodes.
+                if(!Node.isLocalAddress(netMsg.getTunnel().getPreviousNode().getAddress())) {
+                    //sending local nodes
+                    for (Node n :
+                            shareableNeighbors) {
+                        if(Node.isLocalAddress(n.getAddress())) {
+                            shareableNeighbors.remove(n);
+                        }
                     }
                 }
                 if (shareableNeighbors.size() == 0) {
