@@ -42,7 +42,7 @@ public class ShineMediatorServer {
      */
     public static void start(int port) {
         //Creating the worker and boss server event groups.
-        logger.info("Starting the server...");
+        logger.info("Starting the server on port {}...", port);
         isRunning = true;
 
         connectedClients = new ArrayList<>();
@@ -66,6 +66,7 @@ public class ShineMediatorServer {
         //Binding and starting to accept incoming connections.
         try {
             ChannelFuture serverFuture = serverBootstrap.bind(port).sync();
+            logger.info("Server started!");
             serverFuture.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             e.printStackTrace();

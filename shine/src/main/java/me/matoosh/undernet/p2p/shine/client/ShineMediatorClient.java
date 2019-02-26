@@ -40,7 +40,7 @@ public class ShineMediatorClient {
         infoReceivedListner = connectionInfoReceivedListner;
 
         //Starting the client.
-        logger.info("Connecting to the SHINE mediator server...");
+        logger.info("Connecting to the SHINE mediator server ({})...", shineAddress + ":" + shinePort);
 
         Bootstrap clientBootstrap = new Bootstrap();
         final ThreadFactory bossThreadFactory = new DefaultThreadFactory("shine-client-boss");

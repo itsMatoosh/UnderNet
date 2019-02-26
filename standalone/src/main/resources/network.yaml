@@ -6,5 +6,5 @@ network:
   optNeighbors: 5
   maxReconnectCount: 5
   useShine: true
-  shineAddress: localhost
+  shineAddress: 199.247.1.187
   shinePort: 2018
