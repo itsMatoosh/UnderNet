@@ -33,6 +33,11 @@ public class ClientNetworkMessageHandler extends ChannelInboundHandlerAdapter {
      */
     public static final AttributeKey<Node> ATTRIBUTE_KEY_SERVER_NODE = AttributeKey
             .valueOf("ServerNode");
+    /**
+     * Defines the shine id attribute id.
+     */
+    public static final AttributeKey<Integer> ATTRIBUTE_KEY_SHINE_ID = AttributeKey
+            .valueOf("ShineID");
 
     /**
      * The logger of the class.
@@ -56,6 +61,7 @@ public class ClientNetworkMessageHandler extends ChannelInboundHandlerAdapter {
         //Adding a node object to the connection.
         Node serverNode = new Node();
         serverNode.setAddress((InetSocketAddress) ctx.channel().remoteAddress()); //Setting the node's address.
+        serverNode.setShineId(ctx.channel().attr(ATTRIBUTE_KEY_SHINE_ID).get());
         serverNode.channel = ctx.channel();
         ctx.channel().attr(ATTRIBUTE_KEY_SERVER_NODE).set(serverNode);
 

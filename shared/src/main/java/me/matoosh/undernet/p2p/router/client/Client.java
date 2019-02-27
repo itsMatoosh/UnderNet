@@ -8,14 +8,12 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.channel.udt.nio.NioUdtProvider;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.event.EventManager;
 import me.matoosh.undernet.event.client.ClientStatusEvent;
-import me.matoosh.undernet.event.router.RouterErrorEvent;
 import me.matoosh.undernet.p2p.cache.EntryNodeCache;
 import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
@@ -93,15 +91,16 @@ public class Client {
 
         //Connecting to the selected nodes.
         for(Node node : nodesToConnectTo) {
-            connect(node);
+            connect(node.getAddress().getHostString(), node.getPort());
         }
     }
 
     /**
      * Connects the client to a node.
-     * @param node
+     * @param address
+     * @param port
      */
-    public void connect(Node node) {
+    public void connect(String address, int port) {
         if(status == InterfaceStatus.STOPPING) {
             logger.error("Can't connect to nodes, while the client is stopping!");
             return;
@@ -117,13 +116,13 @@ public class Client {
         //Making sure node is not yet connected
         for (Node conn :
                 this.router.getConnectedNodes()) {
-            if (conn.getAddress().getHostString().equals(node.getAddress().getHostString())) {
+            if (conn.getAddress().getHostString().equals(address)) {
                 logger.warn("Node {} already connected!", conn);
                 return;
             }
         }
 
-        logger.info("Connecting to node: {}", node.getAddress());
+        logger.info("Connecting to node: {}", address);
 
         //Making sure the list of client futures exists.
         if(closeFutures == null) {
@@ -135,11 +134,12 @@ public class Client {
         clientBootstrap.group(workerEventLoopGroup) //Assigning the channel to the client event loop group.
                 .channelFactory(NioUdtProvider.BYTE_CONNECTOR) //Using the non blocking io.
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT) //Using the default pooled allocator.
+                .attr(ClientNetworkMessageHandler.ATTRIBUTE_KEY_SHINE_ID, 0)
                 .handler(new ClientChannelInitializer(this));
 
 
         //Connecting
-        ChannelFuture future = clientBootstrap.connect(node.getAddress()); //Connecting to the node.
+        ChannelFuture future = clientBootstrap.connect(new InetSocketAddress(address, port)); //Connecting to the node.
         ChannelFuture closeFuture = future.channel().closeFuture();
         closeFuture.addListener(future1 -> {
             //Removing the future from future list.
@@ -154,7 +154,7 @@ public class Client {
     /**
      * Connects the client to a node.
      */
-    public void shineConnect(Node node, int selfPort) {
+    public void shineConnect(String address, int port, int shineId, int selfPort) {
         if(status == InterfaceStatus.STOPPING) {
             logger.error("Can't connect to nodes, while the client is stopping!");
             return;
@@ -170,13 +170,13 @@ public class Client {
         //Making sure node is not yet connected
         for (Node conn :
                 this.router.getConnectedNodes()) {
-            if (conn.getAddress().getHostString().equals(node.getAddress().getHostString())) {
+            if (conn.getAddress().getHostString().equals(address)) {
                 logger.warn("Node {} already connected!", conn);
                 return;
             }
         }
 
-        logger.info("SHINE connecting to node: {}", node.getAddress());
+        logger.info("SHINE connecting to node: {} ({})", address, shineId);
 
         //Making sure the list of client futures exists.
         if(closeFutures == null) {
@@ -189,11 +189,12 @@ public class Client {
                 .channelFactory(NioUdtProvider.BYTE_RENDEZVOUS) //Using the non blocking io.
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT) //Using the default pooled allocator.
                 .option(ChannelOption.SO_REUSEADDR, true) //Reusing a socket address.
+                .attr(ClientNetworkMessageHandler.ATTRIBUTE_KEY_SHINE_ID, shineId)
                 .handler(new ClientChannelInitializer(this));
 
 
         //Connecting
-        ChannelFuture future = clientBootstrap.connect(node.getAddress(), new InetSocketAddress(selfPort)); //Connecting to the node.
+        ChannelFuture future = clientBootstrap.connect(new InetSocketAddress(address, port), new InetSocketAddress(selfPort)); //Connecting to the node.
         ChannelFuture closeFuture = future.channel().closeFuture();
         closeFuture.addListener(future1 -> {
             //Removing the future from future list.

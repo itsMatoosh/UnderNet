@@ -233,7 +233,7 @@ public class Router extends EventHandler {
                 ArrayList<Integer> ignoreAddresses = new ArrayList<>();
                 for (int i = 0; i < connectedNodes.size(); i++) {
                     Node n = connectedNodes.get(i);
-                    if(!Node.isLocalAddress(n.getAddress()) && n.getShineId() != 0) ignoreAddresses.add(n.getShineId());
+                    if(n.getShineId() != 0) ignoreAddresses.add(n.getShineId());
                 }
 
                 ShineMediatorClient.start(UnderNet.networkConfig.shineAddress(), UnderNet.networkConfig.shinePort(), new ShineMediatorClient.IMediatorClientConnectionInfoReceivedListner() {
@@ -244,17 +244,12 @@ public class Router extends EventHandler {
                             return;
                         }
                         if(UnderNet.router != null && UnderNet.router.status == InterfaceStatus.STARTED) {
-                            Node n = new Node();
-                            n.setShineId(shineId);
-                            n.setAddress(socketAddress);
-                            UnderNet.router.client.shineConnect(n, localPort);
+                            UnderNet.router.client.shineConnect(socketAddress.getAddress().getHostAddress(), socketAddress.getPort(), shineId, localPort);
                         } else {
                             logger.warn("UnderNet router must be running to complete a SHINE connection!");
                         }
                     }
                 }, ignoreAddresses.toArray(new Integer[0]));
-
-
             }
         }
 
@@ -348,7 +343,7 @@ public class Router extends EventHandler {
      * @param node
      */
     public void connectNode(Node node) {
-        client.connect(node);
+        client.connect(node.getAddress().getAddress().getHostAddress(), node.getAddress().getPort());
     }
 
     /**
