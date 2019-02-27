@@ -36,33 +36,37 @@ public class NetworkMessageDecoder extends ByteToMessageDecoder {
         //The length of the received message.
         int messageLength = in.capacity();
 
-        //Reading the message.
-        //Origin id
-        byte[] originId = new byte[NetworkID.NETWORK_ID_LENGTH];
-        in.readBytes(originId);
-        NetworkID msgOrigin = new NetworkID(originId);
+        try {
+            //Reading the message.
+            //Origin id
+            byte[] originId = new byte[NetworkID.NETWORK_ID_LENGTH];
+            in.readBytes(originId);
+            NetworkID msgOrigin = new NetworkID(originId);
 
-        //Destination id
-        byte[] destinationId = new byte[NetworkID.NETWORK_ID_LENGTH];
-        in.readBytes(destinationId);
-        NetworkID msgDestination = new NetworkID(destinationId);
+            //Destination id
+            byte[] destinationId = new byte[NetworkID.NETWORK_ID_LENGTH];
+            in.readBytes(destinationId);
+            NetworkID msgDestination = new NetworkID(destinationId);
 
-        byte signatureLength = in.readByte(); //signature length
-        byte direction = in.readByte(); //message direction
+            byte signatureLength = in.readByte(); //signature length
+            byte direction = in.readByte(); //message direction
 
-        //Reading the signature.
-        byte[] signature = new byte[signatureLength];
-        in.readBytes(signature);
+            //Reading the signature.
+            byte[] signature = new byte[signatureLength];
+            in.readBytes(signature);
 
-        //Creating the cached message.
-        NetworkMessage receivedMessage = new NetworkMessage(msgOrigin, msgDestination, signature, NetworkMessage.MessageDirection.getByValue(direction));
+            //Creating the cached message.
+            NetworkMessage receivedMessage = new NetworkMessage(msgOrigin, msgDestination, signature, NetworkMessage.MessageDirection.getByValue(direction));
 
-        //Allocating data part.
-        receivedMessage.setData(new byte[messageLength - NetworkMessage.NETWORK_MESSAGE_HEADER_LENGTH - signatureLength]);
+            //Allocating data part.
+            receivedMessage.setData(new byte[messageLength - NetworkMessage.NETWORK_MESSAGE_HEADER_LENGTH - signatureLength]);
 
-        //Reading the data of the cached message.
-        in.readBytes(receivedMessage.getData());
+            //Reading the data of the cached message.
+            in.readBytes(receivedMessage.getData());
 
-        out.add(receivedMessage);
+            out.add(receivedMessage);
+        } finally {
+            in.release();
+        }
     }
 }

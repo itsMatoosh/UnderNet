@@ -103,7 +103,7 @@ public class PunchthroughRequestHandler extends ChannelInboundHandlerAdapter {
                 if(ShineMediatorServer.getConnectedClients().get(i).getAddress().equals(ctx.channel().remoteAddress())) entry = ShineMediatorServer.getConnectedClients().get(i);
             }
             if(entry == null) return;
-
+            
             ByteBuf buf = (ByteBuf)msg;
             int length = buf.readInt();
 

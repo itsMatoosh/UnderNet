@@ -29,23 +29,27 @@ public class NetworkMessageEncoder extends MessageToByteEncoder<NetworkMessage> 
             return;
         }
 
-        //Allocating the buffer.
-        logger.debug("Constructing a network message, allocating {} bytes",
-                msg.getTotalLength());
-        out.alloc().buffer(msg.getTotalLength());
+        try {
+            //Allocating the buffer.
+            logger.debug("Constructing a network message, allocating {} bytes",
+                    msg.getTotalLength());
+            out.alloc().buffer(msg.getTotalLength());
 
-        //Writing the header.
-        out.writeBytes(msg.getOrigin().getData());
-        out.writeBytes(msg.getDestination().getData());
-        out.writeByte(msg.getSignature().length);
-        out.writeByte(msg.getDirection().value);
+            //Writing the header.
+            out.writeBytes(msg.getOrigin().getData());
+            out.writeBytes(msg.getDestination().getData());
+            out.writeByte(msg.getSignature().length);
+            out.writeByte(msg.getDirection().value);
 
-        //Writing the signature.
-        out.writeBytes(msg.getSignature());
+            //Writing the signature.
+            out.writeBytes(msg.getSignature());
 
-        //Writing the content.
-        out.writeBytes(msg.getData());
+            //Writing the content.
+            out.writeBytes(msg.getData());
 
-        logger.debug("Message sent to: {}", ctx.channel().remoteAddress(), out.capacity());
+            logger.debug("Message sent to: {}", ctx.channel().remoteAddress(), out.capacity());
+        } finally {
+            out.release();
+        }
     }
 }
