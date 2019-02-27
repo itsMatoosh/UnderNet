@@ -1,0 +1,12 @@
+572   INFO  [MediatorServer] - Starting the server on port 2018...
+842   INFO  com.barchart.udt.SocketUDT - library location : ./lib/bin
+842   INFO  com.barchart.udt.SocketUDT - loader provider  : com.barchart.udt.lib.LibraryLoaderUDT
+846   INFO  com.barchart.udt.lib.PluginPropsUDT - ARCH/OS/LINK = x86_64/MacOSX/gpp
+854   INFO  c.barchart.udt.lib.LibraryLoaderUDT - Platform supported.
+854   INFO  c.barchart.udt.lib.LibraryLoaderUDT - Loading release libraries.
+983   INFO  c.barchart.udt.lib.LibraryLoaderUDT - Release libraries loaded.
+6239  INFO  [MediatorServer] - Server started!
+24575 INFO  [MediatorServer] - /127.0.0.1:53941 connected!
+24599 INFO  [MediatorServer] - Match request received from /127.0.0.1:53941 (-1304996643)
+24600 INFO  [MediatorServer] - Fetching a match for /127.0.0.1:53941, ignoring 0...
+24600 INFO  [MediatorServer] - Not enough qualified nodes to send node info, 1

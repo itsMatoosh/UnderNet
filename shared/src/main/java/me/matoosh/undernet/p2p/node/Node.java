@@ -31,6 +31,10 @@ public class Node implements Serializable {
      * Connection port of the node.
      */
     private int port = 2017;
+    /**
+     * SHINE id of the node.
+     */
+    private int shineId = 0;
 
     /**
      * The channel used for connection to the node.
@@ -150,6 +154,22 @@ public class Node implements Serializable {
      */
     public void setPort(int port) {
         this.port = port;
+    }
+
+    /**
+     * Gets the SHINE id.
+     * @return
+     */
+    public int getShineId() {
+        return shineId;
+    }
+
+    /**
+     * Sets the SHINE id.
+     * @param shineId
+     */
+    public void setShineId(int shineId) {
+        this.shineId = shineId;
     }
 
     /**

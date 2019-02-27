@@ -5,14 +5,16 @@ import io.netty.channel.Channel;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 
+/**
+ * A single connected shine client.
+ */
 public class ShineEntry {
     private Channel channel;
-    private InetSocketAddress address;
-    private ArrayList<InetSocketAddress> ignore;
+    private int shineId;
+    private ArrayList<Integer> ignore;
 
     public ShineEntry(Channel channel) {
         this.channel = channel;
-        this.address = (InetSocketAddress) channel.remoteAddress();
         this.ignore = new ArrayList<>();
     }
 
@@ -20,11 +22,17 @@ public class ShineEntry {
         return channel;
     }
 
-    public InetSocketAddress getAddress() {
-        return address;
+    public InetSocketAddress getAddress() { return (InetSocketAddress) getChannel().remoteAddress(); }
+
+    public ArrayList<Integer> getIgnore() {
+        return ignore;
     }
 
-    public ArrayList<InetSocketAddress> getIgnore() {
-        return ignore;
+    public int getShineId() {
+        return shineId;
+    }
+
+    public void setShineId(int shineId) {
+        this.shineId = shineId;
     }
 }

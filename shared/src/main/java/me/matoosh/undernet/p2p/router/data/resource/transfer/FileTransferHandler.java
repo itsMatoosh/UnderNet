@@ -33,9 +33,9 @@ public class FileTransferHandler extends ResourceTransferHandler {
     private long fileLength;
 
     /**
-     * The standard buffer size for file chunks (1MB)
+     * The standard buffer size for file chunks (256kb)
      */
-    public static final int BUFFER_SIZE = 1048576;
+    public static final int BUFFER_SIZE = 1024 * 256;
 
     /**
      * The amount of bytes written from the received chunks.

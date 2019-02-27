@@ -20,6 +20,7 @@ public enum MsgType {
     RES_DATA_REQUEST((short) 9), //Request data of a resource.
     TUNNEL_CONTROL((short) 10), //Check if a tunnel is alive.
     TUNNEL_CLOSE_REQUEST((short) 11), //Request closure of a tunnel.
+    RES_PULL_NOT_FOUND((short) 12), //Indicates that a pulled resource couldn't be found.
     UNKNOWN((short)-1); //Unknown msg type.
     public short id;
 

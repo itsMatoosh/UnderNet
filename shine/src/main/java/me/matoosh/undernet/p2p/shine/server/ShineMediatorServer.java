@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.concurrent.ThreadFactory;
 
@@ -97,7 +96,7 @@ public class ShineMediatorServer {
      * @param forNode
      * @return
      */
-    private static Channel getNextNeighbor(ShineEntry forNode) {
+    private static ShineEntry getNextNeighbor(ShineEntry forNode) {
         logger.info("Fetching a match for {}, ignoring {}...", forNode.getAddress(), forNode.getIgnore().size());
         if(getConnectedClients().size() <= 1) return null;
 
@@ -105,15 +104,15 @@ public class ShineMediatorServer {
             ShineEntry shineEntry = getConnectedClients().get(i);
             boolean shouldSkip = false;
             for (int j = 0; j < forNode.getIgnore().size(); j++) {
-                if(shineEntry.getAddress().equals(forNode.getIgnore().get(i))) shouldSkip = true;
+                if(forNode.getIgnore().get(j) == shineEntry.getShineId()) shouldSkip = true;
             }
             for (int j = 0; j < shineEntry.getIgnore().size(); j++) {
-                if(forNode.getAddress().equals(shineEntry.getIgnore().get(i))) shouldSkip = true;
+                if(shineEntry.getIgnore().get(j) == forNode.getShineId()) shouldSkip = true;
             }
             if(shouldSkip) continue;
 
             if(!forNode.getAddress().getHostString().equalsIgnoreCase(shineEntry.getAddress().getHostString())) {
-                return shineEntry.getChannel();
+                return shineEntry;
             }
         }
         return null;
@@ -125,7 +124,7 @@ public class ShineMediatorServer {
      */
     public static void sendNeighborInfos(ShineEntry nodeA) {
         //getting node b.
-        Channel nodeB = getNextNeighbor(nodeA);
+        ShineEntry nodeB = getNextNeighbor(nodeA);
         if(nodeB == null) {
             logger.info("Not enough qualified nodes to send node info, {}", getConnectedClients().size());
             return;
@@ -133,21 +132,22 @@ public class ShineMediatorServer {
 
         logger.info("Sending nodes infos...");
         //sending node infos to the two nodes.
-        sendSocketAddress(nodeA.getChannel(), (InetSocketAddress)nodeB.remoteAddress());
-        sendSocketAddress(nodeB, (InetSocketAddress)nodeA.getChannel().remoteAddress());
+        sendSocketAddress(nodeA.getChannel(), nodeB);
+        sendSocketAddress(nodeB.getChannel(), nodeA);
 
         //disconnecting both of the nodes.
         nodeA.getChannel().close();
-        nodeB.close();
+        nodeB.getChannel().close();
     }
 
     /**
      * Sends the socket adress info to the given node.
-     * @param channel
-     * @param socketAddress
+     * @param channel channel to send the info on.
+     * @param entryInfo info to send to the node.
      */
-    private static void sendSocketAddress(Channel channel, InetSocketAddress socketAddress) {
-        InetAddress address = socketAddress.getAddress();
+    private static void sendSocketAddress(Channel channel, ShineEntry entryInfo) {
+        //socket address
+        InetAddress address = entryInfo.getAddress().getAddress();
         ByteBuf buf = Unpooled.buffer(address.getAddress().length + 5);
         if(address instanceof Inet4Address) {
             buf.writeByte(0x0);
@@ -155,7 +155,10 @@ public class ShineMediatorServer {
             buf.writeByte(0x1);
         }
         buf.writeBytes(address.getAddress(), 0, address.getAddress().length);
-        buf.writeInt(socketAddress.getPort());
+        buf.writeInt(entryInfo.getAddress().getPort());
+
+        //shine id
+        buf.writeInt(entryInfo.getShineId());
 
         channel.writeAndFlush(buf);
     }

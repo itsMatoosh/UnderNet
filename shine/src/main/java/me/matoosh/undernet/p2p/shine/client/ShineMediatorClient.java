@@ -23,7 +23,8 @@ import java.util.concurrent.ThreadFactory;
 public class ShineMediatorClient {
     public static Logger logger = LoggerFactory.getLogger("[MediatorClient]");
     public static IMediatorClientConnectionInfoReceivedListner infoReceivedListner;
-    public static InetSocketAddress[] ignoreAddresses;
+    public static Integer[] ignoreIds;
+    public static int shineId = 0;
 
     private static int localPort = 0;
     public static ChannelFuture clientFuture;
@@ -33,13 +34,18 @@ public class ShineMediatorClient {
             logger.warn("Usage: shine-client <server-address> <server-port>");
             return;
         }
+
         start(args[1], Integer.parseInt(args[2]), null);
     }
 
-    public static void start(String shineAddress, int shinePort, IMediatorClientConnectionInfoReceivedListner connectionInfoReceivedListner, InetSocketAddress... ignoreAddresses) {
+    public static void start(String shineAddress, int shinePort, IMediatorClientConnectionInfoReceivedListner connectionInfoReceivedListner, Integer... ignoreIDs) {
+        if(shineId == 0) {
+            logger.warn("Shine ID not set, couldn't initialize the client!");
+            return;
+        }
         if(clientFuture != null && clientFuture.channel() != null && clientFuture.channel().isOpen()) return;
         infoReceivedListner = connectionInfoReceivedListner;
-        ShineMediatorClient.ignoreAddresses = ignoreAddresses;
+        ShineMediatorClient.ignoreIds = ignoreIDs;
 
         //Starting the client.
         logger.info("Connecting to the SHINE mediator server ({})...", shineAddress + ":" + shinePort);
@@ -82,6 +88,11 @@ public class ShineMediatorClient {
         }).start();
     }
 
+    public static void setShineId(int shineId) {
+        logger.info("SHINE id set to: {}", shineId);
+        ShineMediatorClient.shineId = shineId;
+    }
+
     /**
      * Stops the client.
      */
@@ -96,13 +107,13 @@ public class ShineMediatorClient {
      * Called when a node address has been received.
      * @param socketAddress
      */
-    public static void onConnectionInfoReceived(InetSocketAddress socketAddress) {
-        logger.info("Received lonely node info, {}:{}, connecting from port: {}...", socketAddress.getHostString(), socketAddress.getPort(), localPort);
+    public static void onConnectionInfoReceived(InetSocketAddress socketAddress, int shineId) {
+        logger.info("Received lonely node info, {}:{} ({}), connecting from port: {}...", socketAddress.getHostString(), socketAddress.getPort(), shineId, localPort);
         clientFuture.channel().close();
 
         //Running callback
         if(infoReceivedListner != null) {
-            infoReceivedListner.onConnectionInfoReceived(socketAddress, localPort);
+            infoReceivedListner.onConnectionInfoReceived(socketAddress, localPort, shineId);
         }
     }
 
@@ -114,6 +125,6 @@ public class ShineMediatorClient {
     }
 
     public interface IMediatorClientConnectionInfoReceivedListner {
-        void onConnectionInfoReceived(InetSocketAddress socketAddress, int localPort);
+        void onConnectionInfoReceived(InetSocketAddress socketAddress, int localPort, int shineId);
     }
 }

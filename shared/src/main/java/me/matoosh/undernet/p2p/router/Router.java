@@ -155,6 +155,15 @@ public class Router extends EventHandler {
         //Instantiating the message tunnel manager.
         messageTunnelManager = new MessageTunnelManager(this);
         messageTunnelManager.setup();
+
+        //Setting up SHINE
+        if(UnderNet.networkConfig.useShine()) {
+            int newID = 0;
+            while (newID == 0) {
+                newID = UnderNet.secureRandom.nextInt();
+            }
+            ShineMediatorClient.setShineId(newID);
+        }
     }
 
     /**
@@ -221,25 +230,31 @@ public class Router extends EventHandler {
 
             //Request neighbors from SHINE
             if(UnderNet.networkConfig.useShine()) {
-                ArrayList<InetSocketAddress> ignoreAddresses = new ArrayList<>();
+                ArrayList<Integer> ignoreAddresses = new ArrayList<>();
                 for (int i = 0; i < connectedNodes.size(); i++) {
                     Node n = connectedNodes.get(i);
-                    if(!Node.isLocalAddress(n.getAddress())) ignoreAddresses.add(n.getAddress());
+                    if(!Node.isLocalAddress(n.getAddress()) && n.getShineId() != 0) ignoreAddresses.add(n.getShineId());
                 }
 
-                ShineMediatorClient.start(UnderNet.networkConfig.shineAddress(), UnderNet.networkConfig.shinePort(), (socketAddress, localPort) -> {
-                    if(localPort == 0) {
-                        logger.warn("Local SHINE port unknown, can't initiate connection!");
-                        return;
+                ShineMediatorClient.start(UnderNet.networkConfig.shineAddress(), UnderNet.networkConfig.shinePort(), new ShineMediatorClient.IMediatorClientConnectionInfoReceivedListner() {
+                    @Override
+                    public void onConnectionInfoReceived(InetSocketAddress socketAddress, int localPort, int shineId) {
+                        if(localPort == 0) {
+                            logger.warn("Local SHINE port unknown, can't initiate connection!");
+                            return;
+                        }
+                        if(UnderNet.router != null && UnderNet.router.status == InterfaceStatus.STARTED) {
+                            Node n = new Node();
+                            n.setShineId(shineId);
+                            n.setAddress(socketAddress);
+                            UnderNet.router.client.shineConnect(n, localPort);
+                        } else {
+                            logger.warn("UnderNet router must be running to complete a SHINE connection!");
+                        }
                     }
-                    if(UnderNet.router != null && UnderNet.router.status == InterfaceStatus.STARTED) {
-                        Node n = new Node();
-                        n.setAddress(socketAddress);
-                        UnderNet.router.client.shineConnect(n, localPort);
-                    } else {
-                        logger.warn("UnderNet router must be running to complete a SHINE connection!");
-                    }
-                }, ignoreAddresses.toArray(new InetSocketAddress[0]));
+                }, ignoreAddresses.toArray(new Integer[0]));
+
+
             }
         }
 

@@ -245,6 +245,9 @@ public class ResourceManager extends Manager {
             startPush(requestedResource, message.getNetworkMessage().getTunnel());
         } else {
             logger.warn("Resource: {} not available on {}. The pull request will be dropped!", message.getNetworkMessage().getDestination(), Node.self);
+
+            //Sending a pull error message.
+            message.getNetworkMessage().getTunnel().sendMessage(new ResourcePullNotFoundMessage());
         }
     }
 
