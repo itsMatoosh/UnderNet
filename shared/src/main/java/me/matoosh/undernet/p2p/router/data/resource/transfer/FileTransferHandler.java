@@ -227,7 +227,13 @@ public class FileTransferHandler extends ResourceTransferHandler {
             //Adding the data to the data byte[] of the transfer.
             if(dataMessage.getResourceData().length != 0) {
                 try {
-                    outputStream.write(dataMessage.getResourceData());
+                    new Thread(() -> {
+                        try {
+                            outputStream.write(dataMessage.getResourceData());
+                        } catch (IOException e) {
+                            callError(e);
+                        }
+                    }).start();
                     written += dataMessage.getResourceData().length;
                     double speedInMBps = NANOS_PER_SECOND / BYTES_PER_MIB * written / (System.nanoTime() - start + 1);
                     logger.info("Receiving file: {} | {}% ({}MB/s)", this.getResource().attributes.get(1), ((float)written/(float)fileLength)*100f, speedInMBps);
@@ -237,7 +243,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
                     } else {
                         //getTunnel().sendMessage(new ResourceDataChunkRequest(this.getTransferId(), dataMessage.getChunkId() + 1));
                     }
-                } catch (IOException e) {
+                } catch (Exception e) {
                     callError(e);
                 }
             } else {
