@@ -57,6 +57,14 @@ public class FileTransferHandler extends ResourceTransferHandler {
     private int sent = 0;
 
     /**
+     * The time the transfer started.
+     */
+    private long start;
+
+    private final double NANOS_PER_SECOND = 1000000000.0;
+    private final double BYTES_PER_MIB = 1024 * 1024;
+
+    /**
      * The logger of the class.
      */
     public static Logger logger = LoggerFactory.getLogger(FileTransferHandler.class);
@@ -76,6 +84,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
         File file = ((FileResource)this.getResource()).file;
         logger.info("Preparing {} streams for file: {}", this.getTransferType(), file.getName());
         buffer = new byte[BUFFER_SIZE];
+        start = System.nanoTime();
 
         if(this.getTransferType() == ResourceTransferType.OUTBOUND) {
             //Sending
@@ -169,7 +178,8 @@ public class FileTransferHandler extends ResourceTransferHandler {
                     inputBuffer.get(buffer, 0, read);
                     sent += read;
 
-                    logger.info("Sending file: {} | {}% ({}kb)", this.getResource().attributes.get(1), ((float) sent / Long.parseLong(getResource().getInfo().attributes.get(0))) * 100f, sent/1024);
+                    double speedInMBps = NANOS_PER_SECOND / BYTES_PER_MIB * sent / (System.nanoTime() - start + 1);
+                    logger.info("Sending file: {} | {}% ({}MB/s)", this.getResource().attributes.get(1), ((float) sent / Long.parseLong(getResource().getInfo().attributes.get(0))) * 100f, speedInMBps);
                     sendData(buffer, chunkId);
 
                     //Finish if no more bytes available!
@@ -219,7 +229,8 @@ public class FileTransferHandler extends ResourceTransferHandler {
                 try {
                     outputStream.write(dataMessage.getResourceData());
                     written += dataMessage.getResourceData().length;
-                    logger.info("Receiving file: {} | {}% ({}kb)", this.getResource().attributes.get(1), ((float)written/(float)fileLength)*100f, written/1024);
+                    double speedInMBps = NANOS_PER_SECOND / BYTES_PER_MIB * written / (System.nanoTime() - start + 1);
+                    logger.info("Receiving file: {} | {}% ({}MB/s)", this.getResource().attributes.get(1), ((float)written/(float)fileLength)*100f, speedInMBps);
                     if(written >= fileLength) {
                         //File fully received.
                         this.close();
