@@ -12,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 
 /**
@@ -19,13 +21,15 @@ import java.nio.file.Files;
  */
 public class FileTransferHandler extends ResourceTransferHandler {
     /**
-     * Input for receiving file chunks.
+     * Input buffer for sending file chunks.
      */
-    public FileInputStream inputStream;
+    private MappedByteBuffer inputBuffer;
+    private FileChannel inputChannel;
+
     /**
-     * Output for sending file chunks.
+     * Output for receiving file chunks.
      */
-    public FileOutputStream outputStream;
+    private FileOutputStream outputStream;
 
     /**
      * The final length of the received file.
@@ -64,16 +68,19 @@ public class FileTransferHandler extends ResourceTransferHandler {
     @Override
     public void prepare() {
         //Caching as file resource.
-        File saveFile = ((FileResource)this.getResource()).file;
-        logger.info("Preparing {} streams for file: {}", this.getTransferType(), saveFile.getName()) ;
+        File file = ((FileResource)this.getResource()).file;
+        logger.info("Preparing {} streams for file: {}", this.getTransferType(), file.getName()) ;
 
         if(this.getTransferType() == ResourceTransferType.OUTBOUND) { //Sending
             try {
-                inputStream = new FileInputStream(saveFile);
+                inputChannel = new FileInputStream(file).getChannel();
+                inputBuffer = inputChannel.map(FileChannel.MapMode.READ_ONLY, 0, inputChannel.size());
             } catch (FileNotFoundException e) { //File doesn't exist.
                 //Calling a transfer error.
                 callError(e);
                 return;
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         } else { //Receiving
             //Checking if file already exists.
@@ -88,12 +95,12 @@ public class FileTransferHandler extends ResourceTransferHandler {
             }
 
             //Creating or replacing the file.
-            if (saveFile.exists()) {
-                saveFile.delete();
+            if (file.exists()) {
+                file.delete();
             }
             try { //Creating new file.
-                saveFile.createNewFile();
-                outputStream = new FileOutputStream(saveFile);
+                file.createNewFile();
+                outputStream = new FileOutputStream(file);
             } catch (IOException e) {
                 //Calling a transfer error.
                callError(e);
@@ -112,9 +119,11 @@ public class FileTransferHandler extends ResourceTransferHandler {
     public void onClose() {
         logger.info("Closing {} streams for file {}", this.getTransferType(), ((FileResource)this.getResource()).file);
         try {
-            if (inputStream != null) {
-                inputStream.close();
-                inputStream = null;
+            if (inputChannel != null) {
+                inputChannel.close();
+                inputChannel = null;
+                inputBuffer.clear();
+                inputBuffer = null;
             }
             if (outputStream != null) {
                 outputStream.close();
@@ -130,7 +139,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
      */
     @Override
     public void sendChunk(int chunkId) {
-        if(getTransferType().equals(ResourceTransferType.OUTBOUND) && inputStream != null) {
+        if(getTransferType().equals(ResourceTransferType.OUTBOUND) && inputChannel != null) {
             //Stopping on request.
             if(chunkId < 0) {
                 if(chunkId == -2) {
@@ -142,23 +151,24 @@ public class FileTransferHandler extends ResourceTransferHandler {
 
             //File sending logic.
             try {
-                if(inputStream.available() != 0) {
+                if(inputBuffer.capacity() - inputBuffer.position() > 0) {
                     //The send buffer.
                     byte[] buffer;
-                    if(inputStream.available() > BUFFER_SIZE) {
+                    if(inputBuffer.capacity() - inputBuffer.position() > BUFFER_SIZE) {
                         buffer = new byte[BUFFER_SIZE];
+                        sent += BUFFER_SIZE;
                     } else {
-                        buffer = new byte[inputStream.available()];
+                        buffer = new byte[inputBuffer.capacity() - inputBuffer.position()];
+                        sent += inputBuffer.capacity() - inputBuffer.position();
                     }
 
-                    int read = inputStream.read(buffer);
-                    sent += read;
+                    inputBuffer.get(buffer);
 
                     logger.info("Sending file: {} | {}% ({}kb)", this.getResource().attributes.get(1), ((float) sent / Long.parseLong(getResource().getInfo().attributes.get(0))) * 100f, sent/1024);
                     sendData(buffer, chunkId);
 
                     //Finish if no more bytes available!
-                    if(inputStream.available() <= 0) {
+                    if(inputBuffer.capacity() - inputBuffer.position() <= 0) {
                         //File sent fully.
                         this.close();
                     }
@@ -166,7 +176,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
                     //The file has no data. Sending an empty chunk.
                     sendData(new byte[0], chunkId);
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 callError(e);
             }
         }
