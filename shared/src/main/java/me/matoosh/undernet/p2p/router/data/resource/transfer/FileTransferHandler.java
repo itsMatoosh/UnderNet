@@ -15,6 +15,7 @@ import java.io.*;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
+import java.util.ArrayList;
 
 /**
  * Handles file transfers.
@@ -64,6 +65,8 @@ public class FileTransferHandler extends ResourceTransferHandler {
     private final double NANOS_PER_SECOND = 1000000000.0;
     private final double BYTES_PER_MIB = 1024 * 1024;
 
+    private ArrayList<byte[]> received = new ArrayList<>();
+
     /**
      * The logger of the class.
      */
@@ -85,6 +88,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
         logger.info("Preparing {} streams for file: {}", this.getTransferType(), file.getName());
         buffer = new byte[BUFFER_SIZE];
         start = System.nanoTime();
+        received.clear();
 
         if(this.getTransferType() == ResourceTransferType.OUTBOUND) {
             //Sending
@@ -226,25 +230,29 @@ public class FileTransferHandler extends ResourceTransferHandler {
 
             //Adding the data to the data byte[] of the transfer.
             if(dataMessage.getResourceData().length != 0) {
-                try {
+                received.add(dataMessage.getResourceData());
+                if(received.size() >= 125) {
+                    //save 4mb
                     new Thread(() -> {
                         try {
-                            outputStream.write(dataMessage.getResourceData());
+                            for (int i = 0; i < 125; i++) {
+                                byte[] chunk = received.get(0);
+                                outputStream.write(chunk);
+                                written += dataMessage.getResourceData().length;
+                                received.remove(0);
+                            }
+
+                            double speedInMBps = NANOS_PER_SECOND / BYTES_PER_MIB * written / (System.nanoTime() - start + 1);
+                            logger.info("Receiving file: {} | {}% ({}MB/s)", this.getResource().attributes.get(1), ((float) written / (float) fileLength) * 100f, speedInMBps);
+
+                            if (written >= fileLength) {
+                                //File fully received.
+                                this.close();
+                            }
                         } catch (IOException e) {
-                            callError(e);
+                            e.printStackTrace();
                         }
                     }).start();
-                    written += dataMessage.getResourceData().length;
-                    double speedInMBps = NANOS_PER_SECOND / BYTES_PER_MIB * written / (System.nanoTime() - start + 1);
-                    logger.info("Receiving file: {} | {}% ({}MB/s)", this.getResource().attributes.get(1), ((float)written/(float)fileLength)*100f, speedInMBps);
-                    if(written >= fileLength) {
-                        //File fully received.
-                        this.close();
-                    } else {
-                        //getTunnel().sendMessage(new ResourceDataChunkRequest(this.getTransferId(), dataMessage.getChunkId() + 1));
-                    }
-                } catch (Exception e) {
-                    callError(e);
                 }
             } else {
                 //Empty chunk, ending the transfer and closing the file.
