@@ -159,6 +159,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
 
             //File sending logic.
             try {
+                if(!inputChannel.isOpen()) return;
                 if(inputBuffer.capacity() - inputBuffer.position() > 0) {
                     //The send buffer.
                     int read = BUFFER_SIZE;
@@ -175,6 +176,9 @@ public class FileTransferHandler extends ResourceTransferHandler {
                     if(inputBuffer.capacity() - inputBuffer.position() <= 0) {
                         //File sent fully.
                         this.close();
+                    } else {
+                        //Send next chunk.
+                        sendChunk(chunkId + 1);
                     }
                 } else {
                     //The file has no data. Sending an empty chunk.
@@ -220,7 +224,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
                         //File fully received.
                         this.close();
                     } else {
-                        getTunnel().sendMessage(new ResourceDataChunkRequest(this.getTransferId(), dataMessage.getChunkId() + 1));
+                        //getTunnel().sendMessage(new ResourceDataChunkRequest(this.getTransferId(), dataMessage.getChunkId() + 1));
                     }
                 } catch (IOException e) {
                     callError(e);
