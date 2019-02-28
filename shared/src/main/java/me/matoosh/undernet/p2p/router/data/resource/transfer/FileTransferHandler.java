@@ -32,14 +32,19 @@ public class FileTransferHandler extends ResourceTransferHandler {
     private FileOutputStream outputStream;
 
     /**
-     * The final length of the received file.
+     * Buffer for file operations.
      */
-    private long fileLength;
+    private byte[] buffer;
 
     /**
      * The standard buffer size for file chunks (32kb)
      */
     public static final int BUFFER_SIZE = 1024 * 32;
+
+    /**
+     * The final length of the received file.
+     */
+    private long fileLength;
 
     /**
      * The amount of bytes written from the received chunks.
@@ -69,9 +74,11 @@ public class FileTransferHandler extends ResourceTransferHandler {
     public void prepare() {
         //Caching as file resource.
         File file = ((FileResource)this.getResource()).file;
-        logger.info("Preparing {} streams for file: {}", this.getTransferType(), file.getName()) ;
+        logger.info("Preparing {} streams for file: {}", this.getTransferType(), file.getName());
+        buffer = new byte[BUFFER_SIZE];
 
-        if(this.getTransferType() == ResourceTransferType.OUTBOUND) { //Sending
+        if(this.getTransferType() == ResourceTransferType.OUTBOUND) {
+            //Sending
             try {
                 inputChannel = new FileInputStream(file).getChannel();
                 inputBuffer = inputChannel.map(FileChannel.MapMode.READ_ONLY, 0, inputChannel.size());
@@ -82,7 +89,8 @@ public class FileTransferHandler extends ResourceTransferHandler {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        } else { //Receiving
+        } else {
+            //Receiving
             //Checking if file already exists.
             if(getResource().isLocal()) {
                 getResource().calcNetworkId();
@@ -153,16 +161,12 @@ public class FileTransferHandler extends ResourceTransferHandler {
             try {
                 if(inputBuffer.capacity() - inputBuffer.position() > 0) {
                     //The send buffer.
-                    byte[] buffer;
-                    if(inputBuffer.capacity() - inputBuffer.position() > BUFFER_SIZE) {
-                        buffer = new byte[BUFFER_SIZE];
-                        sent += BUFFER_SIZE;
-                    } else {
-                        buffer = new byte[inputBuffer.capacity() - inputBuffer.position()];
-                        sent += inputBuffer.capacity() - inputBuffer.position();
+                    int read = BUFFER_SIZE;
+                    if (inputBuffer.capacity() - inputBuffer.position() <= BUFFER_SIZE) {
+                        read = inputBuffer.capacity() - inputBuffer.position();
                     }
-
-                    inputBuffer.get(buffer);
+                    inputBuffer.get(buffer, 0, read);
+                    sent += read;
 
                     logger.info("Sending file: {} | {}% ({}kb)", this.getResource().attributes.get(1), ((float) sent / Long.parseLong(getResource().getInfo().attributes.get(0))) * 100f, sent/1024);
                     sendData(buffer, chunkId);
