@@ -107,11 +107,7 @@ public class Node implements Serializable {
         if(channel == null) {
             logger.error("Node {} is not a neighboring node, can't send the message!", this);
         } else {
-            try {
-                channel.writeAndFlush(msg).await();
-            } catch (InterruptedException e) {
-                logger.error("Node write interrupted!", e);
-            }
+            channel.writeAndFlush(msg).awaitUninterruptibly();
         }
     }
 

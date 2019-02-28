@@ -261,7 +261,7 @@ public class ResourceManager extends Manager {
                 outboundHandlers) {
             if(transferHandler.getTransferId() == message.getTransferId()) {
                 logger.info("Sending chunk: {}, of file transfer {}", message.getChunkId(), transferHandler.getResource().getNetworkID());
-                transferHandler.callSendChunk(message.getChunkId());
+                new Thread(() -> transferHandler.callSendChunk(message.getChunkId())).start();
                 return;
             }
         }

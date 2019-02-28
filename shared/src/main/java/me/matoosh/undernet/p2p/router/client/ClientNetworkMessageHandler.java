@@ -69,7 +69,7 @@ public class ClientNetworkMessageHandler extends ChannelInboundHandlerAdapter {
         client.router.addConnectedNode(serverNode);
 
         //Calling the channel created event.
-        EventManager.callEvent(new ChannelCreatedEvent(ctx.channel(), false));
+        EventManager.callAsyncEvent(new ChannelCreatedEvent(ctx.channel(), false));
     }
 
     /**
@@ -91,7 +91,7 @@ public class ClientNetworkMessageHandler extends ChannelInboundHandlerAdapter {
         client.router.messageTunnelManager.closeTunnelsOnDisconnect(serverNode);
 
         //Calling the channel closed event.
-        EventManager.callEvent(new ChannelClosedEvent(ctx.channel(), false));
+        EventManager.callAsyncEvent(new ChannelClosedEvent(ctx.channel(), false));
     }
 
     /**
@@ -105,11 +105,7 @@ public class ClientNetworkMessageHandler extends ChannelInboundHandlerAdapter {
         if(msg instanceof NetworkMessage) {
             //Reading the incoming content as a NetworkMessage.
             NetworkMessage networkMessage = (NetworkMessage) msg;
-            try {
-                EventManager.callEvent(new ChannelMessageReceivedEvent(ctx.channel(), false, networkMessage));
-            } finally {
-                networkMessage = null; //Releasing the msg from memory.
-            }
+            EventManager.callAsyncEvent(new ChannelMessageReceivedEvent(ctx.channel(), false, networkMessage));
         }
     }
 
