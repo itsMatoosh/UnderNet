@@ -236,7 +236,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
                     //save 4mb
                     new Thread(() -> {
                         try {
-                            for (int i = 0; i < 124; i++) {
+                            for (int i = 0; i < 125 && i < received.size(); i++) {
                                 byte[] chunk = received.get(0);
                                 outputStream.write(chunk);
                                 received.remove(0);
