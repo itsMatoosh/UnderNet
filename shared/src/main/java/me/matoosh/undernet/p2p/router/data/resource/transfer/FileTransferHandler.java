@@ -178,7 +178,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
                         this.close();
                     } else {
                         //Send next chunk.
-                        sendChunk(chunkId + 1);
+                        callSendChunk(chunkId + 1);
                     }
                 } else {
                     //The file has no data. Sending an empty chunk.
