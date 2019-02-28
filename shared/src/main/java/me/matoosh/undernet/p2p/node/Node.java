@@ -107,7 +107,7 @@ public class Node implements Serializable {
         if(channel == null) {
             logger.error("Node {} is not a neighboring node, can't send the message!", this);
         } else {
-            channel.writeAndFlush(msg, channel.voidPromise()).syncUninterruptibly();
+            channel.writeAndFlush(msg).syncUninterruptibly();
         }
     }
 
