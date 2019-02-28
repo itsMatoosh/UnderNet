@@ -147,10 +147,10 @@ public class NetworkMessageManager extends Manager {
             return;
         }
 
-        if (!message.isValid()) {
+        /*if (!message.isValid()) {
             logger.warn("Message: {} is invalid, the message won't be forwarded!", message);
             return;
-        }
+        }*/
 
         //Getting the next node in the tunnel.
         MessageTunnel tunnel = router.messageTunnelManager.getTunnel(message.getOrigin(), message.getDestination());
