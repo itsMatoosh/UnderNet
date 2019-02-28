@@ -231,14 +231,14 @@ public class FileTransferHandler extends ResourceTransferHandler {
             //Adding the data to the data byte[] of the transfer.
             if(dataMessage.getResourceData().length != 0) {
                 received.add(dataMessage.getResourceData());
-                if(received.size() >= 125) {
+                written += dataMessage.getResourceData().length;
+                if(received.size() >= 125 || written >= fileLength) {
                     //save 4mb
                     new Thread(() -> {
                         try {
                             for (int i = 0; i < 125; i++) {
                                 byte[] chunk = received.get(0);
                                 outputStream.write(chunk);
-                                written += dataMessage.getResourceData().length;
                                 received.remove(0);
                             }
 
