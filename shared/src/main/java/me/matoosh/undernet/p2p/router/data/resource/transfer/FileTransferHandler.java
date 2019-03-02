@@ -34,7 +34,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
     private final double NANOS_PER_SECOND = 1000000000.0;
     private final double BYTES_PER_MIB = 1024 * 1024;
     private final ArrayList<byte[]> received = new ArrayList<>();
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private static final ExecutorService executorService = Executors.newSingleThreadExecutor();
     /**
      * Input buffer for sending file chunks.
      */
@@ -181,7 +181,11 @@ public class FileTransferHandler extends ResourceTransferHandler {
                     sendData(buffer, chunkId);
                     setLastMessageTime(System.currentTimeMillis());
                 }
-            } finally {
+            }
+            catch (Exception e) {
+                callError(e);
+            }
+            finally {
                 //File sent fully.
                 this.close();
             }
@@ -216,29 +220,43 @@ public class FileTransferHandler extends ResourceTransferHandler {
 
             //Adding the data to the data byte[] of the transfer.
             if (dataMessage.getResourceData().length != 0) {
-                received.add(dataMessage.getResourceData());
-                written += dataMessage.getResourceData().length;
-                if ((received.size() >= 125 || written >= fileLength)) {
+                //Saving received chunks
+                if(dataMessage.getChunkId() == 0) {
                     executorService.submit(() -> {
+                        int saved = 0;
                         try {
-                            for (int i = 0; i < 125 && i < received.size(); i++) {
-                                byte[] chunk = received.get(0);
-                                outputStream.write(chunk);
-                                received.remove(0);
-                            }
+                            while (saved < fileLength) {
+                                if ((received.size() >= 128 || written >= fileLength)) {
+                                        int chunksToSave;
+                                        if(received.size() >= 128) {
+                                            chunksToSave = 128;
+                                        } else {
+                                            chunksToSave = received.size();
+                                        }
+                                        byte[] toSave = new byte[BUFFER_SIZE * chunksToSave];
 
-                            double speedInMBps = NANOS_PER_SECOND / BYTES_PER_MIB * written / (System.nanoTime() - start + 1);
-                            logger.info("Receiving file: {} | {}% ({}MB/s)", this.getResource().attributes.get(1), ((float) written / (float) fileLength) * 100f, speedInMBps);
+                                        for (int i = 0; i < chunksToSave; i++) {
+                                            byte[] data = received.get(0);
+                                            System.arraycopy(data, 0, toSave, BUFFER_SIZE * i, data.length);
+                                            received.remove(0);
+                                        }
 
-                            if (written >= fileLength) {
-                                //File fully received.
-                                this.close();
+                                        outputStream.write(toSave);
+                                        double speedInMBps = NANOS_PER_SECOND / BYTES_PER_MIB * saved / (System.nanoTime() - start + 1);
+                                        logger.info("Receiving file: {} | {}% ({}MB/s)", this.getResource().attributes.get(1), ((float) saved / (float) fileLength) * 100f, speedInMBps);
+                                }
                             }
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            callError(e);
+                        } finally{
+                            //File fully received.
+                            this.close();
                         }
                     });
                 }
+
+                received.add(dataMessage.getResourceData());
+                written += dataMessage.getResourceData().length;
             } else {
                 //Empty chunk, ending the transfer and closing the file.
                 logger.info("Empty chunk received for: {}, ending the transfer...", this.getResource().attributes.get(1));
