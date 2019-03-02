@@ -24,9 +24,9 @@ import java.util.concurrent.Executors;
  */
 public class FileTransferHandler extends ResourceTransferHandler {
     /**
-     * The standard buffer size for file chunks (32kb)
+     * The standard buffer size for file chunks (64kb)
      */
-    public static final int BUFFER_SIZE = 1024 * 32;
+    public static final int BUFFER_SIZE = 1024 * 64;
     /**
      * The logger of the class.
      */
@@ -54,6 +54,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
      * The amount of bytes written from the received chunks.
      */
     private int written = 0;
+    private int saved = 0;
     /**
      * The amount of bytes sent.
      */
@@ -83,6 +84,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
             //Sending
             try {
                 buffer = new byte[BUFFER_SIZE];
+                sent = 0;
                 inputChannel = new FileInputStream(file).getChannel();
                 inputBuffer = inputChannel.map(FileChannel.MapMode.READ_ONLY, 0, inputChannel.size());
             } catch (FileNotFoundException e) { //File doesn't exist.
@@ -95,6 +97,8 @@ public class FileTransferHandler extends ResourceTransferHandler {
         } else {
             //Receiving
             //Checking if file already exists.
+            written = 0;
+            saved = 0;
             if (getResource().isLocal()) {
                 getResource().calcNetworkId();
                 if (getResource().getNetworkID().equals(getTunnel().getDestination())) {
@@ -106,7 +110,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
             }
 
             //Creating or replacing the file.
-            buffer = new byte[BUFFER_SIZE * 128];
+            buffer = new byte[BUFFER_SIZE * 64];
             if (file.exists()) {
                 file.delete();
             }
@@ -221,16 +225,17 @@ public class FileTransferHandler extends ResourceTransferHandler {
                 if (dataMessage.getResourceData().length != 0) {
                     //Saving received chunks
                     byte[] chunk = dataMessage.getResourceData();
-                    int bufferIndex = written % BUFFER_SIZE * 128;
-                    written += dataMessage.getResourceData().length;
+                    written += chunk.length;
                     double speedInMBps = NANOS_PER_SECOND / BYTES_PER_MIB * written / (System.nanoTime() - start + 1);
                     logger.info("Receiving file: {} | {}% ({}MB/s)", this.getResource().attributes.get(1), ((float) written / (float) fileLength) * 100f, speedInMBps);
 
                     //add to 4mb buffer
-                    System.arraycopy(chunk, 0, buffer, bufferIndex, chunk.length);
-                    if(buffer.length - (bufferIndex + chunk.length) < BUFFER_SIZE) {
+                    System.arraycopy(chunk, 0, buffer, saved, chunk.length);
+                    saved += chunk.length;
+                    if(buffer.length - saved < BUFFER_SIZE || written >= fileLength) {
                         //save and clear buffer
-                        outputStream.write(buffer);
+                        outputStream.write(buffer, 0, saved);
+                        saved = 0;
                     }
 
 
