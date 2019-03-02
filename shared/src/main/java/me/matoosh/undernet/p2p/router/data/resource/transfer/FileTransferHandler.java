@@ -201,9 +201,11 @@ public class FileTransferHandler extends ResourceTransferHandler {
      * @param chunkId
      */
     private void sendData(byte[] data, int chunkId) {
+        long time = System.currentTimeMillis();
         ResourceDataMessage message = new ResourceDataMessage(data, getTransferId(), chunkId);
         getTunnel().sendMessage(message);
         EventManager.callEvent(new ResourceTransferDataSentEvent(this, message));
+        logger.info("Sent chunk in {}ms", System.currentTimeMillis() - time);
     }
 
     /**
@@ -227,19 +229,20 @@ public class FileTransferHandler extends ResourceTransferHandler {
                     byte[] chunk = dataMessage.getResourceData();
                     written += chunk.length;
                     double speedInMBps = NANOS_PER_SECOND / BYTES_PER_MIB * written / (System.nanoTime() - start + 1);
+                    System.out.println();
                     logger.info("Receiving file: {} | {}% ({}MB/s)", this.getResource().attributes.get(1), ((float) written / (float) fileLength) * 100f, speedInMBps);
 
                     //add to 4mb buffer
                     System.arraycopy(chunk, 0, buffer, saved, chunk.length);
                     saved += chunk.length;
-                    if(buffer.length - saved < BUFFER_SIZE || written >= fileLength) {
+                    if (buffer.length - saved < BUFFER_SIZE || written >= fileLength) {
                         //save and clear buffer
                         outputStream.write(buffer, 0, saved);
                         saved = 0;
                     }
 
 
-                    if(written >= fileLength) {
+                    if (written >= fileLength) {
                         this.close();
                     }
                 } else {
@@ -249,7 +252,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
                     //File fully received.
                     this.close();
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 callError(e);
             }
         }

@@ -5,13 +5,13 @@
         <file>./debug.log</file>
         <append>false</append>
         <encoder>
-            <pattern>%-5relative %-5level %logger{35} - %msg%n</pattern>
+            <pattern>[%d{HH:mm:ss.SSS}] %-5level %logger{35} - %msg%n</pattern>
         </encoder>
     </appender>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%-5relative %-5level %logger{35} - %msg%n</pattern>
+            <pattern>[%d{HH:mm:ss.SSS}] %-5level %logger{35} - %msg%n</pattern>
         </encoder>
     </appender>
 

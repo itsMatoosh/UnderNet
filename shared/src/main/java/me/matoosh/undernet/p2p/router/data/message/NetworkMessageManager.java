@@ -206,10 +206,8 @@ public class NetworkMessageManager extends Manager {
                 message.getTunnel().setLastMessageTime(System.currentTimeMillis());
 
                 //Calling received event.
-                logger.info("Decrypting message: {}ms", System.currentTimeMillis() - time);
                 time = System.currentTimeMillis();
                 EventManager.callEvent(new MessageReceivedEvent(message, forwarder));
-                logger.info("Received event: {}ms", System.currentTimeMillis() - time);
             } else {
                 //Message can't be read.
                 logger.warn("Couldn't read the incoming message! Signature: {}", Base64.encode(message.getSignature()));
