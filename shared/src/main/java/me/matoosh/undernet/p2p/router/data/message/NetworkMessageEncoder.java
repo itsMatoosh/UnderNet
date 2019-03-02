@@ -35,7 +35,6 @@ public class NetworkMessageEncoder extends MessageToByteEncoder<NetworkMessage> 
         out.alloc().buffer(msg.getTotalLength());
 
         //Writing the header.
-        long time = System.currentTimeMillis();
         out.writeBytes(msg.getOrigin().getData());
         out.writeBytes(msg.getDestination().getData());
         out.writeByte(msg.getSignature().length);
@@ -46,8 +45,6 @@ public class NetworkMessageEncoder extends MessageToByteEncoder<NetworkMessage> 
 
         //Writing the content.
         out.writeBytes(msg.getData());
-
-        logger.info("Sent message in {}ms", System.currentTimeMillis() - time);
 
         logger.debug("Message sent to: {}", ctx.channel().remoteAddress(), out.capacity());
     }
