@@ -24,9 +24,9 @@ import java.util.concurrent.Executors;
  */
 public class FileTransferHandler extends ResourceTransferHandler {
     /**
-     * The standard buffer size for file chunks (64kb)
+     * The standard buffer size for file chunks (128kb)
      */
-    public static final int BUFFER_SIZE = 1024 * 512;
+    public static final int BUFFER_SIZE = 1024 * 128;
     /**
      * The logger of the class.
      */
@@ -110,7 +110,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
             }
 
             //Creating or replacing the file.
-            buffer = new byte[BUFFER_SIZE * 8];
+            buffer = new byte[BUFFER_SIZE * 32];
             if (file.exists()) {
                 file.delete();
             }
