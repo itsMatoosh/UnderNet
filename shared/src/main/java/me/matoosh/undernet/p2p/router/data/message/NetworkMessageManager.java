@@ -143,6 +143,7 @@ public class NetworkMessageManager extends Manager {
      */
     public void forwardMessage(NetworkMessage message, Node forwarder) {
         //Ignore node info.
+        long time = System.currentTimeMillis();
         if (message.getContent() != null && message.getContent().getType() == MsgType.NODE_INFO) {
             return;
         }
@@ -164,7 +165,9 @@ public class NetworkMessageManager extends Manager {
         if (message.getDirection() == NetworkMessage.MessageDirection.TO_DESTINATION) {
             //Getting the closest neighbor to forward the message to.
             tunnel.setPreviousNode(forwarder);
-            tunnel.setNextNode(router.neighborNodesManager.getClosestTo(message.getDestination()));
+            if(tunnel.getNextNode() == null || !tunnel.getNextNode().isConnected()) {
+                tunnel.setNextNode(router.neighborNodesManager.getClosestTo(message.getDestination()));
+            }
             nextNode = tunnel.getNextNode();
         } else {
             nextNode = tunnel.getPreviousNode();
@@ -203,12 +206,17 @@ public class NetworkMessageManager extends Manager {
                 message.getTunnel().setLastMessageTime(System.currentTimeMillis());
 
                 //Calling received event.
+                logger.info("Decrypting message: {}ms", System.currentTimeMillis() - time);
+                time = System.currentTimeMillis();
                 EventManager.callEvent(new MessageReceivedEvent(message, forwarder));
+                logger.info("Received event: {}ms", System.currentTimeMillis() - time);
             } else {
                 //Message can't be read.
                 logger.warn("Couldn't read the incoming message! Signature: {}", Base64.encode(message.getSignature()));
             }
         } else {
+            //Set last message received on tunnel.
+            message.getTunnel().setLastMessageTime(System.currentTimeMillis());
             //Forwarding.
             nextNode.sendRaw(message);
         }
