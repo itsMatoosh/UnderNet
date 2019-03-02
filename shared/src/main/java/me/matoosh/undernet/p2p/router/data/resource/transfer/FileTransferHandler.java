@@ -165,8 +165,9 @@ public class FileTransferHandler extends ResourceTransferHandler {
 
             //File sending logic.
             try {
-                if (!inputChannel.isOpen()) return;
-                if (inputBuffer.capacity() - inputBuffer.position() > 0) {
+                while (inputBuffer.capacity() - inputBuffer.position() > 0) {
+                    if (!inputChannel.isOpen()) break;
+
                     //The send buffer.
                     int read = BUFFER_SIZE;
                     if (inputBuffer.capacity() - inputBuffer.position() <= BUFFER_SIZE) {
@@ -178,21 +179,11 @@ public class FileTransferHandler extends ResourceTransferHandler {
                     double speedInMBps = NANOS_PER_SECOND / BYTES_PER_MIB * sent / (System.nanoTime() - start + 1);
                     logger.info("Sending file: {} | {}% ({}MB/s)", this.getResource().attributes.get(1), ((float) sent / Long.parseLong(getResource().getInfo().attributes.get(0))) * 100f, speedInMBps);
                     sendData(buffer, chunkId);
-
-                    //Finish if no more bytes available!
-                    if (inputBuffer.capacity() - inputBuffer.position() <= 0) {
-                        //File sent fully.
-                        this.close();
-                    } else {
-                        //Send next chunk.
-                        callSendChunk(chunkId + 1);
-                    }
-                } else {
-                    //The file has no data. Sending an empty chunk.
-                    sendData(new byte[0], chunkId);
+                    setLastMessageTime(System.currentTimeMillis());
                 }
-            } catch (Exception e) {
-                callError(e);
+            } finally {
+                //File sent fully.
+                this.close();
             }
         }
     }
