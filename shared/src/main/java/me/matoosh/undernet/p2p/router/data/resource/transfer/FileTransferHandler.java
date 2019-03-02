@@ -205,7 +205,6 @@ public class FileTransferHandler extends ResourceTransferHandler {
         ResourceDataMessage message = new ResourceDataMessage(data, getTransferId(), chunkId);
         getTunnel().sendMessage(message);
         EventManager.callEvent(new ResourceTransferDataSentEvent(this, message));
-        logger.info("Sent chunk in {}ms", System.currentTimeMillis() - time);
     }
 
     /**

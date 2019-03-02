@@ -65,14 +65,20 @@ public class NetworkMessageManager extends Manager {
      */
     public void sendMessage(MsgBase content, MessageTunnel messageTunnel) {
         //Constructing the message.
+        long time = System.currentTimeMillis();
         NetworkMessage message = constructMessage(messageTunnel, content, NetworkMessage.MessageDirection.TO_DESTINATION);
+        logger.info("Constructed message in {}ms", System.currentTimeMillis() - time);
 
         //Checking if the tunnel has been created.
         switch (messageTunnel.getTunnelState()) {
             case ESTABLISHED:
                 //Using an existing tunnel.
+                time = System.currentTimeMillis();
                 messageTunnel.encryptMsgSymmetric(message);
+                logger.info("Encrypted message in {}", System.currentTimeMillis() - time);
+                time = System.currentTimeMillis();
                 forwardMessage(message, Node.self);
+                logger.info("Forwarded message in {}", System.currentTimeMillis() - time);
                 break;
             case HOSTED:
                 logger.warn("Can't send messages through a hosted tunnel!");
