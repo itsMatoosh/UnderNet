@@ -250,10 +250,6 @@ public class NetworkMessage {
             logger.warn("Content length of message {} less or equal to 0, {}", this, getContentLength());
             return false;
         }
-        /*if(!checkLength()) {
-            logger.warn("Message {} is bigger than the network MTU, {}", this, getTotalLength());
-            return false;
-        }*/
 
         return true;
     }

@@ -143,15 +143,9 @@ public class NetworkMessageManager extends Manager {
      */
     public void forwardMessage(NetworkMessage message, Node forwarder) {
         //Ignore node info.
-        long time = System.currentTimeMillis();
         if (message.getContent() != null && message.getContent().getType() == MsgType.NODE_INFO) {
             return;
         }
-
-        /*if (!message.isValid()) {
-            logger.warn("Message: {} is invalid, the message won't be forwarded!", message);
-            return;
-        }*/
 
         //Getting the next node in the tunnel.
         MessageTunnel tunnel = router.messageTunnelManager.getTunnel(message.getOrigin(), message.getDestination());
@@ -192,9 +186,6 @@ public class NetworkMessageManager extends Manager {
 
         }
 
-        logger.info("Identified message in {}", System.currentTimeMillis() - time);
-        time = System.currentTimeMillis();
-
         //Checking if we are the last stop.
         if (nextNode == Node.self) {
             //Decrypting the message.
@@ -209,7 +200,6 @@ public class NetworkMessageManager extends Manager {
                 message.getTunnel().setLastMessageTime(System.currentTimeMillis());
 
                 //Calling received event.
-                time = System.currentTimeMillis();
                 EventManager.callEvent(new MessageReceivedEvent(message, forwarder));
             } else {
                 //Message can't be read.
@@ -221,7 +211,6 @@ public class NetworkMessageManager extends Manager {
             //Forwarding.
             nextNode.sendRaw(message);
         }
-        logger.info("Forwarded message in {}", System.currentTimeMillis() - time);
     }
 
     /**
