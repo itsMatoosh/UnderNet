@@ -26,7 +26,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
     /**
      * The standard buffer size for file chunks (64kb)
      */
-    public static final int BUFFER_SIZE = 1024 * 64;
+    public static final int BUFFER_SIZE = 1024 * 256;
     /**
      * The logger of the class.
      */
@@ -110,7 +110,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
             }
 
             //Creating or replacing the file.
-            buffer = new byte[BUFFER_SIZE * 64];
+            buffer = new byte[BUFFER_SIZE * 16];
             if (file.exists()) {
                 file.delete();
             }
