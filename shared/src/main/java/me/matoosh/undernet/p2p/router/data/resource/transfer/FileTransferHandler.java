@@ -33,8 +33,6 @@ public class FileTransferHandler extends ResourceTransferHandler {
     public static Logger logger = LoggerFactory.getLogger(FileTransferHandler.class);
     private final double NANOS_PER_SECOND = 1000000000.0;
     private final double BYTES_PER_MIB = 1024 * 1024;
-    private final ArrayList<byte[]> received = new ArrayList<>();
-    private static final ExecutorService executorService = Executors.newSingleThreadExecutor();
     /**
      * Input buffer for sending file chunks.
      */
@@ -79,13 +77,12 @@ public class FileTransferHandler extends ResourceTransferHandler {
         //Caching as file resource.
         File file = ((FileResource) this.getResource()).file;
         logger.info("Preparing {} streams for file: {}", this.getTransferType(), file.getName());
-        buffer = new byte[BUFFER_SIZE];
         start = System.nanoTime();
-        received.clear();
 
         if (this.getTransferType() == ResourceTransferType.OUTBOUND) {
             //Sending
             try {
+                buffer = new byte[BUFFER_SIZE];
                 inputChannel = new FileInputStream(file).getChannel();
                 inputBuffer = inputChannel.map(FileChannel.MapMode.READ_ONLY, 0, inputChannel.size());
             } catch (FileNotFoundException e) { //File doesn't exist.
@@ -109,6 +106,7 @@ public class FileTransferHandler extends ResourceTransferHandler {
             }
 
             //Creating or replacing the file.
+            buffer = new byte[BUFFER_SIZE * 128];
             if (file.exists()) {
                 file.delete();
             }
@@ -219,50 +217,35 @@ public class FileTransferHandler extends ResourceTransferHandler {
                 this.setTunnel(dataMessage.getNetworkMessage().getTunnel());
 
             //Adding the data to the data byte[] of the transfer.
-            if (dataMessage.getResourceData().length != 0) {
-                //Saving received chunks
-                if(dataMessage.getChunkId() == 0) {
-                    executorService.submit(() -> {
-                        int saved = 0;
-                        try {
-                            while (saved < fileLength) {
-                                if ((received.size() >= 128 || written >= fileLength)) {
-                                        int chunksToSave;
-                                        if(received.size() >= 128) {
-                                            chunksToSave = 128;
-                                        } else {
-                                            chunksToSave = received.size();
-                                        }
-                                        byte[] toSave = new byte[BUFFER_SIZE * chunksToSave];
+            try {
+                if (dataMessage.getResourceData().length != 0) {
+                    //Saving received chunks
+                    byte[] chunk = dataMessage.getResourceData();
+                    int bufferIndex = written % BUFFER_SIZE * 128;
+                    written += dataMessage.getResourceData().length;
+                    double speedInMBps = NANOS_PER_SECOND / BYTES_PER_MIB * written / (System.nanoTime() - start + 1);
+                    logger.info("Receiving file: {} | {}% ({}MB/s)", this.getResource().attributes.get(1), ((float) written / (float) fileLength) * 100f, speedInMBps);
 
-                                        for (int i = 0; i < chunksToSave; i++) {
-                                            byte[] data = received.get(0);
-                                            System.arraycopy(data, 0, toSave, BUFFER_SIZE * i, data.length);
-                                            received.remove(0);
-                                        }
+                    //add to 4mb buffer
+                    System.arraycopy(chunk, 0, buffer, bufferIndex, chunk.length);
+                    if(buffer.length - (bufferIndex + chunk.length) < BUFFER_SIZE) {
+                        //save and clear buffer
+                        outputStream.write(buffer);
+                    }
 
-                                        outputStream.write(toSave);
-                                        double speedInMBps = NANOS_PER_SECOND / BYTES_PER_MIB * saved / (System.nanoTime() - start + 1);
-                                        logger.info("Receiving file: {} | {}% ({}MB/s)", this.getResource().attributes.get(1), ((float) saved / (float) fileLength) * 100f, speedInMBps);
-                                }
-                            }
-                        } catch (IOException e) {
-                            callError(e);
-                        } finally{
-                            //File fully received.
-                            this.close();
-                        }
-                    });
+
+                    if(written >= fileLength) {
+                        this.close();
+                    }
+                } else {
+                    //Empty chunk, ending the transfer and closing the file.
+                    logger.info("Empty chunk received for: {}, ending the transfer...", this.getResource().attributes.get(1));
+
+                    //File fully received.
+                    this.close();
                 }
-
-                received.add(dataMessage.getResourceData());
-                written += dataMessage.getResourceData().length;
-            } else {
-                //Empty chunk, ending the transfer and closing the file.
-                logger.info("Empty chunk received for: {}, ending the transfer...", this.getResource().attributes.get(1));
-
-                //File fully received.
-                this.close();
+            } catch (IOException e) {
+                callError(e);
             }
         }
     }
