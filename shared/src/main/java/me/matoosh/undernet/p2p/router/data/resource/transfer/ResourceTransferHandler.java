@@ -8,11 +8,12 @@ import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.data.message.ResourceDataMessage;
 import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnel;
 import me.matoosh.undernet.p2p.router.data.resource.Resource;
+import me.matoosh.undernet.p2p.router.data.resource.ResourceManager;
 
 /**
  * Handles the receiving of a resource.
  */
-public abstract class ResourceTransferHandler {
+public abstract class ResourceTransferHandler<T extends Resource> implements AutoCloseable {
 
     /**
      * The router used.
@@ -22,7 +23,7 @@ public abstract class ResourceTransferHandler {
     /**
      * The transferred resource.
      */
-    private Resource resource;
+    private T resource;
 
     /**
      * The type of the resource transfer.
@@ -45,7 +46,7 @@ public abstract class ResourceTransferHandler {
     private long lastMessageTime;
 
 
-    public ResourceTransferHandler(Resource resource, ResourceTransferType transferType, MessageTunnel tunnel, int transferId, Router router) {
+    public ResourceTransferHandler(T resource, ResourceTransferType transferType, MessageTunnel tunnel, int transferId, Router router) {
         this.resource = resource;
         this.transferType = transferType;
         this.tunnel = tunnel;
@@ -69,25 +70,38 @@ public abstract class ResourceTransferHandler {
     public abstract void prepare();
 
     /**
-     * Sends chunk with id chunk id.
-     *
-     * @param chunkId
+     * Starts sending the resource.
      */
-    public void callSendChunk(int chunkId) {
-        lastMessageTime = System.currentTimeMillis();
-        sendChunk(chunkId);
+    public void startSending() {
+        if(getTransferType() != ResourceTransferType.OUTBOUND) return;
+        ResourceManager.logger.info("Sending {}...", this.getResource());
+        setLastMessageTime(System.currentTimeMillis());
+        doStartSending();
     }
 
     /**
-     * Sends chunk with id chunk id.
-     *
-     * @param chunkId
+     * Implementation of starting to send a resource.
      */
-    public abstract void sendChunk(int chunkId);
+    abstract void doStartSending();
+
+    /**
+     * Stops the sending of a resource.
+     */
+    public void stopSending() {
+        if(getTransferType() != ResourceTransferType.OUTBOUND) return;
+        ResourceManager.logger.info("Stopping sending {}...", this.getResource());
+        doStartSending();
+    }
+
+    /**
+     * Implementation of stopping the sending of a resource.
+     */
+    abstract void doStopSending();
 
     /**
      * Releases all the resources associated with the handler.
      */
+    @Override
     public void close() {
         //Handling close.
         onClose();
@@ -114,9 +128,10 @@ public abstract class ResourceTransferHandler {
      * Called when a resource data message is received.
      * @param dataMessage
      */
-    public void callDataReceived(ResourceDataMessage dataMessage) {
+    public void receiveData(ResourceDataMessage dataMessage) {
+        if(getTransferType() != ResourceTransferType.INBOUND) return;
         setLastMessageTime(System.currentTimeMillis());
-        onDataReceived(dataMessage);
+        doDataReceived(dataMessage);
     }
 
     /**
@@ -124,7 +139,13 @@ public abstract class ResourceTransferHandler {
      *
      * @param dataMessage
      */
-    public abstract void onDataReceived(ResourceDataMessage dataMessage);
+    abstract void doDataReceived(ResourceDataMessage dataMessage);
+
+    /**
+     * Called when a transfer control message is received for this transfer.
+     * @param message
+     */
+    public abstract void onTransferControlMessage(int message);
 
     /**
      * Calls error for the handler.
@@ -148,7 +169,7 @@ public abstract class ResourceTransferHandler {
         return router;
     }
 
-    public Resource getResource() {
+    public T getResource() {
         return resource;
     }
 

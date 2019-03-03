@@ -17,18 +17,12 @@ public class ResourceDataMessage extends MsgBase {
     private int transferId;
 
     /**
-     * The id of the file chunk
-     */
-    private int chunkId;
-
-    /**
      * Creates a new resource message given the resource.
      * @param data
      */
-    public ResourceDataMessage(byte[] data, int transferId, int chunkId) {
+    public ResourceDataMessage(byte[] data, int transferId) {
         this.resourceData = data;
         this.transferId = transferId;
-        this.chunkId = chunkId;
     }
 
     @Override
@@ -42,9 +36,5 @@ public class ResourceDataMessage extends MsgBase {
 
     public int getTransferId() {
         return transferId;
-    }
-
-    public int getChunkId() {
-        return chunkId;
     }
 }

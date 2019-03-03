@@ -17,7 +17,7 @@ public enum MsgType {
     RES_INFO((short) 6), //Info about a transferred resource.
     RES_PULL((short) 7), //Contains the Network id of the pulled resource.
     RES_DATA((short) 8), //Data of a resource.
-    RES_DATA_REQUEST((short) 9), //Request data of a resource.
+    RES_TRANSFER_CONTROL((short) 9), //Request data of a resource.
     TUNNEL_CONTROL((short) 10), //Check if a tunnel is alive.
     TUNNEL_CLOSE_REQUEST((short) 11), //Request closure of a tunnel.
     RES_PULL_NOT_FOUND((short) 12), //Indicates that a pulled resource couldn't be found.

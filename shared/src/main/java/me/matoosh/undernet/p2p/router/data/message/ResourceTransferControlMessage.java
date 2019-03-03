@@ -3,7 +3,7 @@ package me.matoosh.undernet.p2p.router.data.message;
 /**
  * Message confirming the receiving of data by the other side.
  */
-public class ResourceDataChunkRequest extends MsgBase {
+public class ResourceTransferControlMessage extends MsgBase {
     /**
      * The transfer id of the data.
      */
@@ -12,23 +12,23 @@ public class ResourceDataChunkRequest extends MsgBase {
     /**
      * The id of the chunk requested.
      */
-    private int chunkId;
+    private int controlId;
 
-    public ResourceDataChunkRequest(int transferId, int chunkId) {
+    public ResourceTransferControlMessage(int transferId, int controlId) {
         this.transferId = transferId;
-        this.chunkId = chunkId;
+        this.controlId = controlId;
     }
 
     @Override
     public MsgType getType() {
-        return MsgType.RES_DATA_REQUEST;
+        return MsgType.RES_TRANSFER_CONTROL;
     }
 
     public int getTransferId() {
         return transferId;
     }
 
-    public int getChunkId() {
-        return chunkId;
+    public int getControlId() {
+        return controlId;
     }
 }

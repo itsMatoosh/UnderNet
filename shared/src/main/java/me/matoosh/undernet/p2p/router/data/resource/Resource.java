@@ -1,6 +1,5 @@
 package me.matoosh.undernet.p2p.router.data.resource;
 
-import me.matoosh.undernet.p2p.node.Node;
 import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
 import me.matoosh.undernet.p2p.router.data.message.ResourceInfoMessage;
@@ -35,7 +34,7 @@ public abstract class Resource implements Serializable {
     /**
      * The attributes of the resource.
      */
-    public HashMap<Integer, String> attributes = new HashMap<Integer, String>();
+    public HashMap<Integer, String> attributes = new HashMap<>();
 
     /**
      * Creates a new resource instance.

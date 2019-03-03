@@ -14,7 +14,7 @@ import me.matoosh.undernet.event.router.RouterErrorEvent;
 import me.matoosh.undernet.event.router.RouterStatusEvent;
 import me.matoosh.undernet.identity.NetworkIdentity;
 import me.matoosh.undernet.p2p.router.InterfaceStatus;
-import me.matoosh.undernet.p2p.router.data.resource.transfer.FileTransferHandler;
+import me.matoosh.undernet.p2p.router.data.resource.transfer.FileResourceTransferHandler;
 import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferHandler;
 import me.matoosh.undernet.standalone.UnderNetStandalone;
 import me.matoosh.undernet.standalone.serialization.SerializationTools;
@@ -224,25 +224,25 @@ public class MainFrame extends EventHandler {
             ResourceTransferDataReceivedEvent dataReceivedEvent = (ResourceTransferDataReceivedEvent) e;
             ResourceTransferHandler transferHandler = dataReceivedEvent.getTransferHandler();
 
-            if (transferHandler instanceof FileTransferHandler) {
-                FileTransferHandler fileTransferHandler = (FileTransferHandler) transferHandler;
+            if (transferHandler instanceof FileResourceTransferHandler) {
+                FileResourceTransferHandler fileResourceTransferHandler = (FileResourceTransferHandler) transferHandler;
 
-                progressBar.setValue((int) (((float) fileTransferHandler.getWritten()) / ((float) fileTransferHandler.getFileLength()) * 100f));
+                progressBar.setValue((int) (((float) fileResourceTransferHandler.getWritten()) / ((float) fileResourceTransferHandler.getFileLength()) * 100f));
             }
         } else if (e instanceof ResourceTransferDataSentEvent) {
             ResourceTransferDataSentEvent dataReceivedEvent = (ResourceTransferDataSentEvent) e;
             ResourceTransferHandler transferHandler = dataReceivedEvent.getTransferHandler();
 
-            if (transferHandler instanceof FileTransferHandler) {
-                FileTransferHandler fileTransferHandler = (FileTransferHandler) transferHandler;
+            if (transferHandler instanceof FileResourceTransferHandler) {
+                FileResourceTransferHandler fileResourceTransferHandler = (FileResourceTransferHandler) transferHandler;
 
-                progressBar.setValue((int) (((float) fileTransferHandler.getSent()) / ((float) fileTransferHandler.getFileLength()) * 100f));
+                progressBar.setValue((int) (((float) fileResourceTransferHandler.getSent()) / ((float) fileResourceTransferHandler.getFileLength()) * 100f));
             }
         } else if (e instanceof ResourceTransferFinishedEvent) {
             ResourceTransferFinishedEvent transferFinishedEvent = (ResourceTransferFinishedEvent) e;
             ResourceTransferHandler transferHandler = transferFinishedEvent.getTransferHandler();
 
-            if (transferHandler instanceof FileTransferHandler) {
+            if (transferHandler instanceof FileResourceTransferHandler) {
                 progressBar.setValue(0);
             }
         } else if (e instanceof RouterErrorEvent) {

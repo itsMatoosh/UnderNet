@@ -31,11 +31,6 @@ import java.util.ArrayList;
 
 public class ResourceManager extends Manager {
     /**
-     * The currently active flag resources.
-     */
-    public ArrayList<FlagResource> flagResources = new ArrayList<>();
-
-    /**
      * Cache of currently requested resources.
      */
     public ArrayList<ResourceTransferHandler> outboundHandlers = new ArrayList<>();
@@ -113,54 +108,11 @@ public class ResourceManager extends Manager {
      * @return
      */
     public Resource getLocalResource(NetworkID networkID) {
-        FileResource file = getStoredFileResource(networkID);
+        FileResource file = FileResource.getStoredFileResource(networkID, router);
         if(file != null) {
             return file;
         }
-
-        for (FlagResource flag :
-                flagResources) {
-            if (flag.getNetworkID().equals(networkID)) {
-                return flag;
-            }
-        }
-
         return null;
-    }
-
-    /**
-     * Gets a stored file resource.
-     * @param resource
-     * @return
-     */
-    public FileResource getStoredFileResource(NetworkID resource) {
-        for (File file :
-                UnderNet.fileManager.getContentFolder().listFiles()) {
-            if(file.isHidden()) continue;
-            if(!file.canRead()) continue;
-            FileResource res = new FileResource(router, file);
-            res.calcNetworkId();
-            if(res.getNetworkID().equals(resource)) {
-                return res;
-            }
-        }
-        return null;
-    }
-    /**
-     * Gets the file resources stored in the content folder.
-     * @return
-     */
-    public ArrayList<FileResource> getStoredFileResources() {
-        ArrayList<FileResource> resources = new ArrayList<>();
-        for (File file :
-                UnderNet.fileManager.getContentFolder().listFiles()) {
-            if(file.isHidden()) continue;
-            if(!file.canRead()) continue;
-            FileResource res = new FileResource(router, file);
-            res.calcNetworkId();
-            resources.add(res);
-        }
-        return resources;
     }
 
     /**
@@ -186,15 +138,6 @@ public class ResourceManager extends Manager {
         //Sending the resource info message.
         transferHandler.prepare();
         resource.sendInfo(tunnel, transferHandler.getTransferId());
-    }
-
-    /**
-     * Returns path to a local resource.
-     * @param resource
-     * @return
-     */
-    private File getLocalResourceFile(NetworkID resource) {
-        return new File(UnderNet.fileManager.getContentFolder() + "/" + resource.getStringValue());
     }
 
     /**
@@ -252,16 +195,15 @@ public class ResourceManager extends Manager {
     }
 
     /**
-     * Sends the next requested data chunk of a resource.
+     * Handles a received transfer control message.
      * @param message
      */
-    private void handlerResourceDataRequest(ResourceDataChunkRequest message) {
+    private void handleResourceTransferControlMessage(ResourceTransferControlMessage message) {
         //Sending next chunk from handler.
         for (ResourceTransferHandler transferHandler :
                 outboundHandlers) {
             if(transferHandler.getTransferId() == message.getTransferId()) {
-                logger.info("Sending chunk: {}, of file transfer {}", message.getChunkId(), transferHandler.getResource().getNetworkID());
-                new Thread(() -> transferHandler.callSendChunk(message.getChunkId())).start();
+                transferHandler.onTransferControlMessage(message.getControlId());
                 return;
             }
         }
@@ -278,7 +220,7 @@ public class ResourceManager extends Manager {
         for (ResourceTransferHandler transferHandler :
                 inboundHandlers) {
             if(message.getTransferId() == transferHandler.getTransferId()) {
-                transferHandler.callDataReceived(message);
+                transferHandler.receiveData(message);
                 return;
             }
         }
@@ -304,9 +246,9 @@ public class ResourceManager extends Manager {
                 //Retrieve
                 handleResourceRetrieve((ResourceDataMessage)messageReceivedEvent.networkMessage.getContent());
             }
-            else if(messageReceivedEvent.networkMessage.getContent().getType() == MsgType.RES_DATA_REQUEST) {
+            else if(messageReceivedEvent.networkMessage.getContent().getType() == MsgType.RES_TRANSFER_CONTROL) {
                 //Request data
-                handlerResourceDataRequest((ResourceDataChunkRequest) messageReceivedEvent.networkMessage.getContent());
+                handleResourceTransferControlMessage((ResourceTransferControlMessage) messageReceivedEvent.networkMessage.getContent());
             }else if(messageReceivedEvent.networkMessage.getContent().getType() == MsgType.RES_PULL) {
                 //Resource pull
                 handleResourcePullRequest((ResourcePullMessage)messageReceivedEvent.networkMessage.getContent());
@@ -320,7 +262,7 @@ public class ResourceManager extends Manager {
 
             //Push each available resource.
             for (FileResource file :
-                    getStoredFileResources()) {
+                    FileResource.getStoredFileResources(router)) {
                 if(router.neighborNodesManager.getClosestTo(file.getNetworkID()) != Node.self) {
                     boolean duplicate = false;
                     for (Resource r :
@@ -330,19 +272,6 @@ public class ResourceManager extends Manager {
                     if(duplicate) continue;
 
                     queuedResources.add(file);
-                }
-            }
-            for (FlagResource flag :
-                    flagResources) {
-                if(router.neighborNodesManager.getClosestTo(flag.getNetworkID()) != Node.self) {
-                    boolean duplicate = false;
-                    for (Resource r :
-                            queuedResources) {
-                        if (r == flag) duplicate = true;
-                    }
-                    if(duplicate) continue;
-
-                    queuedResources.add(flag);
                 }
             }
         }

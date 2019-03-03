@@ -3,15 +3,15 @@ package me.matoosh.undernet.p2p.router.data.resource;
 import me.matoosh.undernet.UnderNet;
 import me.matoosh.undernet.p2p.router.Router;
 import me.matoosh.undernet.p2p.router.data.NetworkID;
-import me.matoosh.undernet.p2p.router.data.message.NetworkMessage;
 import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnel;
-import me.matoosh.undernet.p2p.router.data.resource.transfer.FileTransferHandler;
+import me.matoosh.undernet.p2p.router.data.resource.transfer.FileResourceTransferHandler;
 import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferHandler;
 import me.matoosh.undernet.p2p.router.data.resource.transfer.ResourceTransferType;
 
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -133,7 +133,7 @@ public class FileResource extends Resource {
         if (resourceTransferType == ResourceTransferType.OUTBOUND) {
             transferId = UnderNet.secureRandom.nextInt();
         }
-        return new FileTransferHandler(this, resourceTransferType, tunnel, transferId, router);
+        return new FileResourceTransferHandler(this, resourceTransferType, tunnel, transferId, router);
     }
 
     /**
@@ -167,5 +167,38 @@ public class FileResource extends Resource {
             return true;
         }
         return false;
+    }
+
+
+
+    /**
+     * Gets a stored file resource.
+     * @param resource
+     * @return
+     */
+    public static FileResource getStoredFileResource(NetworkID resource, Router router) {
+        for (FileResource file :
+                getStoredFileResources(router)) {
+            if(file.getNetworkID().equals(resource)) {
+                return file;
+            }
+        }
+        return null;
+    }
+    /**
+     * Gets the file resources stored in the content folder.
+     * @return
+     */
+    public static ArrayList<FileResource> getStoredFileResources(Router router) {
+        ArrayList<FileResource> resources = new ArrayList<>();
+        for (File file :
+                UnderNet.fileManager.getContentFolder().listFiles()) {
+            if(file.isHidden()) continue;
+            if(!file.canRead()) continue;
+            FileResource res = new FileResource(router, file);
+            res.calcNetworkId();
+            resources.add(res);
+        }
+        return resources;
     }
 }
