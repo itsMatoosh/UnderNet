@@ -127,7 +127,7 @@ public class MessageTunnelManager extends Manager {
         //Finding an existing tunnel.
         for (int i = 0; i < messageTunnels.size(); i++) {
             MessageTunnel tunnel = messageTunnels.get(i);
-            if (tunnel != null && tunnel.getOrigin().equals(origin) && tunnel.getDestination().equals(destination)) {
+            if (tunnel != null && tunnel.getSymmetricKey() != null && tunnel.getOrigin().equals(origin) && tunnel.getDestination().equals(destination)) {
                 return tunnel;
             }
         }
