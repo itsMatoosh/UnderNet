@@ -127,6 +127,10 @@ public class MessageTunnel {
      */
     public void calcSharedSecret() {
         try {
+            if(sharedSecret != null && getSymmetricKey() != null) {
+                logger.warn("The shared secret for tunnel {}, has already been calculated!", this);
+                return;
+            }
             logger.info("Calculating the shared secret for tunnel: {}", this);
             KeyAgreement keyAgreement;
             try {
