@@ -125,15 +125,13 @@ public class MessageTunnelManager extends Manager {
      */
     public MessageTunnel getTunnel(NetworkID origin, NetworkID destination) {
         //Finding an existing tunnel.
-        MessageTunnel bestTunnel = null;
         for (int i = 0; i < messageTunnels.size(); i++) {
             MessageTunnel tunnel = messageTunnels.get(i);
             if (tunnel != null && tunnel.getOrigin().equals(origin) && tunnel.getDestination().equals(destination)) {
-                bestTunnel = tunnel;
-                if(bestTunnel.getSymmetricKey() != null) return bestTunnel;
+                return tunnel;
             }
         }
-        return bestTunnel;
+        return null;
     }
 
     @Override
@@ -167,6 +165,7 @@ public class MessageTunnelManager extends Manager {
                 tunnel.setOtherPublicKey(tunnelEstablishRequestMessage.getNetworkMessage().getOrigin().getPublicKey());
 
                 //Calculating the shared secret.
+                System.out.println("Calcing for message from: " + messageReceivedEvent.networkMessage.getOrigin() + " to " + messageReceivedEvent.networkMessage.getDestination());
                 tunnel.calcSharedSecret();
 
                 //Sending response.
@@ -185,6 +184,7 @@ public class MessageTunnelManager extends Manager {
                     tunnel.setOtherPublicKey(KeyTools.fromUncompressedPoint(tunnelEstablishResponseMessage.publicKey));
 
                     //Calculating the shared secret.
+                    System.out.println("Calcing for message from: " + messageReceivedEvent.networkMessage.getOrigin() + " to " + messageReceivedEvent.networkMessage.getDestination());
                     tunnel.calcSharedSecret();
                 } catch (Exception e1) {
                     logger.error("Couldn't decode the received public key for tunnel!", e1);
