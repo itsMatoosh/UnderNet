@@ -401,20 +401,11 @@ public class MessageTunnel {
         if (getTunnelState() == MessageTunnelState.HOSTED) {
             return String.format("{(%1$s) <-> (%2$s) <-> (%3$s)}", getOrigin(), Node.self, getDestination());
         }
-        if (getSide() == MessageTunnelSide.ORIGIN) {
-            if (getTunnelState() == MessageTunnelState.NOT_ESTABLISHED || getTunnelState() == MessageTunnelState.ESTABLISHING) {
-                return String.format("{(%1$s) <x> (%2$s)}", Node.self, getDestination());
-            }
-            if (getTunnelState() == MessageTunnelState.ESTABLISHED) {
-                return String.format("{(%1$s) <-> (%2$s)}", Node.self, getDestination());
-            }
-        } else {
-            if (getTunnelState() == MessageTunnelState.NOT_ESTABLISHED || getTunnelState() == MessageTunnelState.ESTABLISHING) {
-                return String.format("{(%1$s) <x> (%2$s)}", getOrigin(), Node.self);
-            }
-            if (getTunnelState() == MessageTunnelState.ESTABLISHED) {
-                return String.format("{(%1$s) <-> (%2$s)}", getOrigin(), Node.self);
-            }
+        if (getTunnelState() == MessageTunnelState.NOT_ESTABLISHED || getTunnelState() == MessageTunnelState.ESTABLISHING) {
+            return String.format("{(%1$s) <x> (%2$s)}", getOrigin(), getDestination());
+        }
+        if (getTunnelState() == MessageTunnelState.ESTABLISHED) {
+            return String.format("{(%1$s) <-> (%2$s)}", getOrigin(), getDestination());
         }
         return "MT:{UNKNOWN}";
     }
