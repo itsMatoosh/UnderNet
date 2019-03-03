@@ -84,7 +84,7 @@ public class ResourcePanel extends EventHandler {
             resourceList.setListData(new String[]{ResourceBundle.getBundle("language").getString("string_empty")});
         }
         new Thread(() -> {
-            Object[] resources = FileResource.getStoredFileResources(UnderNet.router).toArray();
+            FileResource[] resources = FileResource.getStoredFileResources(UnderNet.router);
             EventQueue.invokeLater(() -> resourceList.setListData(resources));
         }).start();
     }

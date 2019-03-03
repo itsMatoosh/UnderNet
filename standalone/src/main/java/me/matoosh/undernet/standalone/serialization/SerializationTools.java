@@ -1,11 +1,16 @@
 package me.matoosh.undernet.standalone.serialization;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.*;
 
 /**
  * Toolkit for serializing objects.
  */
 public class SerializationTools {
+
+    public static Logger logger = LoggerFactory.getLogger(SerializationTools.class);
     /**
      * Writes the specified object to the specified path.
      * @param saveFile
@@ -22,10 +27,8 @@ public class SerializationTools {
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(obj);
             oos.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            logger.error("Error when serializing object!", e);
         }
     }
 
@@ -46,7 +49,9 @@ public class SerializationTools {
             Object object = ois.readObject();
             ois.close();
             return object;
-        } catch (FileNotFoundException e) {} catch (IOException e) {} catch (ClassNotFoundException e) {}
+        } catch (Exception e) {
+            logger.error("Error while reading object from " + file, e);
+        }
         return null;
     }
 }

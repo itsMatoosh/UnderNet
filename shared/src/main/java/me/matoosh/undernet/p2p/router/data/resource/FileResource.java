@@ -189,7 +189,7 @@ public class FileResource extends Resource {
      * Gets the file resources stored in the content folder.
      * @return
      */
-    public static ArrayList<FileResource> getStoredFileResources(Router router) {
+    public static FileResource[] getStoredFileResources(Router router) {
         ArrayList<FileResource> resources = new ArrayList<>();
         for (File file :
                 UnderNet.fileManager.getContentFolder().listFiles()) {
@@ -199,6 +199,6 @@ public class FileResource extends Resource {
             res.calcNetworkId();
             resources.add(res);
         }
-        return resources;
+        return resources.toArray(new FileResource[0]);
     }
 }

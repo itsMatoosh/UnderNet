@@ -52,6 +52,11 @@ public class UnderNet
     public static SecureRandom secureRandom;
 
     /**
+     * The version of the UnderNet protocol used.
+     */
+    public static final int PROTOCOL_VERSION = 1;
+
+    /**
      * Sets up UnderNet.
      */
     public static void setup(FileManager fileManager, ConfigurationProvider configProvider) {
