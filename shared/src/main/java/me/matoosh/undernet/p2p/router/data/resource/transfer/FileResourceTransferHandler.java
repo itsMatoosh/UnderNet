@@ -65,10 +65,6 @@ public class FileResourceTransferHandler extends ResourceTransferHandler<FileRes
      * The time the transfer started.
      */
     private long startTime;
-    /**
-     * Whether the handler should stop sending the file.
-     */
-    private boolean shouldStopSending;
 
     public FileResourceTransferHandler(FileResource resource, ResourceTransferType fileTransferType, MessageTunnel tunnel, int transferId, Router router) {
         super(resource, fileTransferType, tunnel, transferId, router);
@@ -139,7 +135,7 @@ public class FileResourceTransferHandler extends ResourceTransferHandler<FileRes
             //File sending logic.
             try {
                 startTime = System.nanoTime();
-                while (inputBuffer.capacity() - inputBuffer.position() > 0 && !shouldStopSending) {
+                while (inputBuffer != null && inputBuffer.capacity() - inputBuffer.position() > 0) {
                     if (!inputChannel.isOpen()) break;
 
                     //The send buffer.
@@ -179,7 +175,7 @@ public class FileResourceTransferHandler extends ResourceTransferHandler<FileRes
 
     @Override
     void doStopSending() {
-        shouldStopSending = true;
+        close();
     }
 
     /**
