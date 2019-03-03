@@ -90,7 +90,7 @@ public abstract class ResourceTransferHandler<T extends Resource> implements Aut
     public void stopSending() {
         if(getTransferType() != ResourceTransferType.OUTBOUND) return;
         ResourceManager.logger.info("Stopping sending {}...", this.getResource());
-        doStartSending();
+        doStopSending();
     }
 
     /**
