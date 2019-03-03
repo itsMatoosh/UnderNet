@@ -86,7 +86,6 @@ public class FileResourceTransferHandler extends ResourceTransferHandler<FileRes
             try {
                 buffer = new byte[BUFFER_SIZE];
                 sent = 0;
-                shouldStopSending = false;
                 inputChannel = new FileInputStream(file).getChannel();
                 inputBuffer = inputChannel.map(FileChannel.MapMode.READ_ONLY, 0, inputChannel.size());
             } catch (FileNotFoundException e) { //File doesn't exist.
