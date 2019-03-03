@@ -119,19 +119,21 @@ public class MessageTunnelManager extends Manager {
     }
 
     /**
-     * Gets or creates a message tunnel.
+     * Gets or message tunnel.
      *
      * @return
      */
     public MessageTunnel getTunnel(NetworkID origin, NetworkID destination) {
         //Finding an existing tunnel.
+        MessageTunnel bestTunnel = null;
         for (int i = 0; i < messageTunnels.size(); i++) {
             MessageTunnel tunnel = messageTunnels.get(i);
-            if (tunnel != null && tunnel.getSymmetricKey() != null && tunnel.getOrigin().equals(origin) && tunnel.getDestination().equals(destination)) {
-                return tunnel;
+            if (tunnel != null && tunnel.getOrigin().equals(origin) && tunnel.getDestination().equals(destination)) {
+                bestTunnel = tunnel;
+                if(bestTunnel.getSymmetricKey() != null) return bestTunnel;
             }
         }
-        return null;
+        return bestTunnel;
     }
 
     @Override
