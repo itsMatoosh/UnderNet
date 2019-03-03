@@ -107,7 +107,8 @@ public abstract class ResourceTransferHandler<T extends Resource> implements Aut
         onClose();
 
         //Closing tunnel.
-        router.messageTunnelManager.closeTunnel(this.getTunnel());
+        if(transferType == ResourceTransferType.INBOUND)
+            router.messageTunnelManager.closeTunnel(this.getTunnel());
 
         //Removing from the list.
         if (this.getTransferType() == ResourceTransferType.INBOUND) {
