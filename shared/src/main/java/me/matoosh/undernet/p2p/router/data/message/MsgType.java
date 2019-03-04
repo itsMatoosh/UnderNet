@@ -5,6 +5,9 @@ import me.matoosh.undernet.p2p.router.data.message.tunnel.TunnelControlMessage;
 import me.matoosh.undernet.p2p.router.data.message.tunnel.TunnelEstablishRequestMessage;
 import me.matoosh.undernet.p2p.router.data.message.tunnel.TunnelEstablishResponseMessage;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
 /**
  * Types of messages the network sends.
  * Can go up to a 1000, since ids above that are reserved for other handlers.
@@ -55,9 +58,10 @@ public enum MsgType {
      * @throws IllegalAccessException
      * @throws InstantiationException
      */
-    public MsgBase getMessageInstance(byte[] data) throws IllegalAccessException, InstantiationException {
-        MsgBase msg = (MsgBase) this.type.newInstance();
-        if(data != null)
+    public MsgBase getMessageInstance(byte[] data) throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+        Constructor<?> cons = this.type.getConstructor();
+        MsgBase msg = (MsgBase) cons.newInstance();
+        if(data != null && data.length > 0)
             msg.doDeserialize(data);
         return msg;
     }
