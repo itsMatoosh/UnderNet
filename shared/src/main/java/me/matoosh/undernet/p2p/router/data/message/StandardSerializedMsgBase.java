@@ -5,7 +5,7 @@ import java.io.*;
 /**
  * A message base with standard serialization.
  */
-public abstract class StandardSerializedMsgBase extends MsgBase {
+public abstract class StandardSerializedMsgBase extends MsgBase implements Serializable {
     @Override
     public void doDeserialize(byte[] data) {
         ByteArrayInputStream bis = new ByteArrayInputStream(data);
@@ -35,7 +35,6 @@ public abstract class StandardSerializedMsgBase extends MsgBase {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutput out;
         try {
-            System.out.println("DD");
             out = new ObjectOutputStream(bos);
             out.writeObject(this);
             out.flush();
@@ -49,7 +48,6 @@ public abstract class StandardSerializedMsgBase extends MsgBase {
                 // ignore close exception
             }
         }
-        System.out.println("SS");
         return new byte[0];
     }
 }
