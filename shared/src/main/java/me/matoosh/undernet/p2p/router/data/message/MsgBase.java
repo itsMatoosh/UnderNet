@@ -1,5 +1,6 @@
 package me.matoosh.undernet.p2p.router.data.message;
 
+import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 
 /**
@@ -33,7 +34,7 @@ public abstract class MsgBase {
      * Deserializes the contents of the message from a byte array.
      * @param data
      */
-    public static MsgBase deserialize(byte[] data) throws InstantiationException, IllegalAccessException {
+    public static MsgBase deserialize(byte[] data) throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         ByteBuffer buffer = ByteBuffer.wrap(data);
         short type = buffer.getShort();
         byte[] msgData = new byte[data.length - 2];
