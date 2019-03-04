@@ -34,7 +34,7 @@ public abstract class MsgBase {
     public static MsgBase deserialize(byte[] data) throws InstantiationException, IllegalAccessException {
         ByteBuffer buffer = ByteBuffer.wrap(data);
         short type = buffer.getShort();
-        byte[] msgData = new byte[data.length - 1];
+        byte[] msgData = new byte[data.length - 2];
         buffer.get(msgData);
 
         return MsgType.getById(type).getMessageInstance(msgData);
