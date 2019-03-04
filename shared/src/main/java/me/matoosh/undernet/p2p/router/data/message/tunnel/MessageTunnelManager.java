@@ -124,22 +124,6 @@ public class MessageTunnelManager extends Manager {
     }
 
     /**
-     * Sends a tunnel restablish request to the other side of the tunnel.
-     * @param tunnel
-     */
-    public void sendTunnelRestablishRequest(MessageTunnel tunnel) {
-        //Sending a tunnel request.
-        NetworkMessage tunnelRequest;
-        if(tunnel.getSide() == MessageTunnelSide.ORIGIN) {
-            tunnelRequest = router.networkMessageManager.constructMessage(tunnel, new TunnelRestablishRequest(), NetworkMessage.MessageDirection.TO_DESTINATION);
-        } else {
-            tunnelRequest = router.networkMessageManager.constructMessage(tunnel, new TunnelRestablishRequest(), NetworkMessage.MessageDirection.TO_ORIGIN);
-        }
-
-        router.networkMessageManager.forwardMessage(tunnelRequest, Node.self);
-    }
-
-    /**
      * Gets or message tunnel.
      *
      * @return
@@ -213,8 +197,6 @@ public class MessageTunnelManager extends Manager {
                 EventManager.callEvent(new MessageTunnelEstablishedEvent(tunnel));
             } else if (messageReceivedEvent.networkMessage.getContent().getType() == MsgType.TUNNEL_CLOSE_REQUEST) {
                 closeTunnel(messageReceivedEvent.networkMessage.getTunnel());
-            } else if (messageReceivedEvent.networkMessage.getContent().getType() == MsgType.TUNNEL_RESTABLISH_REQUEST) {
-                sendTunnelResponse(messageReceivedEvent.networkMessage.getTunnel());
             }
         }
     }

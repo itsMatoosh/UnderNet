@@ -18,6 +18,20 @@ public class PingMessage extends MsgBase {
         return MsgType.NODE_PING;
     }
 
+    @Override
+    public void doDeserialize(byte[] data) {
+        if(data[0] == 1) this.pong = true;
+        else this.pong = false;
+    }
+
+    @Override
+    public byte[] doSerialize() {
+        if(pong) {
+            return new byte[] {1};
+        }
+        return new byte[] {0};
+    }
+
     public boolean isPong() {
         return pong;
     }

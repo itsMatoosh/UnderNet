@@ -95,7 +95,7 @@ public class KeyTools {
                 / Byte.SIZE;
 
         if (uncompressedPoint.length != 2 * keySizeBytes) {
-            logger.error("Couldn't deserialize EC Public Key, invalid data size!");
+            logger.error("Couldn't doDeserialize EC Public Key, invalid data size!");
             return null;
         }
 
@@ -128,7 +128,7 @@ public class KeyTools {
         } else if (x.length == keySizeBytes + 1 && x[0] == 0) {
             System.arraycopy(x, 1, uncompressedPoint, offset, keySizeBytes);
         } else {
-            logger.error("Couldn't serialize EC public key {}, X value too large!", publicKey);
+            logger.error("Couldn't doSerialize EC public key {}, X value too large!", publicKey);
             return null;
         }
         offset += keySizeBytes;
@@ -140,7 +140,7 @@ public class KeyTools {
         } else if (y.length == keySizeBytes + 1 && y[0] == 0) {
             System.arraycopy(y, 1, uncompressedPoint, offset, keySizeBytes);
         } else {
-            logger.error("Couldn't serialize EC public key {}, Y value too large!", publicKey);
+            logger.error("Couldn't doSerialize EC public key {}, Y value too large!", publicKey);
             return null;
         }
 

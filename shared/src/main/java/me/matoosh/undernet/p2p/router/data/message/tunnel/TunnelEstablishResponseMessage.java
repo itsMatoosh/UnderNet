@@ -22,4 +22,14 @@ public class TunnelEstablishResponseMessage extends MsgBase {
     public MsgType getType() {
         return MsgType.TUNNEL_ESTABLISH_RESPONSE;
     }
+
+    @Override
+    public void doDeserialize(byte[] data) {
+        this.publicKey = data;
+    }
+
+    @Override
+    public byte[] doSerialize() {
+        return publicKey;
+    }
 }

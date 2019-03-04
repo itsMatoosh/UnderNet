@@ -142,7 +142,7 @@ public class EntryNodeCache {
             logger.error("Entry node cache, contains old or incompatible data, resetting...");
             clear();
         } catch (ClassNotFoundException e) {
-            logger.error("Couldn't deserialize the entry node cache file!", e);
+            logger.error("Couldn't doDeserialize the entry node cache file!", e);
             clear();
         } catch (FileNotFoundException e) {
             logger.error("Entry node cache file not found!");

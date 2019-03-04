@@ -300,8 +300,8 @@ public class MessageTunnel {
         if (getSymmetricKey() == null) {
             logger.warn("Missing symmetric key for tunnel: {}", this);
             if(getPreviousNode() != null) {
-                //restablishing tunnel
-                UnderNet.router.messageTunnelManager.sendTunnelRestablishRequest(this);
+                //closing tunnel
+                UnderNet.router.messageTunnelManager.closeTunnel(this);
             }
             return;
         }

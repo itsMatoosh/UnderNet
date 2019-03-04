@@ -7,8 +7,6 @@ import me.matoosh.undernet.p2p.router.data.message.tunnel.MessageTunnel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.nio.ByteBuffer;
 import java.security.*;
 
 /**
@@ -69,7 +67,7 @@ public class NetworkMessage {
      * The raw data.
      * The serialized content.
      */
-    private ByteBuffer data;
+    private byte[] data;
 
     public NetworkMessage() {
     }
@@ -106,23 +104,8 @@ public class NetworkMessage {
      * Serializes the message's content.
      */
     public void serialize() {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutput out;
-        try {
-            out = new ObjectOutputStream(bos);
-            out.writeObject(this.content);
-            out.flush();
-            this.data = ByteBuffer.wrap(bos.toByteArray());
-            logger.debug("Serialized a message of type {}, data length: {}", content.getType(), this.data.array().length);
-        } catch (IOException e) {
-            logger.error("Error while serializing a network message: " + this.toString(), e);
-        } finally {
-            try {
-                bos.close();
-            } catch (IOException ex) {
-                // ignore close exception
-            }
-        }
+        this.data = content.serialize();
+        logger.debug("Serialized a message of type {}, data length: {}", this.content.getType(), this.data.length);
     }
 
     /**
@@ -131,25 +114,12 @@ public class NetworkMessage {
      * @return
      */
     public void deserialize() {
-        ByteArrayInputStream bis = new ByteArrayInputStream(this.data.array());
-        ObjectInput in = null;
         try {
-            in = new ObjectInputStream(bis);
-            this.content = (MsgBase) in.readObject();
+            this.content = MsgBase.deserialize(this.data);
             this.content.setNetworkMessage(this);
-            logger.debug("Deserialized message of length: {}", this.data.array().length);
-        } catch (ClassNotFoundException e) {
-            logger.error("Error occured while deserializing a network message!", e);
-        } catch (IOException e) {
-            logger.error("Error occured while deserializing a network message!", e);
-        } finally {
-            try {
-                if (in != null) {
-                    in.close();
-                }
-            } catch (IOException ex) {
-                // ignore close exception
-            }
+            logger.debug("Deserialized message of type {}, data length: {}", this.content.getType(), this.data.length);
+        } catch (Exception e) {
+            logger.error("Couldn't doDeserialize message " + this, e);
         }
     }
 
@@ -186,7 +156,7 @@ public class NetworkMessage {
      * @return
      */
     public int getContentLength() {
-        return this.data.capacity();
+        return this.data.length;
     }
 
     /**
@@ -195,7 +165,7 @@ public class NetworkMessage {
      * @return
      */
     public byte[] getData() {
-        return this.data.array();
+        return this.data;
     }
 
     /**
@@ -204,7 +174,7 @@ public class NetworkMessage {
      * @param data
      */
     public void setData(byte[] data) {
-        this.data = ByteBuffer.wrap(data);
+        this.data = data;
     }
 
     public MsgBase getContent() {
@@ -275,7 +245,7 @@ public class NetworkMessage {
         try {
             Signature sig = Signature.getInstance("SHA1withECDSA", "SunEC");
             sig.initSign(Node.self.getIdentity().getPrivateKey());
-            sig.update(data.array());
+            sig.update(data);
             this.signature = sig.sign();
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
@@ -307,7 +277,7 @@ public class NetworkMessage {
                 }
             }
 
-            sig.update(data.array());
+            sig.update(data);
 
             return sig.verify(signature);
         } catch (NoSuchAlgorithmException e) {

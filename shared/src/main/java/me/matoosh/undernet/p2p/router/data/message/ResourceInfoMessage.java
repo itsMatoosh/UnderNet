@@ -5,7 +5,7 @@ import me.matoosh.undernet.p2p.router.data.resource.ResourceInfo;
 /**
  * A message with resource info.
  */
-public class ResourceInfoMessage extends MsgBase {
+public class ResourceInfoMessage extends StandardSerializedMsgBase {
     /**
      * The resource info.
      */
@@ -24,6 +24,13 @@ public class ResourceInfoMessage extends MsgBase {
     @Override
     public MsgType getType() {
         return MsgType.RES_INFO;
+    }
+
+    @Override
+    void restoreValues(StandardSerializedMsgBase serializedMsgBase) {
+        ResourceInfoMessage infoMessage = (ResourceInfoMessage) serializedMsgBase;
+        this.resourceInfo = infoMessage.resourceInfo;
+        this.transferId = infoMessage.transferId;
     }
 
     public ResourceInfo getResourceInfo() {

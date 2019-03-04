@@ -1,5 +1,7 @@
 package me.matoosh.undernet.p2p.router.data.message;
 
+import java.nio.ByteBuffer;
+
 /**
  * Message containing resource data.
  * Created by Mateusz Rębacz on 26.09.2017.
@@ -28,6 +30,22 @@ public class ResourceDataMessage extends MsgBase {
     @Override
     public MsgType getType() {
         return MsgType.RES_DATA;
+    }
+
+    @Override
+    public void doDeserialize(byte[] data) {
+        ByteBuffer buffer = ByteBuffer.wrap(data);
+        this.resourceData = new byte[data.length - 4];
+        this.transferId = buffer.getInt();
+        buffer.get(resourceData);
+    }
+
+    @Override
+    public byte[] doSerialize() {
+        ByteBuffer buffer = ByteBuffer.allocate(resourceData.length + 4);
+        buffer.putInt(transferId);
+        buffer.put(resourceData);
+        return buffer.array();
     }
 
     public byte[] getResourceData() {
