@@ -203,7 +203,7 @@ public class NetworkMessageManager extends Manager {
                 EventManager.callEvent(new MessageReceivedEvent(message, forwarder));
             } else {
                 //Message can't be read.
-                logger.warn("Couldn't read the incoming message! Signature: {}", Base64.encode(message.getSignature()));
+                logger.warn("Couldn't read the incoming message! Signature: {}", NetworkID.getStringValue(message.getSignature()));
             }
         } else {
             //Set last message received on tunnel.

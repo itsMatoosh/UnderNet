@@ -114,7 +114,28 @@ public class MessageTunnelManager extends Manager {
      */
     public void sendTunnelResponse(MessageTunnel tunnel) {
         //Sending a tunnel request.
-        NetworkMessage tunnelRequest = router.networkMessageManager.constructMessage(tunnel, new TunnelEstablishResponseMessage(Node.self.getIdentity().getPublicKey()), NetworkMessage.MessageDirection.TO_ORIGIN);
+        NetworkMessage tunnelRequest;
+        if(tunnel.getSide() == MessageTunnelSide.ORIGIN) {
+            tunnelRequest = router.networkMessageManager.constructMessage(tunnel, new TunnelEstablishResponseMessage(Node.self.getIdentity().getPublicKey()), NetworkMessage.MessageDirection.TO_DESTINATION);
+        } else {
+            tunnelRequest = router.networkMessageManager.constructMessage(tunnel, new TunnelEstablishResponseMessage(Node.self.getIdentity().getPublicKey()), NetworkMessage.MessageDirection.TO_ORIGIN);
+        }
+        router.networkMessageManager.forwardMessage(tunnelRequest, Node.self);
+    }
+
+    /**
+     * Sends a tunnel restablish request to the other side of the tunnel.
+     * @param tunnel
+     */
+    public void sendTunnelRestablishRequest(MessageTunnel tunnel) {
+        //Sending a tunnel request.
+        NetworkMessage tunnelRequest;
+        if(tunnel.getSide() == MessageTunnelSide.ORIGIN) {
+            tunnelRequest = router.networkMessageManager.constructMessage(tunnel, new TunnelRestablishRequest(), NetworkMessage.MessageDirection.TO_DESTINATION);
+        } else {
+            tunnelRequest = router.networkMessageManager.constructMessage(tunnel, new TunnelRestablishRequest(), NetworkMessage.MessageDirection.TO_ORIGIN);
+        }
+
         router.networkMessageManager.forwardMessage(tunnelRequest, Node.self);
     }
 
@@ -165,7 +186,6 @@ public class MessageTunnelManager extends Manager {
                 tunnel.setOtherPublicKey(tunnelEstablishRequestMessage.getNetworkMessage().getOrigin().getPublicKey());
 
                 //Calculating the shared secret.
-                System.out.println("Calcing for message from: " + messageReceivedEvent.networkMessage.getOrigin() + " to " + messageReceivedEvent.networkMessage.getDestination());
                 tunnel.calcSharedSecret();
 
                 //Sending response.
@@ -184,7 +204,6 @@ public class MessageTunnelManager extends Manager {
                     tunnel.setOtherPublicKey(KeyTools.fromUncompressedPoint(tunnelEstablishResponseMessage.publicKey));
 
                     //Calculating the shared secret.
-                    System.out.println("Calcing for message from: " + messageReceivedEvent.networkMessage.getOrigin() + " to " + messageReceivedEvent.networkMessage.getDestination());
                     tunnel.calcSharedSecret();
                 } catch (Exception e1) {
                     logger.error("Couldn't decode the received public key for tunnel!", e1);
@@ -193,8 +212,9 @@ public class MessageTunnelManager extends Manager {
                 //Calling the event.
                 EventManager.callEvent(new MessageTunnelEstablishedEvent(tunnel));
             } else if (messageReceivedEvent.networkMessage.getContent().getType() == MsgType.TUNNEL_CLOSE_REQUEST) {
-                TunnelCloseRequestMessage closeRequestMessage = (TunnelCloseRequestMessage) messageReceivedEvent.networkMessage.getContent();
-                closeTunnel(closeRequestMessage.getNetworkMessage().getTunnel());
+                closeTunnel(messageReceivedEvent.networkMessage.getTunnel());
+            } else if (messageReceivedEvent.networkMessage.getContent().getType() == MsgType.TUNNEL_RESTABLISH_REQUEST) {
+                sendTunnelResponse(messageReceivedEvent.networkMessage.getTunnel());
             }
         }
     }
