@@ -21,6 +21,8 @@ public abstract class MsgBase {
         this.networkMessage = networkMessage;
     }
 
+    public MsgBase() {}
+
     /**
      * Gets the type of the message.
      * @return
