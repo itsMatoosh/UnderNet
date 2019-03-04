@@ -16,6 +16,8 @@ public class ResourceInfoMessage extends StandardSerializedMsgBase {
      */
     private int transferId;
 
+    public ResourceInfoMessage(){}
+
     public ResourceInfoMessage(ResourceInfo resourceInfo, int transferId) {
         this.resourceInfo = resourceInfo;
         this.transferId = transferId;

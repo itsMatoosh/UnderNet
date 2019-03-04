@@ -4,7 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -14,6 +13,7 @@ public class NodeNeighborsMessage extends MsgBase {
 
     private String[] addresses;
 
+    public NodeNeighborsMessage() {}
     public NodeNeighborsMessage(InetSocketAddress[] addresses) {
         this.addresses = new String[addresses.length];
         for (int i = 0; i < addresses.length; i++) {

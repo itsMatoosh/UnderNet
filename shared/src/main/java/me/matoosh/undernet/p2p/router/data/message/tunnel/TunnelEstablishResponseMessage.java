@@ -14,6 +14,8 @@ public class TunnelEstablishResponseMessage extends MsgBase {
      */
     public byte[] publicKey;
 
+    public TunnelEstablishResponseMessage() {}
+
     public TunnelEstablishResponseMessage(ECPublicKey publicKey) {
         this.publicKey = KeyTools.toUncompressedPoint(publicKey);
     }

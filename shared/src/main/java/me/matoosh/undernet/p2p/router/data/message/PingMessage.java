@@ -9,6 +9,7 @@ public class PingMessage extends MsgBase {
      */
     private boolean pong;
 
+    public PingMessage(){}
     public PingMessage(boolean pong) {
         this.pong = pong;
     }

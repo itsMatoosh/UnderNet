@@ -14,8 +14,6 @@ public class NodeInfoMessage extends MsgBase {
      */
     private int connectionPort;
 
-    public NodeInfoMessage(){}
-
     /**
      * Constructs the node info message.
      */

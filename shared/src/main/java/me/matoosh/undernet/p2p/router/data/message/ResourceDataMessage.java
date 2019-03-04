@@ -18,6 +18,8 @@ public class ResourceDataMessage extends MsgBase {
      */
     private int transferId;
 
+    public ResourceDataMessage() {}
+
     /**
      * Creates a new resource message given the resource.
      * @param data

@@ -16,6 +16,8 @@ public class ResourceTransferControlMessage extends MsgBase {
      */
     private int controlId;
 
+    public ResourceTransferControlMessage(){}
+
     public ResourceTransferControlMessage(int transferId, int controlId) {
         this.transferId = transferId;
         this.controlId = controlId;
