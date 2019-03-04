@@ -6,6 +6,9 @@ import java.io.*;
  * A message base with standard serialization.
  */
 public abstract class StandardSerializedMsgBase extends MsgBase implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     @Override
     public void doDeserialize(byte[] data) {
         ByteArrayInputStream bis = new ByteArrayInputStream(data);
