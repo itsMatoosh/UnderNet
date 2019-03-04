@@ -119,7 +119,7 @@ public class NetworkMessage {
             this.content.setNetworkMessage(this);
             logger.debug("Deserialized message of type {}, data length: {}", this.content.getType(), this.data.length);
         } catch (Exception e) {
-            logger.error("Couldn't doDeserialize message " + this, e);
+            logger.error("Couldn't deserialize message " + this, e);
         }
     }
 
