@@ -12,6 +12,7 @@ public abstract class StandardSerializedMsgBase extends MsgBase {
         ObjectInput in = null;
         try {
             in = new ObjectInputStream(bis);
+            System.out.println("SSDASDADSD");
             restoreValues((StandardSerializedMsgBase)in.readObject());
         } catch (IOException e) {
             e.printStackTrace();
