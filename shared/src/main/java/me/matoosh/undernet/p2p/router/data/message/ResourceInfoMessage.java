@@ -33,6 +33,8 @@ public class ResourceInfoMessage extends StandardSerializedMsgBase {
         ResourceInfoMessage infoMessage = (ResourceInfoMessage) serializedMsgBase;
         this.resourceInfo = infoMessage.resourceInfo;
         this.transferId = infoMessage.transferId;
+        if(resourceInfo == null) System.out.println("NULL");
+        System.out.println("Restored resource info: " + transferId);
     }
 
     public ResourceInfo getResourceInfo() {
