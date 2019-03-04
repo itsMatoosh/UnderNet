@@ -8,12 +8,10 @@ import java.io.*;
 public abstract class StandardSerializedMsgBase extends MsgBase {
     @Override
     public void doDeserialize(byte[] data) {
-        System.out.println("SDASDSAD");
         ByteArrayInputStream bis = new ByteArrayInputStream(data);
         ObjectInput in = null;
         try {
             in = new ObjectInputStream(bis);
-            System.out.println("SSDASDADSD");
             restoreValues((StandardSerializedMsgBase)in.readObject());
         } catch (IOException e) {
             e.printStackTrace();

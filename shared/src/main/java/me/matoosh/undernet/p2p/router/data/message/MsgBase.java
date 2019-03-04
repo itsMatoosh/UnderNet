@@ -35,6 +35,7 @@ public abstract class MsgBase {
      * @param data
      */
     public static MsgBase deserialize(byte[] data) throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        System.out.println("Deserializing " + data.length);
         ByteBuffer buffer = ByteBuffer.wrap(data);
         short type = buffer.getShort();
         byte[] msgData = new byte[data.length - 2];
