@@ -17,5 +17,3 @@
 
 ## Want to help?
 The project is in its very early stages of development and most of the features described above have not yet been implemented. If you're experienced with networking and Java and would like to help the project, feel free to fork, develop and issue pull requests. The project is set up with Gradle and can be opened and built with Intellij IDEA.
-
-#### Expected to release before 2020
