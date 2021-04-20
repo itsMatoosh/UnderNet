@@ -1,4 +1,4 @@
-# UnderNet
+# UnderNet [![Java CI with Gradle](https://github.com/itsMatoosh/UnderNet/actions/workflows/gradle.yml/badge.svg)](https://github.com/itsMatoosh/UnderNet/actions/workflows/gradle.yml)
 A P2P mesh distributed network. 
 
 ![Imgur](https://i.imgur.com/po8xteU.png)
